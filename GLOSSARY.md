@@ -14,6 +14,10 @@ _À éviter_ : base, classeur (le classeur est autre chose)
 Un ensemble de cartes publié ensemble sous un nom et un code (ex. ORIGINS / OGN).
 _À éviter_ : set, série
 
+**Extension promo** :
+Une Extension regroupant des cartes promotionnelles (OPP, PR, JDG, OGS…), par opposition aux Extensions principales. Masquée par défaut dans le Catalogue.
+_À éviter_ : set auxiliaire
+
 **Carte** :
 Une carte au sens du jeu (son nom, ses règles), indépendamment de ses impressions. Ex. « Jinx ».
 _À éviter_ : oracle
@@ -22,9 +26,16 @@ _À éviter_ : oracle
 Une impression précise d'une carte dans une extension, identifiée par son numéro (ex. `OGN-042a`) : normale, Showcase, SP, overnumbered, signée… C'est l'unité de la collection, de la liste de souhaits, de la sélection du classeur et du prix.
 _À éviter_ : printing, variante, carte (quand on parle d'une impression précise)
 
+**Code de version** :
+L'identifiant lisible et propre à l'app d'une Version : code d'Extension + numéro (`OGN-030a`), plus un suffixe d'édition quand deux Versions partagent un numéro (`OPP-017-metal`).
+_À éviter_ : id, riftboundId, printing_id
+
 **Finition** :
 Le traitement physique d'une version : normale ou foil. Elle ne distingue que des prix.
 _À éviter_ : foil/non-foil comme version
+
+**Finition de référence** :
+La Finition qui sert à valoriser une Version : normale si elle existe, sinon foil.
 
 ### Prix
 
@@ -35,6 +46,20 @@ _À éviter_ : marché, fournisseur
 **Devise d'affichage** :
 La devise dans laquelle l'utilisateur choisit de voir les prix : CAD, USD ou EUR. Indépendante de la source de prix.
 _À éviter_ : monnaie
+
+**Relevé de prix** :
+La valeur d'un prix pour une Version, une Source de prix et une Finition à une date donnée. L'ensemble des relevés forme l'historique.
+_À éviter_ : snapshot, cotation
+
+### Nature des données
+
+**Données de référence** :
+Ce que l'app télécharge et peut reconstruire à tout moment : Catalogue, prix du jour, taux de change.
+_À éviter_ : cache
+
+**Données précieuses** :
+Ce qui ne peut pas être retéléchargé et ne doit jamais être perdu : Collection, Liste de souhaits, Sélection du classeur, réglages, historique des Relevés de prix.
+_À éviter_ : données utilisateur (trop vague)
 
 ### Données personnelles
 
