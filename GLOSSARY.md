@@ -62,6 +62,10 @@ La somme, sur la Collection, de la quantité × le prix de la Finition de réfé
 La valeur d'un prix pour une Version, une Source de prix et une Finition à une date donnée. L'ensemble des relevés forme l'historique.
 _À éviter_ : snapshot, cotation
 
+**Complétion** :
+La part des Versions distinctes d'une Extension que l'utilisateur possède (ex. 54 / 352).
+_À éviter_ : progression, pourcentage de collection
+
 ### Nature des données
 
 **Données de référence** :
@@ -111,6 +115,7 @@ Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
 | Devise d'affichage | `DisplayCurrency` |
 | Collection | `Collection` |
 | Valeur de la collection | `collectionValue` |
+| Complétion | `completion` |
 | Liste de souhaits | `Wishlist` |
 | Sélection du classeur | `BinderSelection` |
 | Sauvegarde | `Backup` |
