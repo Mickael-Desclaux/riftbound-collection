@@ -89,3 +89,32 @@ _À éviter_ : cartes retirées, cartes à imprimer
 **Sauvegarde** :
 Un fichier JSON contenant les données personnelles de l'utilisateur, exportable puis importable sur un autre appareil.
 _À éviter_ : backup, classeur actualisé
+
+## Noms dans le code
+
+Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
+
+| Terme | Nom dans le code |
+|---|---|
+| Catalogue | `Catalog` |
+| Extension | `Expansion` (jamais `Set`, type natif JavaScript) |
+| Extension promo | `isPromo` sur `Expansion` |
+| Carte | `Card` |
+| Version | `Printing` (jamais `Version`, réservé aux versions de schéma, de sauvegarde, d'app) |
+| Code de version | `PrintingCode` |
+| Finition | `Finish` |
+| Finition de référence | `referenceFinish` |
+| Source de prix | `PriceSource` (`tcgplayer` / `cardmarket`) |
+| Indicateur de référence | `referenceMetric` |
+| Relevé de prix | `PriceRecord` |
+| Variation de prix | `priceChange` |
+| Devise d'affichage | `DisplayCurrency` |
+| Collection | `Collection` |
+| Valeur de la collection | `collectionValue` |
+| Liste de souhaits | `Wishlist` |
+| Sélection du classeur | `BinderSelection` |
+| Sauvegarde | `Backup` |
+| Données de référence | `ReferenceData` |
+| Données précieuses | `PreciousData` |
+
+En français, « printing » reste à éviter ; dans le code, `Printing` est le nom officiel.
