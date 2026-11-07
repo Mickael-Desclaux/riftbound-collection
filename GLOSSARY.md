@@ -98,6 +98,10 @@ _À éviter_ : cartes retirées, cartes à imprimer
 Un fichier JSON contenant les données personnelles de l'utilisateur, exportable puis importable sur un autre appareil.
 _À éviter_ : backup, classeur actualisé
 
+**Sauvegarde de sécurité** :
+Une Sauvegarde créée automatiquement par l'app, sur l'appareil, juste avant une opération risquée (restauration d'une Sauvegarde, migration de schéma) pour pouvoir revenir en arrière.
+_À éviter_ : backup automatique, snapshot
+
 ## Noms dans le code
 
 Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
@@ -124,6 +128,7 @@ Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
 | Liste de souhaits | `Wishlist` |
 | Sélection du classeur | `BinderSelection` |
 | Sauvegarde | `Backup` |
+| Sauvegarde de sécurité | `SafetyBackup` |
 | Données de référence | `ReferenceData` |
 | Données précieuses | `PreciousData` |
 
