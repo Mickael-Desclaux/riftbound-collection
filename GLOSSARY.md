@@ -47,6 +47,17 @@ _À éviter_ : marché, fournisseur
 La devise dans laquelle l'utilisateur choisit de voir les prix : CAD, USD ou EUR. Indépendante de la source de prix.
 _À éviter_ : monnaie
 
+**Indicateur de référence** :
+L'indicateur de prix retenu pour une Source de prix : `market` pour TCGplayer, `trend` pour Cardmarket. C'est lui qu'on affiche et qu'on historise.
+_À éviter_ : prix moyen, prix du marché (ambigus)
+
+**Variation de prix** :
+L'évolution en pourcentage de l'Indicateur de référence d'une Version sur une période (7 ou 30 jours), calculée dans la devise d'origine de la source.
+_À éviter_ : tendance (le `trend` Cardmarket est autre chose)
+
+**Valeur de la collection** :
+La somme, sur la Collection, de la quantité × le prix de la Finition de référence, dans la Source de prix et la Devise d'affichage choisies. Les Versions sans prix en sont exclues et comptées à part.
+
 **Relevé de prix** :
 La valeur d'un prix pour une Version, une Source de prix et une Finition à une date donnée. L'ensemble des relevés forme l'historique.
 _À éviter_ : snapshot, cotation
@@ -68,7 +79,7 @@ Les cartes que l'utilisateur possède, chacune avec une quantité.
 _À éviter_ : inventaire, « cartes cochées »
 
 **Liste de souhaits** :
-Les cartes que l'utilisateur veut acquérir et dont il surveille le prix.
+Les Versions que l'utilisateur veut acquérir et dont il surveille le prix depuis leur date d'ajout.
 _À éviter_ : wishlist, favoris
 
 **Sélection du classeur** :
