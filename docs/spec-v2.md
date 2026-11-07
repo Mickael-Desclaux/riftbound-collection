@@ -25,7 +25,10 @@ Source : [Prototype de la grille Catalogue](https://github.com/Mickael-Desclaux/
   - bouton « Filtres (n) », menu de tri, compteur « N versions » ;
   - puces des filtres actifs, retirables d'un toucher.
 - **Grille 2 colonnes** : image, nom, Code de version, prix (Source de prix et Devise d'affichage choisies), badge « ×n » si possédée.
-- **Actions sur la carte** : **✓** bascule « possédée ×1 » / « non possédée » (la quantité exacte se règle sur la fiche) ; **♡** ajoute à la Liste de souhaits ou l'en retire.
+- **Actions sur la carte** :
+  - **✓** bascule « possédée ×1 » / « non possédée » ; la quantité exacte se règle sur la fiche ;
+  - sur une Version possédée en plusieurs exemplaires, ✓ remet la quantité à 0, avec le toast « Retirée de la collection (×n) · Annuler » ;
+  - **♡** ajoute à la Liste de souhaits ou l'en retire.
 - **Feuille de filtres** (monte du bas) :
   - critères : Extension, « Afficher les extensions promo », rareté, version (normale / alternative / overnumbered / signée / metal), type, domaine, possédées / manquantes, fourchette de prix ;
   - boutons « Réinitialiser », **« Voir N versions »** et **« Ajouter les N résultats au classeur »**.
@@ -72,7 +75,7 @@ Source : [Écran Liste de souhaits et alertes de prix](https://github.com/Mickae
 
 - **En-tête** : « N cartes · coût total X » ; les cartes sans prix sont comptées à part.
 - **Grille commune** limitée aux souhaits, avec la variation depuis l'ajout. Tri par défaut : **plus forte baisse depuis l'ajout**.
-- Une Version qui devient possédée est **retirée automatiquement** des souhaits (toast « Retirée des souhaits · Annuler »).
+- Une Version qui passe de 0 à au moins 1 exemplaire est **retirée automatiquement** des souhaits, **depuis n'importe quel écran** (grille, fiche, Catalogue), avec le toast « Retirée des souhaits · Annuler ».
 
 ### 2.5 Classeur
 Source : [Le classeur PDF en v2](https://github.com/Mickael-Desclaux/riftbound-collection/issues/12).
@@ -94,7 +97,7 @@ Rassemblés à partir des tickets ci-dessus.
 
 - **Devise d'affichage** : CAD / USD / EUR.
 - **Source de prix** : TCGplayer / Cardmarket, avec la mention « toutes langues et tous états » sous Cardmarket.
-- **Thème** (voir le point ouvert n° 3).
+- **Thème** : Système (par défaut) / Clair / Sombre ; le sombre reprend les couleurs des prototypes.
 - **Notifications** :
   - « Nouvelles extensions » (interrupteur) ;
   - « Alertes de prix des souhaits » (interrupteur et seuil en %, 15 % par défaut).
@@ -245,13 +248,13 @@ Source : [Distribution de l'APK et mises à jour](https://github.com/Mickael-Des
 - **Mises à jour** : par APK uniquement ; bandeau « Nouvelle version disponible » dans l'app. Les mises à jour à distance (expo-updates) sont une évolution possible.
 - **Installation chez un ami** : lien de la Release, puis « Installer des applis inconnues ». Les données sont conservées d'une version à l'autre. Un guide est dans le README.
 
-## 9. Points ouverts relevés à l'assemblage
+## 9. Points tranchés à l'assemblage
 
-Ce sont des trous entre décisions, pas des contradictions. À trancher avant le découpage :
+Trois trous entre décisions sont apparus à l'assemblage. L'utilisateur les a tranchés le 2026-11-07, et les sections concernées ont été mises à jour :
 
-1. **✓ sur une carte possédée en plusieurs exemplaires.** La grille fait basculer ✓ entre « ×1 » et « non possédée ». Que se passe-t-il pour une Version possédée ×3 ? Proposition : ✓ remet à 0, avec un toast « Retirée de la collection (×3) · Annuler ».
-2. **Retrait automatique des souhaits.** Il est décidé pour ✓ depuis la grille des Souhaits. Proposition : il s'applique à **tout passage de 0 à au moins 1 exemplaire**, quel que soit l'écran (grille, fiche, Catalogue).
-3. **Thème.** Le Réglage est prévu, mais son contenu n'a jamais été tranché. Proposition : Système (par défaut) / Clair / Sombre, avec le sombre des prototypes comme référence.
+1. **✓ sur une Version possédée en plusieurs exemplaires** : la quantité revient à 0, avec un toast « Annuler » (§ 2.1).
+2. **Retrait automatique des souhaits** : il s'applique à tout passage de 0 à au moins 1 exemplaire, quel que soit l'écran (§ 2.4).
+3. **Thème** : Système (par défaut) / Clair / Sombre (§ 2.6).
 
 ## 10. Écarts de nommage par rapport aux tickets
 
