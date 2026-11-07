@@ -106,30 +106,30 @@ _À éviter_ : backup automatique, snapshot
 
 Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
 
-| Terme | Nom dans le code |
-|---|---|
-| Catalogue | `Catalog` |
-| Extension | `Expansion` (jamais `Set`, type natif JavaScript) |
-| Extension promo | `isPromo` sur `Expansion` |
-| Carte | `Card` |
-| Version | `Printing` (jamais `Version`, réservé aux versions de schéma, de sauvegarde, d'app) |
-| Code de version | `PrintingCode` |
-| Finition | `Finish` |
-| Finition de référence | `referenceFinish` |
-| Source de prix | `PriceSource` (`tcgplayer` / `cardmarket`) |
-| Indicateur de référence | `referenceMetric` |
-| Relevé de prix | `PriceRecord` |
-| Variation de prix | `priceChange` |
-| Devise d'affichage | `DisplayCurrency` |
-| Collection | `Collection` |
-| Valeur de la collection | `collectionValue` |
-| Complétion | `completion` |
-| Alerte de prix | `PriceAlert` |
-| Liste de souhaits | `Wishlist` |
-| Sélection du classeur | `BinderSelection` |
-| Sauvegarde | `Backup` |
-| Sauvegarde de sécurité | `SafetyBackup` |
-| Données de référence | `ReferenceData` |
-| Données précieuses | `PreciousData` |
+| Terme                   | Nom dans le code                                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| Catalogue               | `Catalog`                                                                           |
+| Extension               | `Expansion` (jamais `Set`, type natif JavaScript)                                   |
+| Extension promo         | `isPromo` sur `Expansion`                                                           |
+| Carte                   | `Card`                                                                              |
+| Version                 | `Printing` (jamais `Version`, réservé aux versions de schéma, de sauvegarde, d'app) |
+| Code de version         | `PrintingCode`                                                                      |
+| Finition                | `Finish`                                                                            |
+| Finition de référence   | `referenceFinish`                                                                   |
+| Source de prix          | `PriceSource` (`tcgplayer` / `cardmarket`)                                          |
+| Indicateur de référence | `referenceMetric`                                                                   |
+| Relevé de prix          | `PriceRecord`                                                                       |
+| Variation de prix       | `priceChange`                                                                       |
+| Devise d'affichage      | `DisplayCurrency`                                                                   |
+| Collection              | `Collection`                                                                        |
+| Valeur de la collection | `collectionValue`                                                                   |
+| Complétion              | `completion`                                                                        |
+| Alerte de prix          | `PriceAlert`                                                                        |
+| Liste de souhaits       | `Wishlist`                                                                          |
+| Sélection du classeur   | `BinderSelection`                                                                   |
+| Sauvegarde              | `Backup`                                                                            |
+| Sauvegarde de sécurité  | `SafetyBackup`                                                                      |
+| Données de référence    | `ReferenceData`                                                                     |
+| Données précieuses      | `PreciousData`                                                                      |
 
 En français, « printing » reste à éviter ; dans le code, `Printing` est le nom officiel.

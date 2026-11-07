@@ -1,6 +1,7 @@
 # Architecture : noyau métier pur, adaptateurs de sources, interface sans réseau
 
 Le code est organisé autour d'un noyau `domain/` en TypeScript pur (sans React, sans SQLite, sans réseau) qui porte toutes les règles métier : Code de version, règles de prix, filtres et tri, format de la Sauvegarde. Autour de lui :
+
 - `sources/` contient un adaptateur par site externe, qui valide strictement chaque réponse (Zod) et la traduit en types du domaine ;
 - `data/` contient le schéma Drizzle, les migrations et les requêtes ;
 - `sync/` est le **seul** module qui fait du réseau ;

@@ -17,6 +17,7 @@
 Barre d'onglets : **Catalogue · Collection · Souhaits · Réglages**. La **fiche** d'une Version s'ouvre depuis n'importe quelle grille.
 
 ### 2.1 Grille commune (Catalogue, Collection, Souhaits)
+
 Source : [Prototype de la grille Catalogue](https://github.com/Mickael-Desclaux/riftbound-collection/issues/10) (variante A).
 
 - **En-tête fixe** :
@@ -38,6 +39,7 @@ Source : [Prototype de la grille Catalogue](https://github.com/Mickael-Desclaux/
 - **Résultat vide** : message et bouton « Effacer les filtres ».
 
 ### 2.2 Fiche d'une Version
+
 Source : [Prototype de la fiche carte](https://github.com/Mickael-Desclaux/riftbound-collection/issues/11) (mise en page A).
 
 - **Transition** :
@@ -59,6 +61,7 @@ Source : [Prototype de la fiche carte](https://github.com/Mickael-Desclaux/riftb
   9. **Barre d'actions fixe** : quantité − n +, ♡, « + Classeur » / « Dans le classeur ».
 
 ### 2.3 Collection
+
 Source : [Écran Collection](https://github.com/Mickael-Desclaux/riftbound-collection/issues/13).
 
 1. Bouton **« Classeur »** en haut.
@@ -67,10 +70,12 @@ Source : [Écran Collection](https://github.com/Mickael-Desclaux/riftbound-colle
    - toucher l'en-tête déplie le **graphique de la valeur des cartes actuellement possédées**, avec la mention « pas l'historique de tes achats ».
 3. **Complétion par Extension** (repliable) : « ORIGINS — 54 / 352 · 15 % ». Toucher une ligne ouvre le Catalogue filtré sur cette Extension et sur « Manquantes ».
 4. **Grille commune** limitée aux Versions possédées, triée par défaut par **« Valeur » (quantité × prix)**.
+
 - **Collection vide** : message et bouton vers le Catalogue.
 - **Version inconnue** (Code de version absent du Catalogue) : en fin de liste, cadre gris, exclue de la valeur, jamais supprimée.
 
 ### 2.4 Souhaits
+
 Source : [Écran Liste de souhaits et alertes de prix](https://github.com/Mickael-Desclaux/riftbound-collection/issues/14).
 
 - **En-tête** : « N cartes · coût total X » ; les cartes sans prix sont comptées à part.
@@ -78,6 +83,7 @@ Source : [Écran Liste de souhaits et alertes de prix](https://github.com/Mickae
 - Une Version qui passe de 0 à au moins 1 exemplaire est **retirée automatiquement** des souhaits, **depuis n'importe quel écran** (grille, fiche, Catalogue), avec le toast « Retirée des souhaits · Annuler ».
 
 ### 2.5 Classeur
+
 Source : [Le classeur PDF en v2](https://github.com/Mickael-Desclaux/riftbound-collection/issues/12).
 
 - **Ajout** : depuis la fiche, ou en masse depuis les filtres du Catalogue. La Sélection du classeur démarre vide.
@@ -93,6 +99,7 @@ Source : [Le classeur PDF en v2](https://github.com/Mickael-Desclaux/riftbound-c
   - le PDF est généré par expo-print (595 × 842) et part dans la fenêtre de partage Android.
 
 ### 2.6 Réglages
+
 Rassemblés à partir des tickets ci-dessus.
 
 - **Devise d'affichage** : CAD / USD / EUR.
@@ -109,6 +116,7 @@ Rassemblés à partir des tickets ci-dessus.
 - **Version de l'app**, avec le bandeau « Nouvelle version disponible » quand il y en a une.
 
 ## 3. Règles de prix
+
 Source : [Règles de prix](https://github.com/Mickael-Desclaux/riftbound-collection/issues/7).
 
 1. **Indicateur de référence** : TCGplayer `market` (USD), Cardmarket `trend` (EUR).
@@ -132,34 +140,37 @@ Source : [Règles de prix](https://github.com/Mickael-Desclaux/riftbound-collect
 Principe : [ADR 0001 — Données de référence et données précieuses](adr/0001-donnees-de-reference-et-donnees-precieuses.md). Source : [Modèle de données](https://github.com/Mickael-Desclaux/riftbound-collection/issues/6), complété par les tickets Règles de prix et Souhaits.
 
 ### 4.1 Code de version
+
 `{EXTENSION}-{collector_number}` (ex. `OGN-030a`, `OGN-303s`). Un suffixe d'édition s'ajoute **seulement** quand deux Versions partagent un numéro : c'est le cas de 24 paires promo OPP (`OPP-017-metal`, `-top8`, `-champion`, d'après la mention entre parenthèses du nom). Cette règle est critique : elle doit être déterministe et testée, et la changer impose une migration.
 
 ### 4.2 Tables
+
 Les noms de tables suivent les noms de code du glossaire (code en anglais). Les noms proposés ici sont à confirmer à l'implémentation.
 
 **Données de référence** (reconstructibles) :
 
-| Table | Contenu |
-|---|---|
-| `expansion` | code, nom, date de sortie, `isPromo`, nombre de Versions (`card_count`) |
-| `card` | `oracle_id` RiftHunt, nom, type, sous-type, domaines, texte |
-| `printing` | Code de version (clé), carte, extension, numéro, rareté, variante, finitions existantes, images (small / normal / large), artiste, `tcgId`, `printing_id` RiftHunt, `idProduct` Cardmarket |
-| `current_price` | Version × source × Finition : tous les indicateurs du jour, devise d'origine, date de publication de la source |
-| `exchange_rate` | date, devise de départ, devise d'arrivée, taux, source (Frankfurter / Banque du Canada) |
+| Table           | Contenu                                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `expansion`     | code, nom, date de sortie, `isPromo`, nombre de Versions (`card_count`)                                                                                                                    |
+| `card`          | `oracle_id` RiftHunt, nom, type, sous-type, domaines, texte                                                                                                                                |
+| `printing`      | Code de version (clé), carte, extension, numéro, rareté, variante, finitions existantes, images (small / normal / large), artiste, `tcgId`, `printing_id` RiftHunt, `idProduct` Cardmarket |
+| `current_price` | Version × source × Finition : tous les indicateurs du jour, devise d'origine, date de publication de la source                                                                             |
+| `exchange_rate` | date, devise de départ, devise d'arrivée, taux, source (Frankfurter / Banque du Canada)                                                                                                    |
 
 **Données précieuses** (jamais effacées ; elles référencent le Code de version, sans clé étrangère vers le Catalogue) :
 
-| Table | Contenu |
-|---|---|
-| `price_record` | Code de version × source × Finition × date → valeur de l'Indicateur de référence, **enregistrée seulement quand elle change** |
-| `collection_entry` | Code de version → quantité |
-| `wishlist_entry` | Code de version → date d'ajout, prix et date de la dernière Alerte de prix |
-| `binder_entry` | Codes de version de la Sélection du classeur |
-| `setting` | clé → valeur (devise, source, thème, période du graphique, notifications, seuil d'alerte…) |
+| Table              | Contenu                                                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `price_record`     | Code de version × source × Finition × date → valeur de l'Indicateur de référence, **enregistrée seulement quand elle change** |
+| `collection_entry` | Code de version → quantité                                                                                                    |
+| `wishlist_entry`   | Code de version → date d'ajout, prix et date de la dernière Alerte de prix                                                    |
+| `binder_entry`     | Codes de version de la Sélection du classeur                                                                                  |
+| `setting`          | clé → valeur (devise, source, thème, période du graphique, notifications, seuil d'alerte…)                                    |
 
 **Volume attendu** : 1 725 Versions au 2026-11-07, deux sources, deux Finitions. Comme on n'enregistre que les changements, l'historique reste bien en dessous de 1,5 million de lignes par an.
 
 ### 4.3 Sauvegarde
+
 - **Contenu** : fichier `.json` avec en-tête `format` + `version` + date d'export ; réglages, Collection, Liste de souhaits (avec la dernière alerte) et Sélection du classeur, désignés par leur Code de version ; historique des Relevés de prix sous forme compacte (une série de points par Version × source × Finition). Le Catalogue n'en fait pas partie.
 - **Import** :
   - validation complète avant toute modification ;
@@ -169,23 +180,26 @@ Les noms de tables suivent les noms de code du glossaire (code en anglais). Les 
 - **Sauvegardes de sécurité** : même format, dans le dossier privé de l'app ; on garde la dernière de chaque type (restauration, migration). Elles ne sont pas incluses dans la Sauvegarde.
 
 ### 4.4 Migrations
+
 Migrations Drizzle. Les tables de référence peuvent être recréées. Les tables précieuses ne changent que par une migration qui conserve leurs données, exécutée en transaction et précédée d'une Sauvegarde de sécurité. En cas d'échec, rien n'est modifié et un écran propose d'exporter la Sauvegarde de sécurité.
 
 ## 5. Sources externes et synchronisation
+
 Sources : [Synchronisation](https://github.com/Mickael-Desclaux/riftbound-collection/issues/8) et les recherches [RiftHunt](https://github.com/Mickael-Desclaux/riftbound-collection/issues/2), [Cardmarket](https://github.com/Mickael-Desclaux/riftbound-collection/issues/3), [taux de change](https://github.com/Mickael-Desclaux/riftbound-collection/issues/4).
 
-| Source | URL | Rôle | Fréquence |
-|---|---|---|---|
-| RiftHunt — Extensions | `https://api.rifthunt.com/sets` | détecter les changements de catalogue | chaque jour |
-| RiftHunt — Catalogue | `https://api.rifthunt.com/cards/search?q=lang:en&unique=prints&page=N` (10 pages de 175) | Catalogue complet | si `/sets` change, sinon chaque semaine |
-| RiftHunt — Prix | `https://api.rifthunt.com/bulk/prices` (0,9 Mo) | prix TCGplayer (USD) | si > 6 h |
-| Cardmarket — Price guide | `https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_22.json` (0,4 Mo) | prix Cardmarket (EUR) | si > 6 h |
-| OpenRift — Liens | `https://openrift.app/api/v1/prices/links` (2,8 Mo) | `tcgId` → `idProduct` Cardmarket (1 517 / 1 688 Versions) | avec le Catalogue |
-| Frankfurter | `https://api.frankfurter.dev/v1/…` (données BCE) | taux USD / EUR / CAD et historique | une fois par jour |
-| Banque du Canada Valet | `FXUSDCAD`, `FXEURCAD` | taux de secours | si Frankfurter échoue |
-| GitHub Releases | API publique du dépôt | nouvelle version de l'app | une fois par jour |
+| Source                   | URL                                                                                          | Rôle                                                      | Fréquence                               |
+| ------------------------ | -------------------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------- |
+| RiftHunt — Extensions    | `https://api.rifthunt.com/sets`                                                              | détecter les changements de catalogue                     | chaque jour                             |
+| RiftHunt — Catalogue     | `https://api.rifthunt.com/cards/search?q=lang:en&unique=prints&page=N` (10 pages de 175)     | Catalogue complet                                         | si `/sets` change, sinon chaque semaine |
+| RiftHunt — Prix          | `https://api.rifthunt.com/bulk/prices` (0,9 Mo)                                              | prix TCGplayer (USD)                                      | si > 6 h                                |
+| Cardmarket — Price guide | `https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_22.json` (0,4 Mo) | prix Cardmarket (EUR)                                     | si > 6 h                                |
+| OpenRift — Liens         | `https://openrift.app/api/v1/prices/links` (2,8 Mo)                                          | `tcgId` → `idProduct` Cardmarket (1 517 / 1 688 Versions) | avec le Catalogue                       |
+| Frankfurter              | `https://api.frankfurter.dev/v1/…` (données BCE)                                             | taux USD / EUR / CAD et historique                        | une fois par jour                       |
+| Banque du Canada Valet   | `FXUSDCAD`, `FXEURCAD`                                                                       | taux de secours                                           | si Frankfurter échoue                   |
+| GitHub Releases          | API publique du dépôt                                                                        | nouvelle version de l'app                                 | une fois par jour                       |
 
 **Règles** :
+
 - **Déclenchement** : à l'ouverture et au retour dans l'app, une source dont le dernier succès date de plus de 6 h est retéléchargée. Le tirer-pour-rafraîchir force la mise à jour. Une tâche en arrière-plan (expo-background-task, environ 2 fois par jour, au mieux) applique la même logique.
 - **Fichiers inchangés** : ETag et Last-Modified évitent de les retélécharger.
 - **Les deux sources de prix sont toujours téléchargées**, quelle que soit la source affichée.
@@ -197,6 +211,7 @@ Sources : [Synchronisation](https://github.com/Mickael-Desclaux/riftbound-collec
 - **Notifications** : une seule permission, demandée à la fin de la première synchronisation.
 
 ## 6. Premier lancement, hors-ligne et erreurs
+
 Source : [Premier lancement, hors-ligne et erreurs](https://github.com/Mickael-Desclaux/riftbound-collection/issues/15).
 
 - **Premier lancement** :
@@ -207,6 +222,7 @@ Source : [Premier lancement, hors-ligne et erreurs](https://github.com/Mickael-D
 - **Messages** : phrases courtes en français, toujours avec une action, et un repli « Détails » pour le diagnostic.
 
 ## 7. Architecture et qualité
+
 Principe : [ADR 0002 — Noyau pur et adaptateurs](adr/0002-architecture-noyau-pur-et-adaptateurs.md). Sources : [Architecture](https://github.com/Mickael-Desclaux/riftbound-collection/issues/9) et [Briques techniques Expo](https://github.com/Mickael-Desclaux/riftbound-collection/issues/5).
 
 ```
@@ -239,6 +255,7 @@ src/
 - **Documentation** : README, GLOSSARY, ADR, et un `AGENTS.md` de conventions créé à l'amorçage.
 
 ## 8. Distribution
+
 Source : [Distribution de l'APK et mises à jour](https://github.com/Mickael-Desclaux/riftbound-collection/issues/16).
 
 - **Build** : EAS Build cloud (offre gratuite), `buildType: "apk"`. En secours : `eas build --local` sous Linux.
