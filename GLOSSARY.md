@@ -66,6 +66,10 @@ _À éviter_ : snapshot, cotation
 La part des Versions distinctes d'une Extension que l'utilisateur possède (ex. 54 / 352).
 _À éviter_ : progression, pourcentage de collection
 
+**Alerte de prix** :
+Une notification émise quand une Version de la Liste de souhaits a baissé d'au moins le seuil choisi depuis son ajout (ou depuis sa dernière alerte).
+_À éviter_ : notification de prix, rappel
+
 ### Nature des données
 
 **Données de référence** :
@@ -116,6 +120,7 @@ Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
 | Collection | `Collection` |
 | Valeur de la collection | `collectionValue` |
 | Complétion | `completion` |
+| Alerte de prix | `PriceAlert` |
 | Liste de souhaits | `Wishlist` |
 | Sélection du classeur | `BinderSelection` |
 | Sauvegarde | `Backup` |
