@@ -3,7 +3,14 @@ const expoConfig = require('eslint-config-expo/flat');
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
 
 module.exports = defineConfig([
-  globalIgnores(['dist/*', 'legacy/*', '.expo/*', '.prototype-preview/*', 'prototypes/*']),
+  globalIgnores([
+    'dist/*',
+    'legacy/*',
+    '.expo/*',
+    '.prototype-preview/*',
+    'prototypes/*',
+    'src/data/migrations/*',
+  ]),
   expoConfig,
   eslintPluginPrettierRecommended,
 ]);

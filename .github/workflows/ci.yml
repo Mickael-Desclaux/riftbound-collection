@@ -24,5 +24,12 @@ jobs:
         run: pnpm format:check
       - name: Tests
         run: pnpm test --ci
+      - name: Migrations à jour avec le schéma
+        run: |
+          pnpm db:generate
+          test -z "$(git status --porcelain -- src/data/migrations)" || {
+            echo "::error::Le schéma a changé sans migration : lance pnpm db:generate et ajoute les fichiers créés."
+            exit 1
+          }
       - name: Versions compatibles avec le SDK Expo
         run: pnpm expo install --check
