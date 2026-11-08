@@ -7,3 +7,4 @@ Schéma Drizzle, migrations et requêtes SQLite. Voir ADR 0001 pour la séparati
 - La base est **injectée** : `AppDatabaseProvider` (`features/startup/`) l'ouvre (expo-sqlite) et applique les migrations au démarrage, puis les écrans la lisent avec `useDatabase()`. Les fonctions de ce dossier la reçoivent en paramètre (`AppDatabase`).
 - Tests : `createTestDatabase()` (`testing/`) donne une base better-sqlite3 en mémoire, migrée avec le même paquet de migrations que l'app.
 - Réglages : `getSetting` / `setSetting` (`settings.ts`), et `useSetting` pour une lecture réactive dans l'interface.
+- Grilles : `catalogGrid.ts` donne les requêtes ; l'interface les lit avec `useReactiveQuery`, qui lit tout de suite puis relit (une seule fois par rafale de changements) quand l'une des tables lues change. `useLiveQuery` de Drizzle ne réagit qu'à la table principale et relit à chaque ligne modifiée.

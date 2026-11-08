@@ -1,0 +1,77 @@
+import { useEffect, useRef, type ReactElement } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+
+import { Button } from '@/ui/controls';
+
+import { colors } from '@/ui/theme';
+
+import type { GridPrinting } from './gridPrinting';
+import { Pagination } from './Pagination';
+import { PrintingTile } from './PrintingTile';
+
+export type { GridPrinting } from './gridPrinting';
+
+export type PrintingGridProps = {
+  items: GridPrinting[];
+  page: number;
+  pageCount: number;
+  onPageChange: (page: number) => void;
+  onClearFilters: () => void;
+  /** Affiché au-dessus de la grille (recherche, puces, compteur…). */
+  header?: ReactElement;
+};
+
+/**
+ * Grille commune aux onglets Catalogue, Collection et Souhaits (spec § 2.1) :
+ * 2 colonnes, pagination numérotée, retour en haut à chaque changement de page.
+ */
+export function PrintingGrid({
+  items,
+  page,
+  pageCount,
+  onPageChange,
+  onClearFilters,
+  header,
+}: PrintingGridProps) {
+  const list = useRef<FlatList<GridPrinting>>(null);
+
+  useEffect(() => {
+    list.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [page]);
+
+  return (
+    <View style={styles.container}>
+      {header}
+      <FlatList
+        ref={list}
+        data={items}
+        keyExtractor={(item) => item.printingCode}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.content}
+        renderItem={({ item }) => <PrintingTile printing={item} />}
+        ListEmptyComponent={<EmptyResult onClearFilters={onClearFilters} />}
+        ListFooterComponent={
+          <Pagination page={page} pageCount={pageCount} onPageChange={onPageChange} />
+        }
+      />
+    </View>
+  );
+}
+
+function EmptyResult({ onClearFilters }: { onClearFilters: () => void }) {
+  return (
+    <View style={styles.empty}>
+      <Text style={styles.emptyText}>Aucune version ne correspond.</Text>
+      <Button label="Effacer les filtres" onPress={onClearFilters} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: 12, gap: 12 },
+  row: { gap: 12 },
+  empty: { alignItems: 'center', gap: 12, paddingVertical: 48 },
+  emptyText: { color: colors.muted, fontSize: 15 },
+});

@@ -17,7 +17,7 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": ["expo-router", "expo-font", "expo-sqlite"],
+    "plugins": ["expo-router", "expo-font", "expo-sqlite", "expo-image"],
     "experiments": {
       "typedRoutes": true
     }
