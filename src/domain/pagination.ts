@@ -24,3 +24,8 @@ export const PAGE_SIZE = 24;
 export function pageCount(total: number): number {
   return Math.max(1, Math.ceil(total / PAGE_SIZE));
 }
+
+/** Les éléments de la page `page` (à partir de 1). */
+export function pageOf<T>(items: T[], page: number): T[] {
+  return items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+}
