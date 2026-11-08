@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactElement } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/ui/controls';
 
@@ -19,6 +19,9 @@ export type PrintingGridProps = {
   onClearFilters: () => void;
   /** Affiché au-dessus de la grille (recherche, puces, compteur…). */
   header?: ReactElement;
+  /** Tirer-pour-rafraîchir : force la mise à jour des données (spec § 5). */
+  onRefresh?: () => void;
+  refreshing?: boolean;
 };
 
 /**
@@ -32,7 +35,9 @@ export function PrintingGrid({
   onPageChange,
   onClearFilters,
   header,
-}: PrintingGridProps) {
+  onRefresh,
+  refreshing = false,
+}: Readonly<PrintingGridProps>) {
   const list = useRef<FlatList<GridPrinting>>(null);
 
   useEffect(() => {
@@ -44,7 +49,18 @@ export function PrintingGrid({
       {header}
       <FlatList
         ref={list}
+        testID="printing-grid"
         data={items}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.accent]}
+              progressBackgroundColor={colors.surface}
+            />
+          ) : undefined
+        }
         keyExtractor={(item) => item.printingCode}
         numColumns={2}
         columnWrapperStyle={styles.row}

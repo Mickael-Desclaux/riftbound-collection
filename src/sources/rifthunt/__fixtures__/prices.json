@@ -1,0 +1,232 @@
+{
+  "fetched": "2026-11-08T15:10:21.672Z",
+  "source": "tcgplayer",
+  "currency": "USD",
+  "prices": [
+    {
+      "printing_id": "7bbd2e93-3b09-4ceb-880f-755964372781",
+      "riftboundId": "ogn-030a-298",
+      "collector": "030a",
+      "slug": "jinx-demolitionist-alternate-art",
+      "tcgId": "652803",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F652803",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 0.99,
+          "mid": 3.75,
+          "high": 100,
+          "market": 2.95,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "aa32d7c5-0ac7-472e-80f2-468449e4aaef",
+      "riftboundId": "ogn-255-298",
+      "collector": "255",
+      "slug": "ahri-nine-tailed-fox",
+      "tcgId": "653053",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653053",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 0.49,
+          "mid": 1.49,
+          "high": 19.99,
+          "market": 0.78,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "16e27674-7792-45bb-ad7c-a1da99d9b049",
+      "riftboundId": "ogn-303-298",
+      "collector": "303",
+      "slug": "ahri-nine-tailed-fox-overnumbered",
+      "tcgId": "653101",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653101",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 285.98,
+          "mid": 348.96,
+          "high": 2000,
+          "market": 343.06,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "48a61eda-16e9-4701-9700-5d39a9d10dfa",
+      "riftboundId": "ogn-303*-298",
+      "collector": "303s",
+      "slug": "ahri-nine-tailed-fox-signature",
+      "tcgId": "653102",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653102",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 5251.04,
+          "mid": 6375.52,
+          "high": 7500,
+          "market": 3711.35,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "dfc7829c-2047-4e2e-bdaa-80b77b34afb0",
+      "riftboundId": "opp-017-024",
+      "collector": "017",
+      "slug": "annie-dark-child-metal",
+      "tcgId": "669265",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F669265",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": 2210.34,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "ffada028-a00a-4fd0-8397-66cb573a2fe0",
+      "riftboundId": "opp-017-024",
+      "collector": "017",
+      "slug": "annie-dark-child",
+      "tcgId": "680247",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F680247",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 20,
+          "mid": 30,
+          "high": 75,
+          "market": 28.24,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "d2f8a97c-0d30-4beb-915f-517c5f15d37b",
+      "riftboundId": "opp-r04b",
+      "collector": "r04b",
+      "slug": "body-rune",
+      "tcgId": "709745",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F709745",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 2,
+          "mid": 3.9,
+          "high": 12.98,
+          "market": 2.66,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "c73bc6e7-b94f-4bc5-a1a0-a367b1b684e9",
+      "riftboundId": "rad-sp1-005",
+      "collector": "sp1",
+      "slug": "ahri-confident-k-da-special-art-card",
+      "tcgId": "722845",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F722845",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 25,
+          "mid": 38.39,
+          "high": 123.97,
+          "market": 34.47,
+          "directLow": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "directLow": null
+        }
+      }
+    },
+    {
+      "printing_id": "01afb7e3-0e97-42a2-9458-28a51a2626b4",
+      "riftboundId": "ogn-001-298",
+      "collector": "001",
+      "slug": "blazing-scorcher",
+      "tcgId": "652771",
+      "purchaseUri": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F652771",
+      "updatedAt": "2026-11-07T17:01:52.522Z",
+      "finishes": {
+        "foil": {
+          "low": 0.13,
+          "mid": 0.25,
+          "high": 99,
+          "market": 0.21,
+          "directLow": null
+        },
+        "normal": {
+          "low": 0.01,
+          "mid": 0.2,
+          "high": 15,
+          "market": 0.09,
+          "directLow": null
+        }
+      }
+    }
+  ]
+}

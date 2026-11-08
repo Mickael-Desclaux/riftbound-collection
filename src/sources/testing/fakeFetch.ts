@@ -1,7 +1,7 @@
 /** Une requête reçue par le faux `fetch`. */
 export type RecordedRequest = { url: string; headers: Record<string, string> };
 
-type FakeResponse = { status?: number; body: unknown } | Error;
+type FakeResponse = { status?: number; body?: unknown; headers?: Record<string, string> } | Error;
 
 /**
  * Faux `fetch` pour les tests : sert une réponse enregistrée par URL exacte,
@@ -15,7 +15,10 @@ export function fakeFetch(responses: Record<string, FakeResponse>) {
     const response = responses[url];
     if (response === undefined) throw new Error(`URL inattendue dans le test : ${url}`);
     if (response instanceof Error) throw response;
-    return new Response(JSON.stringify(response.body), { status: response.status ?? 200 });
+    const status = response.status ?? 200;
+    // Une réponse 304 n'a pas de corps.
+    const body = status === 304 ? null : JSON.stringify(response.body);
+    return new Response(body, { status, headers: response.headers });
   };
   return { fetch: fetch as typeof globalThis.fetch, requests };
 }
