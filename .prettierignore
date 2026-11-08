@@ -1,0 +1,4 @@
+legacy/
+.expo/
+.prototype-preview/
+pnpm-lock.yaml
