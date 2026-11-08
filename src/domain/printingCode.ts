@@ -36,7 +36,8 @@ const EDITION_SUFFIXES: Record<string, string> = {
   Champion: 'champion',
 };
 
-function editionOf(name: string): string | undefined {
+/** L'édition promo indiquée par le nom (`metal`, `top8`, `champion`), s'il y en a une. */
+export function editionOf(name: string): string | undefined {
   const mention = /\(([^)]+)\)\s*$/.exec(name)?.[1];
   return mention === undefined ? undefined : EDITION_SUFFIXES[mention];
 }

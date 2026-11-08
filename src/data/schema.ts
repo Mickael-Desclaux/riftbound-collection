@@ -20,6 +20,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 
 // Imports relatifs : drizzle-kit charge ce fichier sans l'alias `@/`.
+import type { PrintingVariant } from '../domain/catalog';
 import type { IsoDate, IsoDateTime } from '../domain/dates';
 import type { Currency, Finish, PriceSource } from '../domain/price';
 import type { PrintingCode } from '../domain/printingCode';
@@ -70,7 +71,7 @@ export const printing = sqliteTable(
       .references(() => expansion.code, { onDelete: 'cascade' }),
     collectorNumber: text('collector_number').notNull(),
     rarity: text('rarity').notNull(),
-    variant: text('variant').notNull(),
+    variant: text('variant').$type<PrintingVariant>().notNull(),
     finishes: text('finishes', { mode: 'json' }).$type<Finish[]>().notNull(),
     imageSmall: text('image_small'),
     imageNormal: text('image_normal'),
@@ -123,6 +124,20 @@ export const exchangeRate = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.baseCurrency, t.quoteCurrency, t.date] })],
 );
+
+export const SOURCE_IDS = ['rifthunt-sets', 'rifthunt-catalog'] as const;
+export type SourceId = (typeof SOURCE_IDS)[number];
+
+/**
+ * Dernière réussite et dernière erreur de chaque source (spec § 2.6, § 5).
+ * Une source jamais contactée n'a pas de ligne.
+ */
+export const sourceState = sqliteTable('source_state', {
+  source: text('source').$type<SourceId>().primaryKey(),
+  lastSuccessAt: text('last_success_at').$type<IsoDateTime>(),
+  lastErrorAt: text('last_error_at').$type<IsoDateTime>(),
+  lastErrorMessage: text('last_error_message'),
+});
 
 // ---------------------------------------------------------------------------
 // Données précieuses : jamais de clé étrangère vers le Catalogue (ADR 0001)
@@ -185,6 +200,7 @@ export const referenceDataTables = {
   printing,
   currentPrice,
   exchangeRate,
+  sourceState,
 } as const;
 
 export const preciousDataTables = {

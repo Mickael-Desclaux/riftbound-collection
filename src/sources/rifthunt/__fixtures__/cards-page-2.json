@@ -1,0 +1,274 @@
+{
+  "object": "list",
+  "total_cards": 9,
+  "has_more": false,
+  "data": [
+    {
+      "object": "card",
+      "id": "d2f8a97c-0d30-4beb-915f-517c5f15d37b",
+      "printing_id": "d2f8a97c-0d30-4beb-915f-517c5f15d37b",
+      "oracle_id": "ad9136c1-353a-4042-9597-130b22490759",
+      "lang": "en",
+      "name": "Body Rune",
+      "oracle_name": "Body Rune",
+      "type": "Rune",
+      "domains": ["body"],
+      "energy": null,
+      "power": null,
+      "might": null,
+      "keywords": [],
+      "tags": [],
+      "rules_text": null,
+      "flavor_text": null,
+      "set": "opp",
+      "set_name": "Riftbound Organized Play Promotional Cards",
+      "collector_number": "r04b",
+      "rarity": "common",
+      "artist": null,
+      "variant": null,
+      "riftbound_id": "opp-r04b",
+      "rifthunt_uri": "/cards/opp/r04b/body-rune/",
+      "rulings_uri": "/cards/d2f8a97c-0d30-4beb-915f-517c5f15d37b/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/opp/r04b/body-rune.webp?v=516e5bbbb64f",
+        "normal": "https://images.rifthunt.com/cards/normal/front/opp/r04b/body-rune.webp?v=516e5bbbb64f",
+        "large": "https://images.rifthunt.com/cards/large/front/opp/r04b/body-rune.webp?v=516e5bbbb64f"
+      },
+      "tcg_id": "709745",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F709745",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Body%20Rune"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": 2,
+          "mid": 3.9,
+          "high": 12.98,
+          "market": 2.66,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    },
+    {
+      "object": "card",
+      "id": "f32c3f01-ffaf-45ac-a4aa-8002ca55ffca",
+      "printing_id": "f32c3f01-ffaf-45ac-a4aa-8002ca55ffca",
+      "oracle_id": "86b56235-5e9f-4199-a69b-32be2a5c8c3f",
+      "lang": "en",
+      "name": "Recruit (DE)",
+      "oracle_name": "Recruit",
+      "type": "Unit",
+      "domains": ["colorless"],
+      "energy": null,
+      "power": null,
+      "might": 1,
+      "keywords": [],
+      "tags": ["recruit"],
+      "rules_text": null,
+      "flavor_text": "\"To strike against any of us is to strike against all of us!\"",
+      "set": "ogn",
+      "set_name": "Origins",
+      "collector_number": "271",
+      "rarity": "common",
+      "artist": "Six More Vodka",
+      "variant": null,
+      "riftbound_id": "ogn-271-298",
+      "rifthunt_uri": "/cards/ogn/271/recruit-de/",
+      "rulings_uri": "/cards/f32c3f01-ffaf-45ac-a4aa-8002ca55ffca/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/ogn/271/recruit-de.webp?v=547e7cba2458",
+        "normal": "https://images.rifthunt.com/cards/normal/front/ogn/271/recruit-de.webp?v=547e7cba2458",
+        "large": "https://images.rifthunt.com/cards/large/front/ogn/271/recruit-de.webp?v=547e7cba2458"
+      },
+      "tcg_id": null,
+      "finishes": null,
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Friftbound%2Fproduct%3FproductLineName%3Driftbound%26q%3DRecruit%2520(DE)",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Recruit%20(DE)"
+      },
+      "prices": null
+    },
+    {
+      "object": "card",
+      "id": "c73bc6e7-b94f-4bc5-a1a0-a367b1b684e9",
+      "printing_id": "c73bc6e7-b94f-4bc5-a1a0-a367b1b684e9",
+      "oracle_id": "c159ab13-5e85-4a0d-ad76-fb81967a187f",
+      "lang": "en",
+      "name": "Ahri, Confident (K/DA Special Art Card)",
+      "oracle_name": "Ahri, Confident",
+      "type": "Unit",
+      "domains": ["calm"],
+      "energy": 4,
+      "power": 1,
+      "might": 4,
+      "keywords": ["disarm"],
+      "tags": ["ahri", "ionia"],
+      "rules_text": "[Disarm]\nWhen you reduce the Might of an enemy unit here by 1 or more, give me +1 :rb_might: this turn.",
+      "flavor_text": "Hard on myself\nPut my heart on a shelf\n'Cause I forget that myself needs loving",
+      "set": "rad",
+      "set_name": "Radiance",
+      "collector_number": "sp1",
+      "rarity": "showcase",
+      "artist": "HCuu",
+      "variant": "showcase",
+      "riftbound_id": "rad-sp1-005",
+      "rifthunt_uri": "/cards/rad/sp1/ahri-confident-k-da-special-art-card/",
+      "rulings_uri": "/cards/c73bc6e7-b94f-4bc5-a1a0-a367b1b684e9/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/rad/sp1/ahri-confident-k-da-special-art-card.webp?v=e1722bb9bf29",
+        "normal": "https://images.rifthunt.com/cards/normal/front/rad/sp1/ahri-confident-k-da-special-art-card.webp?v=e1722bb9bf29",
+        "large": "https://images.rifthunt.com/cards/large/front/rad/sp1/ahri-confident-k-da-special-art-card.webp?v=e1722bb9bf29"
+      },
+      "tcg_id": "722845",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F722845",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Ahri%2C%20Confident%20(K%2FDA%20Special%20Art%20Card)"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": 25,
+          "mid": 38.39,
+          "high": 123.97,
+          "market": 34.47,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    },
+    {
+      "object": "card",
+      "id": "16e27674-7792-45bb-ad7c-a1da99d9b049",
+      "printing_id": "16e27674-7792-45bb-ad7c-a1da99d9b049",
+      "oracle_id": "8061d9dc-a589-45b9-9e08-6dca62a4e781",
+      "lang": "en",
+      "name": "Ahri, Nine-Tailed Fox (Overnumbered)",
+      "oracle_name": "Ahri, Nine-Tailed Fox",
+      "type": "Legend",
+      "domains": ["calm", "mind"],
+      "energy": null,
+      "power": null,
+      "might": null,
+      "keywords": [],
+      "tags": ["ahri"],
+      "rules_text": "When an enemy unit attacks a battlefield you control, give it -1 :rb_might: this turn, to a minimum of 1 :rb_might:.",
+      "flavor_text": null,
+      "set": "ogn",
+      "set_name": "Origins",
+      "collector_number": "303",
+      "rarity": "showcase",
+      "artist": "Airi Pan",
+      "variant": "overnumbered",
+      "riftbound_id": "ogn-303-298",
+      "rifthunt_uri": "/cards/ogn/303/ahri-nine-tailed-fox-overnumbered/",
+      "rulings_uri": "/cards/16e27674-7792-45bb-ad7c-a1da99d9b049/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/ogn/303/ahri-nine-tailed-fox-overnumbered.webp?v=86d6034951d9",
+        "normal": "https://images.rifthunt.com/cards/normal/front/ogn/303/ahri-nine-tailed-fox-overnumbered.webp?v=86d6034951d9",
+        "large": "https://images.rifthunt.com/cards/large/front/ogn/303/ahri-nine-tailed-fox-overnumbered.webp?v=86d6034951d9"
+      },
+      "tcg_id": "653101",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653101",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Ahri%2C%20Nine-Tailed%20Fox%20(Overnumbered)"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": 285.98,
+          "mid": 348.96,
+          "high": 2000,
+          "market": 343.06,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    },
+    {
+      "object": "card",
+      "id": "aa32d7c5-0ac7-472e-80f2-468449e4aaef",
+      "printing_id": "aa32d7c5-0ac7-472e-80f2-468449e4aaef",
+      "oracle_id": "8061d9dc-a589-45b9-9e08-6dca62a4e781",
+      "lang": "en",
+      "name": "Ahri, Nine-Tailed Fox",
+      "oracle_name": "Ahri, Nine-Tailed Fox",
+      "type": "Legend",
+      "domains": ["calm", "mind"],
+      "energy": null,
+      "power": null,
+      "might": null,
+      "keywords": [],
+      "tags": ["ahri"],
+      "rules_text": "When an enemy unit attacks a battlefield you control, give it -1 :rb_might: this turn, to a minimum of 1 :rb_might:.",
+      "flavor_text": null,
+      "set": "ogn",
+      "set_name": "Origins",
+      "collector_number": "255",
+      "rarity": "rare",
+      "artist": "Envar Studio",
+      "variant": null,
+      "riftbound_id": "ogn-255-298",
+      "rifthunt_uri": "/cards/ogn/255/ahri-nine-tailed-fox/",
+      "rulings_uri": "/cards/aa32d7c5-0ac7-472e-80f2-468449e4aaef/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/ogn/255/ahri-nine-tailed-fox.webp?v=dc274eaf4bd9",
+        "normal": "https://images.rifthunt.com/cards/normal/front/ogn/255/ahri-nine-tailed-fox.webp?v=dc274eaf4bd9",
+        "large": "https://images.rifthunt.com/cards/large/front/ogn/255/ahri-nine-tailed-fox.webp?v=dc274eaf4bd9"
+      },
+      "tcg_id": "653053",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653053",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Ahri%2C%20Nine-Tailed%20Fox"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": 0.49,
+          "mid": 1.49,
+          "high": 19.99,
+          "market": 0.78,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    }
+  ]
+}

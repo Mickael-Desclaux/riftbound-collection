@@ -1,0 +1,236 @@
+{
+  "object": "list",
+  "total_cards": 9,
+  "has_more": true,
+  "next_page": "/cards/search?q=lang%3Aen&lang=en&page=2&unique=prints&order=name&dir=auto",
+  "data": [
+    {
+      "object": "card",
+      "id": "7bbd2e93-3b09-4ceb-880f-755964372781",
+      "printing_id": "7bbd2e93-3b09-4ceb-880f-755964372781",
+      "oracle_id": "3c9f75ec-5bb4-4a1d-9280-342e08ac6e78",
+      "lang": "en",
+      "name": "Jinx, Demolitionist (Alternate Art)",
+      "oracle_name": "Jinx, Demolitionist",
+      "type": "Unit",
+      "domains": ["fury"],
+      "energy": 3,
+      "power": 1,
+      "might": 4,
+      "keywords": ["accelerate"],
+      "tags": ["jinx", "zaun"],
+      "rules_text": "[Accelerate] (You may pay :rb_energy_1::rb_rune_fury: as an additional cost to have me enter ready.)\n[Assault 2] (+2 :rb_might: while I'm an attacker.)\nWhen you play me, discard 2.",
+      "flavor_text": "\"I really need a new gun. But don't tell my other guns.\"",
+      "set": "ogn",
+      "set_name": "Origins",
+      "collector_number": "030a",
+      "rarity": "showcase",
+      "artist": "League Splash Team",
+      "variant": "alternate",
+      "riftbound_id": "ogn-030a-298",
+      "rifthunt_uri": "/cards/ogn/030a/jinx-demolitionist-alternate-art/",
+      "rulings_uri": "/cards/7bbd2e93-3b09-4ceb-880f-755964372781/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/ogn/030a/jinx-demolitionist-alternate-art.webp?v=9fb0ff787e8f",
+        "normal": "https://images.rifthunt.com/cards/normal/front/ogn/030a/jinx-demolitionist-alternate-art.webp?v=9fb0ff787e8f",
+        "large": "https://images.rifthunt.com/cards/large/front/ogn/030a/jinx-demolitionist-alternate-art.webp?v=9fb0ff787e8f"
+      },
+      "tcg_id": "652803",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F652803",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Jinx%2C%20Demolitionist%20(Alternate%20Art)"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": 0.99,
+          "mid": 3.75,
+          "high": 100,
+          "market": 2.95,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    },
+    {
+      "object": "card",
+      "id": "48a61eda-16e9-4701-9700-5d39a9d10dfa",
+      "printing_id": "48a61eda-16e9-4701-9700-5d39a9d10dfa",
+      "oracle_id": "8061d9dc-a589-45b9-9e08-6dca62a4e781",
+      "lang": "en",
+      "name": "Ahri, Nine-Tailed Fox (Signature)",
+      "oracle_name": "Ahri, Nine-Tailed Fox",
+      "type": "Legend",
+      "domains": ["calm", "mind"],
+      "energy": null,
+      "power": null,
+      "might": null,
+      "keywords": [],
+      "tags": ["ahri"],
+      "rules_text": "When an enemy unit attacks a battlefield you control, give it -1 :rb_might: this turn, to a minimum of 1 :rb_might:.",
+      "flavor_text": null,
+      "set": "ogn",
+      "set_name": "Origins",
+      "collector_number": "303s",
+      "rarity": "showcase",
+      "artist": "Airi Pan",
+      "variant": "signature",
+      "riftbound_id": "ogn-303*-298",
+      "rifthunt_uri": "/cards/ogn/303s/ahri-nine-tailed-fox-signature/",
+      "rulings_uri": "/cards/48a61eda-16e9-4701-9700-5d39a9d10dfa/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/ogn/303s/ahri-nine-tailed-fox-signature.webp?v=d34b6d90cc0e",
+        "normal": "https://images.rifthunt.com/cards/normal/front/ogn/303s/ahri-nine-tailed-fox-signature.webp?v=d34b6d90cc0e",
+        "large": "https://images.rifthunt.com/cards/large/front/ogn/303s/ahri-nine-tailed-fox-signature.webp?v=d34b6d90cc0e"
+      },
+      "tcg_id": "653102",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653102",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Ahri%2C%20Nine-Tailed%20Fox%20(Signature)"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": 5251.04,
+          "mid": 6375.52,
+          "high": 7500,
+          "market": 3711.35,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    },
+    {
+      "object": "card",
+      "id": "ffada028-a00a-4fd0-8397-66cb573a2fe0",
+      "printing_id": "ffada028-a00a-4fd0-8397-66cb573a2fe0",
+      "oracle_id": "ca7c49d5-0303-485f-a0a9-a3c748d57b92",
+      "lang": "en",
+      "name": "Annie, Dark Child",
+      "oracle_name": "Annie, Dark Child",
+      "type": "Legend",
+      "domains": ["fury", "chaos"],
+      "energy": null,
+      "power": null,
+      "might": null,
+      "keywords": [],
+      "tags": ["annie"],
+      "rules_text": "At the end of your turn, ready 2 runes.",
+      "flavor_text": null,
+      "set": "opp",
+      "set_name": "Riftbound Organized Play Promotional Cards",
+      "collector_number": "017",
+      "rarity": "promo",
+      "artist": "Six More Vodka",
+      "variant": null,
+      "riftbound_id": "opp-017-024",
+      "rifthunt_uri": "/cards/opp/017/annie-dark-child/",
+      "rulings_uri": "/cards/ffada028-a00a-4fd0-8397-66cb573a2fe0/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/opp/017/annie-dark-child.webp?v=82890abab27c",
+        "normal": "https://images.rifthunt.com/cards/normal/front/opp/017/annie-dark-child.webp?v=82890abab27c",
+        "large": "https://images.rifthunt.com/cards/large/front/opp/017/annie-dark-child.webp?v=82890abab27c"
+      },
+      "tcg_id": "680247",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F680247",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Annie%2C%20Dark%20Child"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": 20,
+          "mid": 30,
+          "high": 75,
+          "market": 28.24,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    },
+    {
+      "object": "card",
+      "id": "dfc7829c-2047-4e2e-bdaa-80b77b34afb0",
+      "printing_id": "dfc7829c-2047-4e2e-bdaa-80b77b34afb0",
+      "oracle_id": "ca7c49d5-0303-485f-a0a9-a3c748d57b92",
+      "lang": "en",
+      "name": "Annie, Dark Child (Metal)",
+      "oracle_name": "Annie, Dark Child",
+      "type": "Legend",
+      "domains": ["fury", "chaos"],
+      "energy": null,
+      "power": null,
+      "might": null,
+      "keywords": [],
+      "tags": ["annie"],
+      "rules_text": "At the end of your turn, ready 2 runes.",
+      "flavor_text": null,
+      "set": "opp",
+      "set_name": "Riftbound Organized Play Promotional Cards",
+      "collector_number": "017",
+      "rarity": "promo",
+      "artist": "Six More Vodka",
+      "variant": null,
+      "riftbound_id": "opp-017-024",
+      "rifthunt_uri": "/cards/opp/017/annie-dark-child-metal/",
+      "rulings_uri": "/cards/dfc7829c-2047-4e2e-bdaa-80b77b34afb0/rulings",
+      "images": {
+        "small": "https://images.rifthunt.com/cards/small/front/opp/017/annie-dark-child-metal.webp?v=620c77e7542c",
+        "normal": "https://images.rifthunt.com/cards/normal/front/opp/017/annie-dark-child-metal.webp?v=620c77e7542c",
+        "large": "https://images.rifthunt.com/cards/large/front/opp/017/annie-dark-child-metal.webp?v=620c77e7542c"
+      },
+      "tcg_id": "669265",
+      "finishes": ["foil"],
+      "purchase_uris": {
+        "tcgplayer": "https://tcgplayer.pxf.io/c/2226219/1830156/21018?subId1=rifthunt_api&partnerpropertyid=1989897&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F669265",
+        "cardmarket": "https://www.cardmarket.com/en/Riftbound/Products/Search?searchString=Annie%2C%20Dark%20Child%20(Metal)"
+      },
+      "prices": {
+        "currency": "USD",
+        "source": "tcgplayer",
+        "updated_at": "2026-11-07T17:01:52.522Z",
+        "foil": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": 2210.34,
+          "direct_low": null
+        },
+        "normal": {
+          "low": null,
+          "mid": null,
+          "high": null,
+          "market": null,
+          "direct_low": null
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "object": "error",
+  "status": 404,
+  "code": "not_found",
+  "details": "Your query didn't match any cards. Adjust your search terms."
+}

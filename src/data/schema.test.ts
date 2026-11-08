@@ -106,7 +106,7 @@ describe('Catalogue', () => {
     expansionCode: 'OGN',
     collectorNumber: '030a',
     rarity: 'Epic',
-    variant: 'alternative',
+    variant: 'alternate' as const,
     finishes: ['foil' as const],
     rifthuntPrintingId: 'rh-ogn-030a',
   };
