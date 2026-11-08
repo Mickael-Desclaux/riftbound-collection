@@ -27,7 +27,7 @@ Une impression précise d'une carte dans une extension, identifiée par son num�
 _À éviter_ : printing, variante, carte (quand on parle d'une impression précise)
 
 **Code de version** :
-L'identifiant lisible et propre à l'app d'une Version : code d'Extension + numéro (`OGN-030a`), plus un suffixe d'édition quand deux Versions partagent un numéro (`OPP-017-metal`).
+L'identifiant lisible et propre à l'app d'une Version : code d'Extension + numéro (`OGN-030a`) ; pour les promos OPP, la vague (`OPP-017-024`) ; plus un suffixe d'édition quand le nom l'indique (`OPP-017-024-metal`).
 _À éviter_ : id, riftboundId, printing_id
 
 **Finition** :

@@ -141,7 +141,12 @@ Principe : [ADR 0001 — Données de référence et données précieuses](adr/00
 
 ### 4.1 Code de version
 
-`{EXTENSION}-{collector_number}` (ex. `OGN-030a`, `OGN-303s`). Un suffixe d'édition s'ajoute **seulement** quand deux Versions partagent un numéro : c'est le cas de 24 paires promo OPP (`OPP-017-metal`, `-top8`, `-champion`, d'après la mention entre parenthèses du nom). Cette règle est critique : elle doit être déterministe et testée, et la changer impose une migration.
+`{EXTENSION}-{collector_number}` (ex. `OGN-030a`, `OGN-303s`), avec deux compléments :
+
+- **Vague des promos OPP** : OPP réunit plusieurs vagues de promos, chacune avec sa propre numérotation (`OPP-001` désigne trois cartes différentes). Toute Version OPP porte donc sa vague, 3ᵉ segment de son `riftbound_id` : `OPP-001-298`. Les runes OPP, qui n'ont pas de vague, n'en portent pas (`OPP-r04b`).
+- **Suffixe d'édition** : `-metal`, `-top8` ou `-champion`, dès que le nom se termine par « (Metal) », « (Top 8) » ou « (Champion) ». Il distingue notamment les 24 paires OPP qui partagent un `riftbound_id` (`OPP-017-024` et `OPP-017-024-metal`).
+
+Le code ne dépend que de la Version elle-même : l'arrivée d'une nouvelle promo ne change jamais un code existant. Cette règle est critique : elle doit être déterministe et testée (sur le catalogue réel : 1 725 codes, aucun doublon), et la changer impose une migration.
 
 ### 4.2 Tables
 
@@ -274,6 +279,8 @@ Trois trous entre décisions sont apparus à l'assemblage. L'utilisateur les a t
 3. **Thème** : Système (par défaut) / Clair / Sombre (§ 2.6).
 
 ## 10. Écarts de nommage par rapport aux tickets
+
+- Code de version (2026-11-08, ticket #22) : sur le catalogue réel, la règle initiale (suffixe d'édition seulement en cas de collision) laissait 28 numéros OPP en double, et une nouvelle promo aurait pu changer un code existant. L'utilisateur a choisi d'ajouter la vague à toutes les Versions OPP (§ 4.1).
 
 - Le ticket « Modèle de données » nommait les tables en français (`reglage`, `souhait`…). Le ticket « Architecture » a ensuite choisi le code en anglais : la section 4.2 applique donc les noms de code du glossaire.
 - Les Réglages de la carte mentionnaient l'export PDF du classeur. Le classeur s'ouvre finalement **depuis l'onglet Collection** (ticket du classeur).
