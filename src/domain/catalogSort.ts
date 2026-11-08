@@ -5,7 +5,12 @@ export type CatalogSort = 'number' | 'name';
 
 export const DEFAULT_CATALOG_SORT: CatalogSort = 'number';
 
-const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+/** Comparaison par code (numéros, Codes de version), sans règles de langue. */
+function byText(a: string, b: string): number {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
 
 const comparators: Record<CatalogSort, (a: CatalogEntry, b: CatalogEntry) => number> = {
   number: (a, b) =>

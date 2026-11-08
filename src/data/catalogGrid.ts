@@ -77,7 +77,7 @@ export function readFilterOptions(db: AppDatabase): {
   types: string[];
   domains: string[];
 } {
-  const distinct = (values: string[]) => [...new Set(values)].sort();
+  const distinct = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b));
   const printings = db.select({ rarity: printing.rarity }).from(printing).all();
   const cards = db.select({ type: card.type, domains: card.domains }).from(card).all();
   return {

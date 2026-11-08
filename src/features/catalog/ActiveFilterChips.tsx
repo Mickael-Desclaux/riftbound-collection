@@ -14,7 +14,7 @@ type Props = {
 };
 
 /** Puces des filtres actifs, sous l'en-tête : un toucher retire le filtre. */
-export function ActiveFilterChips({ filters, options, onChange }: Props) {
+export function ActiveFilterChips({ filters, options, onChange }: Readonly<Props>) {
   const active = activeFilters(filters);
   if (active.length === 0) return null;
   const expansions = [...options.expansions, ...options.promoExpansions];

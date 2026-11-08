@@ -165,10 +165,10 @@ export function CatalogScreen() {
 function SortMenu({
   sort,
   onChange,
-}: {
+}: Readonly<{
   sort: CatalogSort;
   onChange: (sort: CatalogSort) => void;
-}) {
+}>) {
   const [open, setOpen] = useState(false);
   return (
     <>

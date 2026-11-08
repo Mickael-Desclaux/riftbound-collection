@@ -51,7 +51,14 @@ const OWNERSHIP: { value: Ownership; label: string }[] = [
  * Feuille de filtres (spec § 2.1), qui monte du bas. Les choix s'appliquent
  * tout de suite ; « Voir N versions » referme la feuille.
  */
-export function FilterSheet({ visible, filters, options, resultCount, onChange, onClose }: Props) {
+export function FilterSheet({
+  visible,
+  filters,
+  options,
+  resultCount,
+  onChange,
+  onClose,
+}: Readonly<Props>) {
   const update = (change: Partial<CatalogFilters>) => onChange({ ...filters, ...change });
 
   return (
@@ -159,7 +166,7 @@ export function FilterSheet({ visible, filters, options, resultCount, onChange, 
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: Readonly<{ title: string; children: React.ReactNode }>) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
