@@ -19,15 +19,22 @@ import {
   text,
 } from 'drizzle-orm/sqlite-core';
 
-// Import relatif : drizzle-kit charge ce fichier sans l'alias `@/`.
+// Imports relatifs : drizzle-kit charge ce fichier sans l'alias `@/`.
+import type { IsoDate, IsoDateTime } from '../domain/dates';
 import type { Currency, Finish, PriceSource } from '../domain/price';
+import type { PrintingCode } from '../domain/printingCode';
 
 export type ExchangeRateSource = 'frankfurter' | 'bank-of-canada';
 
-/** Date du calendrier au format ISO `AAAA-MM-JJ`. */
-type IsoDate = string;
-/** Instant au format ISO 8601 complet, en UTC. */
-type IsoDateTime = string;
+/** Le Code de version porte le même nom de colonne dans toutes les tables. */
+const printingCodeColumn = () => text('printing_code').$type<PrintingCode>();
+
+/** Ce qui désigne un prix : une Version, une Source de prix et une Finition. */
+const priceKeyColumns = () => ({
+  printingCode: printingCodeColumn().notNull(),
+  source: text('source').$type<PriceSource>().notNull(),
+  finish: text('finish').$type<Finish>().notNull(),
+});
 
 // ---------------------------------------------------------------------------
 // Données de référence
@@ -54,7 +61,7 @@ export const card = sqliteTable('card', {
 export const printing = sqliteTable(
   'printing',
   {
-    code: text('code').primaryKey(),
+    printingCode: printingCodeColumn().primaryKey(),
     cardOracleId: text('card_oracle_id')
       .notNull()
       .references(() => card.oracleId, { onDelete: 'cascade' }),
@@ -90,11 +97,9 @@ export const printing = sqliteTable(
 export const currentPrice = sqliteTable(
   'current_price',
   {
-    printingCode: text('printing_code').notNull(),
-    source: text('source').$type<PriceSource>().notNull(),
-    finish: text('finish').$type<Finish>().notNull(),
+    ...priceKeyColumns(),
     /** Valeur de l'Indicateur de référence, recopiée pour trier et filtrer. */
-    referenceValue: real('reference_value'),
+    referenceMetricValue: real('reference_metric_value'),
     /** Tous les indicateurs publiés par la source, tels quels. */
     metrics: text('metrics', { mode: 'json' }).$type<Record<string, number | null>>().notNull(),
     currency: text('currency').$type<Currency>().notNull(),
@@ -103,6 +108,10 @@ export const currentPrice = sqliteTable(
   (t) => [primaryKey({ columns: [t.printingCode, t.source, t.finish] })],
 );
 
+/**
+ * Un seul taux par jour et par paire de devises : la Banque du Canada ne sert
+ * que si Frankfurter échoue, et `source` indique d'où vient le taux retenu.
+ */
 export const exchangeRate = sqliteTable(
   'exchange_rate',
   {
@@ -119,14 +128,17 @@ export const exchangeRate = sqliteTable(
 // Données précieuses : jamais de clé étrangère vers le Catalogue (ADR 0001)
 // ---------------------------------------------------------------------------
 
-/** Relevé de prix, enregistré seulement quand la valeur change. */
+/**
+ * Relevé de prix, enregistré seulement quand la valeur change.
+ * Il est daté à l'instant de publication de la source, et non au jour : c'est
+ * ce qui garantit qu'un même fichier ne crée jamais deux relevés. Les calculs
+ * au jour près (Variation de prix, souhaits) se font à la lecture.
+ */
 export const priceRecord = sqliteTable(
   'price_record',
   {
-    printingCode: text('printing_code').notNull(),
-    source: text('source').$type<PriceSource>().notNull(),
-    finish: text('finish').$type<Finish>().notNull(),
-    /** Date de publication de la source. */
+    ...priceKeyColumns(),
+    /** Instant de publication de la source (`updatedAt` TCGplayer, `createdAt` Cardmarket). */
     recordedAt: text('recorded_at').$type<IsoDateTime>().notNull(),
     value: real('value').notNull(),
   },
@@ -136,23 +148,28 @@ export const priceRecord = sqliteTable(
 export const collectionEntry = sqliteTable(
   'collection_entry',
   {
-    printingCode: text('printing_code').primaryKey(),
+    printingCode: printingCodeColumn().primaryKey(),
     quantity: integer('quantity').notNull(),
   },
   (t) => [check('collection_entry_quantity_positive', sql`${t.quantity} > 0`)],
 );
 
 export const wishlistEntry = sqliteTable('wishlist_entry', {
-  printingCode: text('printing_code').primaryKey(),
+  printingCode: printingCodeColumn().primaryKey(),
   addedAt: text('added_at').$type<IsoDateTime>().notNull(),
-  /** Prix (devise d'origine) et date de la dernière Alerte de prix. */
+  /**
+   * Dernière Alerte de prix : prix dans la devise d'origine de sa source, et la
+   * source elle-même, pour ne jamais comparer des euros à des dollars après un
+   * changement de Source de prix.
+   */
   lastAlertPrice: real('last_alert_price'),
+  lastAlertSource: text('last_alert_source').$type<PriceSource>(),
   lastAlertAt: text('last_alert_at').$type<IsoDateTime>(),
 });
 
-/** Sélection du classeur. */
-export const binderEntry = sqliteTable('binder_entry', {
-  printingCode: text('printing_code').primaryKey(),
+/** Une Version de la Sélection du classeur. */
+export const binderSelection = sqliteTable('binder_selection', {
+  printingCode: printingCodeColumn().primaryKey(),
 });
 
 /** Réglages : valeurs encodées en JSON, lues via `settings.ts`. */
@@ -161,6 +178,7 @@ export const setting = sqliteTable('setting', {
   value: text('value').notNull(),
 });
 
+/** Tables de chaque famille (ADR 0001), pour les tests et les futures migrations. */
 export const referenceDataTables = {
   expansion,
   card,
@@ -173,6 +191,6 @@ export const preciousDataTables = {
   priceRecord,
   collectionEntry,
   wishlistEntry,
-  binderEntry,
+  binderSelection,
   setting,
 } as const;

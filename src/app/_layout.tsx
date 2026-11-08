@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
-import { AppDatabaseProvider } from '@/data/AppDatabaseProvider';
+import { AppDatabaseProvider } from '@/features/startup/AppDatabaseProvider';
 
 export default function RootLayout() {
   return (

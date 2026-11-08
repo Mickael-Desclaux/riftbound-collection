@@ -3,6 +3,14 @@ const shared = {
   moduleNameMapper: { '^@/(.*)$': '<rootDir>/src/$1' },
 };
 
+const sqlFiles = {
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'sql'],
+  transform: {
+    '\\.sql$': '<rootDir>/jest/sqlTransformer.js',
+    '\\.[jt]sx?$': 'babel-jest',
+  },
+};
+
 // Le code sans interface tourne sous Node pur : better-sqlite3 (module natif)
 // ne fonctionne pas dans l'environnement React Native de jest-expo.
 const nodeOnly = [
@@ -17,6 +25,7 @@ module.exports = {
   projects: [
     {
       ...shared,
+      ...sqlFiles,
       displayName: 'node',
       testEnvironment: 'node',
       roots: nodeOnly,

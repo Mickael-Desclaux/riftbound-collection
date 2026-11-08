@@ -1,11 +1,10 @@
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { useState, type ReactNode } from 'react';
 
+import { DatabaseProvider } from '@/data/DatabaseProvider';
+import migrations from '@/data/migrations/migrations';
+import { openAppDatabase } from '@/data/openAppDatabase';
 import { PlaceholderScreen } from '@/ui/PlaceholderScreen';
-
-import { DatabaseProvider } from './DatabaseProvider';
-import migrations from './migrations/migrations';
-import { openAppDatabase } from './openAppDatabase';
 
 /**
  * Ouvre la base de l'app, applique les migrations en attente, puis la fournit

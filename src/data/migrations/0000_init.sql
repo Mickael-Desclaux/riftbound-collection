@@ -1,4 +1,4 @@
-CREATE TABLE `binder_entry` (
+CREATE TABLE `binder_selection` (
 	`printing_code` text PRIMARY KEY NOT NULL
 );
 --> statement-breakpoint
@@ -21,7 +21,7 @@ CREATE TABLE `current_price` (
 	`printing_code` text NOT NULL,
 	`source` text NOT NULL,
 	`finish` text NOT NULL,
-	`reference_value` real,
+	`reference_metric_value` real,
 	`metrics` text NOT NULL,
 	`currency` text NOT NULL,
 	`published_at` text NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE `price_record` (
 );
 --> statement-breakpoint
 CREATE TABLE `printing` (
-	`code` text PRIMARY KEY NOT NULL,
+	`printing_code` text PRIMARY KEY NOT NULL,
 	`card_oracle_id` text NOT NULL,
 	`expansion_code` text NOT NULL,
 	`collector_number` text NOT NULL,
@@ -85,5 +85,6 @@ CREATE TABLE `wishlist_entry` (
 	`printing_code` text PRIMARY KEY NOT NULL,
 	`added_at` text NOT NULL,
 	`last_alert_price` real,
+	`last_alert_source` text,
 	`last_alert_at` text
 );

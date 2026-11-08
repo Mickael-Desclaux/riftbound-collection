@@ -1,18 +1,28 @@
-import { card, collectionEntry, expansion, printing, setting } from './schema';
+import { getTableConfig, type SQLiteTable } from 'drizzle-orm/sqlite-core';
+
+import type { PrintingCode } from '@/domain/printingCode';
+
+import {
+  card,
+  collectionEntry,
+  expansion,
+  preciousDataTables,
+  printing,
+  referenceDataTables,
+  setting,
+} from './schema';
 import { applyMigrations, createTestDatabase } from './testing/createTestDatabase';
 
-const REFERENCE_TABLES = ['card', 'current_price', 'exchange_rate', 'expansion', 'printing'];
-const PRECIOUS_TABLES = [
-  'binder_entry',
-  'collection_entry',
-  'price_record',
-  'setting',
-  'wishlist_entry',
-];
+const tableNames = (tables: Record<string, SQLiteTable>) =>
+  Object.values(tables).map((table) => getTableConfig(table).name);
+const REFERENCE_TABLES = tableNames(referenceDataTables);
+const PRECIOUS_TABLES = tableNames(preciousDataTables);
+
+const code = (value: string) => value as PrintingCode;
 
 async function setup() {
   const { db, sqlite } = await createTestDatabase();
-  const tableNames = (
+  const existingTables = (
     sqlite
       .prepare(
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%'",
@@ -23,7 +33,7 @@ async function setup() {
     .sort();
   const foreignKeysOf = (table: string) =>
     sqlite.prepare(`PRAGMA foreign_key_list(${table})`).all();
-  return { db, sqlite, tableNames, foreignKeysOf };
+  return { db, existingTables, foreignKeysOf };
 }
 
 function insertOrigins(db: Awaited<ReturnType<typeof setup>>['db']) {
@@ -42,10 +52,10 @@ function insertOrigins(db: Awaited<ReturnType<typeof setup>>['db']) {
 }
 
 describe('migrations', () => {
-  it('créent les tables de référence et les tables précieuses', async () => {
-    const { tableNames } = await setup();
+  it('créent exactement les tables de référence et les tables précieuses', async () => {
+    const { existingTables } = await setup();
 
-    expect(tableNames).toEqual([...REFERENCE_TABLES, ...PRECIOUS_TABLES].sort());
+    expect(existingTables).toEqual([...REFERENCE_TABLES, ...PRECIOUS_TABLES].sort());
   });
 
   it('peuvent être relancées sans rien changer', async () => {
@@ -68,7 +78,9 @@ describe('séparation des Données précieuses (ADR 0001)', () => {
   it('accepte une Version de la Collection absente du Catalogue', async () => {
     const { db } = await setup();
 
-    db.insert(collectionEntry).values({ printingCode: 'OGN-999', quantity: 2 }).run();
+    db.insert(collectionEntry)
+      .values({ printingCode: code('OGN-999'), quantity: 2 })
+      .run();
 
     expect(db.select().from(collectionEntry).all()).toEqual([
       { printingCode: 'OGN-999', quantity: 2 },
@@ -79,14 +91,17 @@ describe('séparation des Données précieuses (ADR 0001)', () => {
     const { db } = await setup();
 
     expect(() =>
-      db.insert(collectionEntry).values({ printingCode: 'OGN-030a', quantity: 0 }).run(),
+      db
+        .insert(collectionEntry)
+        .values({ printingCode: code('OGN-030a'), quantity: 0 })
+        .run(),
     ).toThrow(/CHECK constraint failed/);
   });
 });
 
 describe('Catalogue', () => {
   const jinx = {
-    code: 'OGN-030a',
+    printingCode: code('OGN-030a'),
     cardOracleId: 'oracle-jinx',
     expansionCode: 'OGN',
     collectorNumber: '030a',
@@ -103,7 +118,7 @@ describe('Catalogue', () => {
     db.insert(printing).values(jinx).run();
 
     expect(db.select().from(printing).get()).toMatchObject({
-      code: 'OGN-030a',
+      printingCode: 'OGN-030a',
       finishes: ['foil'],
     });
     expect(db.select().from(card).get()?.domains).toEqual(['Fury', 'Chaos']);
@@ -125,7 +140,9 @@ describe('Catalogue', () => {
     const { db } = await setup();
     insertOrigins(db);
     db.insert(printing).values(jinx).run();
-    db.insert(collectionEntry).values({ printingCode: 'OGN-030a', quantity: 1 }).run();
+    db.insert(collectionEntry)
+      .values({ printingCode: code('OGN-030a'), quantity: 1 })
+      .run();
 
     db.delete(expansion).run();
 

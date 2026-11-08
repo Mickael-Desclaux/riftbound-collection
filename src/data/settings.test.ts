@@ -1,16 +1,12 @@
 import { setting } from './schema';
-import { getSetting, parseSetting, setSetting } from './settings';
+import { getSetting, setSetting } from './settings';
 import { createTestDatabase } from './testing/createTestDatabase';
 
-describe('réglages', () => {
+describe('réglages en base', () => {
   it('donnent la valeur par défaut quand rien n’est enregistré', async () => {
     const { db } = await createTestDatabase();
 
     expect(getSetting(db, 'displayCurrency')).toBe('CAD');
-    expect(getSetting(db, 'priceSource')).toBe('tcgplayer');
-    expect(getSetting(db, 'theme')).toBe('system');
-    expect(getSetting(db, 'chartPeriod')).toBe('30d');
-    expect(getSetting(db, 'priceAlertThreshold')).toBe(15);
   });
 
   it('relisent la dernière valeur enregistrée', async () => {
@@ -18,10 +14,10 @@ describe('réglages', () => {
 
     setSetting(db, 'displayCurrency', 'EUR');
     setSetting(db, 'displayCurrency', 'USD');
-    setSetting(db, 'priceAlertThreshold', 20);
+    setSetting(db, 'chartPeriod', { from: '2026-01-01', to: '2026-02-01' });
 
     expect(getSetting(db, 'displayCurrency')).toBe('USD');
-    expect(getSetting(db, 'priceAlertThreshold')).toBe(20);
+    expect(getSetting(db, 'chartPeriod')).toEqual({ from: '2026-01-01', to: '2026-02-01' });
     expect(db.select().from(setting).all()).toHaveLength(2);
   });
 
@@ -37,10 +33,5 @@ describe('réglages', () => {
     db.insert(setting).values({ key: 'theme', value: '"sepia"' }).run();
 
     expect(getSetting(db, 'theme')).toBe('system');
-  });
-
-  it('ignorent une valeur stockée illisible', () => {
-    expect(parseSetting('chartPeriod', '{pas du json')).toBe('30d');
-    expect(parseSetting('chartPeriod', '"90d"')).toBe('90d');
   });
 });
