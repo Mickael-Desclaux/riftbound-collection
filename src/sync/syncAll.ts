@@ -18,6 +18,7 @@ export async function syncAll(
     { source: 'prices' as const, run: () => syncTcgplayerPrices(deps, { refresh }) },
   ];
   const failures: SyncReport['failures'] = [];
+  // L'une après l'autre, volontairement : les prix se rattachent au Catalogue à jour.
   for (const step of steps) {
     try {
       await step.run();

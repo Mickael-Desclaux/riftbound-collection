@@ -49,7 +49,7 @@ export function CatalogScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = () => {
     setRefreshing(true);
-    refresh().finally(() => setRefreshing(false));
+    void refresh().finally(() => setRefreshing(false));
   };
 
   const catalog = useReactiveQuery(() => readCatalogEntries(db), [db], CATALOG_ENTRY_TABLES);
