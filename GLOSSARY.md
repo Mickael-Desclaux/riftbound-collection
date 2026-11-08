@@ -27,8 +27,12 @@ Une impression précise d'une carte dans une extension, identifiée par son num�
 _À éviter_ : printing, variante, carte (quand on parle d'une impression précise)
 
 **Code de version** :
-L'identifiant lisible et propre à l'app d'une Version : code d'Extension + numéro (`OGN-030a`), plus un suffixe d'édition quand deux Versions partagent un numéro (`OPP-017-metal`).
+L'identifiant lisible et propre à l'app d'une Version : code d'Extension + numéro (`OGN-030a`) ; pour les promos OPP, PR et JDG, la Vague quand la Version en a une (`OPP-017-024`, mais `OPP-r04b` pour une rune) ; plus un suffixe d'édition quand le nom l'indique (`OPP-017-024-metal`).
 _À éviter_ : id, riftboundId, printing_id
+
+**Vague** :
+Une série de promos d'une Extension promo (OPP, PR, JDG), numérotée à part : `OPP-001` existe dans plusieurs vagues. Elle est donnée par le 3ᵉ segment du `riftbound_id` (`opp-001-298`).
+_À éviter_ : lot, série
 
 **Finition** :
 Le traitement physique d'une version : normale ou foil. Elle ne distingue que des prix.
@@ -114,6 +118,7 @@ Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
 | Carte                   | `Card`                                                                              |
 | Version                 | `Printing` (jamais `Version`, réservé aux versions de schéma, de sauvegarde, d'app) |
 | Code de version         | `PrintingCode`                                                                      |
+| Vague                   | `wave`                                                                              |
 | Finition                | `Finish`                                                                            |
 | Finition de référence   | `referenceFinish`                                                                   |
 | Source de prix          | `PriceSource` (`tcgplayer` / `cardmarket`)                                          |
