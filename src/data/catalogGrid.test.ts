@@ -1,14 +1,18 @@
-import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '@/domain/catalogFilters';
 import type { PrintingCode } from '@/domain/printingCode';
 
 import { replaceCatalog } from './catalog';
-import { selectCatalogCount, selectCatalogPage, selectExpansionChips } from './catalogGrid';
+import {
+  readCatalogEntries,
+  readFilterOptions,
+  readOwnedQuantities,
+  selectExpansionChips,
+  withOwnedQuantities,
+} from './catalogGrid';
+import { collectionEntry } from './schema';
 import { catalogOf, expansionOf, printingOf } from './testing/catalogFactory';
 import { createTestDatabase } from './testing/createTestDatabase';
 
-const number = (n: number) => String(n).padStart(3, '0');
-
-/** 30 Versions OGN, 3 SFD (sorties après), 2 OPP (promo). */
+/** OGN (sortie en premier), SFD, puis OPP (promo, sans date). */
 async function catalogDatabase() {
   const { db } = await createTestDatabase();
   replaceCatalog(
@@ -20,122 +24,60 @@ async function catalogDatabase() {
         expansionOf('OPP', { name: 'Organized Play', isPromo: true }),
       ],
       [
-        ...Array.from({ length: 30 }, (_, i) =>
-          printingOf('OGN', number(30 - i), `Unit ${30 - i}`),
-        ),
-        printingOf('SFD', '001', 'Jinx, Rebel'),
-        printingOf('SFD', '002', 'Ahri, Alluring'),
-        printingOf('SFD', '003', 'Garen, Rugged'),
-        printingOf('OPP', '017', 'Jinx, Rebel'),
-        printingOf('OPP', '018', 'Lux, Crownguard'),
+        { ...printingOf('OGN', '030a', 'Jinx'), rarity: 'epic', variant: 'alternate' as const },
+        printingOf('SFD', '001', 'Ahri'),
+        printingOf('OPP', '017', 'Annie'),
       ],
     ),
   );
   return db;
 }
 
-const filters = (overrides: Partial<CatalogFilters> = {}) => ({
-  ...DEFAULT_CATALOG_FILTERS,
-  ...overrides,
-});
-const codes = (rows: { printingCode: string }[]) => rows.map((row) => row.printingCode);
-
-describe('selectCatalogPage', () => {
-  it('donne la 1re page dans l’ordre des Extensions puis des numéros, sans les promos', async () => {
+describe('readCatalogEntries', () => {
+  it('donne toutes les Versions, avec leur Extension, leur Carte et leur rang de sortie', async () => {
     const db = await catalogDatabase();
 
-    const page = selectCatalogPage(db, filters(), 1).all();
+    const entries = readCatalogEntries(db);
 
-    expect(page).toHaveLength(24);
-    expect(codes(page).slice(0, 3)).toEqual(['OGN-001', 'OGN-002', 'OGN-003']);
-    expect(page[0]).toMatchObject({ printingCode: 'OGN-001', name: 'Unit 1' });
-  });
-
-  it('cherche par nom de Carte, sans tenir compte de la casse', async () => {
-    const db = await catalogDatabase();
-
-    const page = selectCatalogPage(db, filters({ search: 'jinx' }), 1).all();
-
-    expect(codes(page)).toEqual(['SFD-001']);
-  });
-
-  it('cherche aussi par Code de version', async () => {
-    const db = await catalogDatabase();
-
-    const page = selectCatalogPage(db, filters({ search: 'sfd-00' }), 1).all();
-
-    expect(codes(page)).toEqual(['SFD-001', 'SFD-002', 'SFD-003']);
-  });
-
-  it('cherche « % » tel quel, sans joker', async () => {
-    const db = await catalogDatabase();
-
-    expect(selectCatalogPage(db, filters({ search: '%' }), 1).all()).toEqual([]);
-  });
-
-  it('se limite aux Extensions choisies par les puces', async () => {
-    const db = await catalogDatabase();
-
-    const page = selectCatalogPage(db, filters({ expansionCodes: ['SFD'] }), 1).all();
-
-    expect(codes(page)).toEqual(['SFD-001', 'SFD-002', 'SFD-003']);
-  });
-
-  it('montre les promos quand on le demande, après les Extensions datées', async () => {
-    const db = await catalogDatabase();
-
-    const page = selectCatalogPage(db, filters({ showPromo: true, search: 'jinx' }), 1).all();
-
-    expect(codes(page)).toEqual(['SFD-001', 'OPP-017']);
-  });
-
-  it('donne la suite sur la page 2', async () => {
-    const db = await catalogDatabase();
-
-    const page = selectCatalogPage(db, filters(), 2).all();
-
-    expect(codes(page)).toEqual([
-      'OGN-025',
-      'OGN-026',
-      'OGN-027',
-      'OGN-028',
-      'OGN-029',
-      'OGN-030',
-      'SFD-001',
-      'SFD-002',
-      'SFD-003',
-    ]);
-  });
-});
-
-describe('selectCatalogPage, départage', () => {
-  it('ordonne les Versions qui partagent un numéro par leur Code de version', async () => {
-    const { db } = await createTestDatabase();
-    const wave = (n: string, riftboundWave: string, name: string) => ({
-      ...printingOf('OPP', n, name),
-      printingCode: `OPP-${n}-${riftboundWave}` as PrintingCode,
-    });
-    replaceCatalog(
-      db,
-      catalogOf(
-        [expansionOf('OPP', { isPromo: true })],
-        [wave('017', '298', 'Zed'), wave('017', '024', 'Annie'), wave('017', '166', 'Morgana')],
-      ),
+    expect(entries.map((e) => [e.printingCode, e.expansionRank, e.isPromo])).toEqual(
+      expect.arrayContaining([
+        ['OGN-030a', 0, false],
+        ['SFD-001', 1, false],
+        ['OPP-017', 2, true],
+      ]),
     );
+    expect(entries.find((e) => e.printingCode === 'OGN-030a')).toMatchObject({
+      name: 'Jinx',
+      rarity: 'epic',
+      variant: 'alternate',
+      type: 'Unit',
+      domains: [],
+      ownedQuantity: 0,
+    });
+  });
 
-    const page = selectCatalogPage(db, filters({ showPromo: true }), 1).all();
+  it('donne la quantité possédée d’après la Collection', async () => {
+    const db = await catalogDatabase();
+    db.insert(collectionEntry)
+      .values({ printingCode: 'SFD-001' as PrintingCode, quantity: 3 })
+      .run();
 
-    expect(codes(page)).toEqual(['OPP-017-024', 'OPP-017-166', 'OPP-017-298']);
+    const entries = withOwnedQuantities(readCatalogEntries(db), readOwnedQuantities(db));
+    const ahri = entries.find((e) => e.printingCode === 'SFD-001');
+
+    expect(ahri?.ownedQuantity).toBe(3);
   });
 });
 
-describe('selectCatalogCount', () => {
-  it('compte toutes les Versions qui correspondent, pas seulement la page', async () => {
+describe('readFilterOptions', () => {
+  it('liste les valeurs présentes dans le Catalogue, pour la feuille de filtres', async () => {
     const db = await catalogDatabase();
 
-    expect(selectCatalogCount(db, filters()).get()?.count).toBe(33);
-    expect(selectCatalogCount(db, filters({ showPromo: true })).get()?.count).toBe(35);
-    expect(selectCatalogCount(db, filters({ search: 'jinx' })).get()?.count).toBe(1);
+    expect(readFilterOptions(db)).toEqual({
+      rarities: ['common', 'epic'],
+      types: ['Unit'],
+      domains: [],
+    });
   });
 });
 

@@ -1,4 +1,4 @@
-import { PAGE_SIZE, pageCount, paginationItems } from './pagination';
+import { PAGE_SIZE, pageCount, pageOf, paginationItems } from './pagination';
 
 describe('paginationItems', () => {
   it('montre la première, la dernière et les voisines de la page courante', () => {
@@ -26,5 +26,14 @@ describe('pageCount', () => {
 
   it('garde une page même sans résultat', () => {
     expect(pageCount(0)).toBe(1);
+  });
+});
+
+describe('pageOf', () => {
+  const items = Array.from({ length: 50 }, (_, i) => i + 1);
+
+  it('donne les 24 éléments de la page demandée', () => {
+    expect(pageOf(items, 1)).toEqual(items.slice(0, 24));
+    expect(pageOf(items, 3)).toEqual([49, 50]);
   });
 });

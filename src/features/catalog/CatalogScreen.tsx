@@ -1,86 +1,114 @@
 import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { selectCatalogCount, selectCatalogPage, selectExpansionChips } from '@/data/catalogGrid';
+import {
+  CATALOG_ENTRY_TABLES,
+  readCatalogEntries,
+  readFilterOptions,
+  readOwnedQuantities,
+  selectExpansionChips,
+  withOwnedQuantities,
+} from '@/data/catalogGrid';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
-import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '@/domain/catalogFilters';
-import { pageCount } from '@/domain/pagination';
-import { Chip } from '@/ui/controls';
+import {
+  activeFilters,
+  DEFAULT_CATALOG_FILTERS,
+  filterCatalog,
+  type CatalogFilters,
+} from '@/domain/catalogFilters';
+import { DEFAULT_CATALOG_SORT, sortCatalog, type CatalogSort } from '@/domain/catalogSort';
+import { pageCount, pageOf } from '@/domain/pagination';
+import { Chip, controlStyles } from '@/ui/controls';
 import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { colors } from '@/ui/theme';
 
+import { ActiveFilterChips } from './ActiveFilterChips';
+import { FilterSheet, type FilterOptions } from './FilterSheet';
+
 const formatCount = new Intl.NumberFormat('fr-FR').format;
 
-/** Tables lues par la grille du Catalogue (la requête les joint). */
-const CATALOG_TABLES = ['printing', 'card', 'expansion'];
+const SORT_LABELS: Record<CatalogSort, string> = { number: 'Numéro', name: 'Nom' };
 
-/** Onglet Catalogue : toutes les Versions, avec recherche, puces d'Extension et pagination. */
+/**
+ * Onglet Catalogue : toutes les Versions, avec recherche, puces d'Extension,
+ * feuille de filtres, tri et pagination. Filtres, tri et page vivent dans cet
+ * écran, qui reste monté quand une fiche s'ouvre par-dessus (Stack de l'onglet).
+ */
 export function CatalogScreen() {
   const db = useDatabase();
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_CATALOG_FILTERS);
+  const [sort, setSort] = useState<CatalogSort>(DEFAULT_CATALOG_SORT);
   const [page, setPage] = useState(1);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const total = useReactiveQuery(
-    () => selectCatalogCount(db, filters).get()?.count ?? 0,
-    [db, filters],
-    CATALOG_TABLES,
+  const catalog = useReactiveQuery(() => readCatalogEntries(db), [db], CATALOG_ENTRY_TABLES);
+  const owned = useReactiveQuery(() => readOwnedQuantities(db), [db], ['collection_entry']);
+  const entries = useMemo(() => withOwnedQuantities(catalog, owned), [catalog, owned]);
+  const options = useReactiveQuery(
+    (): FilterOptions => {
+      const all = selectExpansionChips(db, true).all();
+      const main = selectExpansionChips(db, false).all();
+      return {
+        ...readFilterOptions(db),
+        expansions: main,
+        promoExpansions: all.filter((e) => !main.some((m) => m.code === e.code)),
+      };
+    },
+    [db],
+    ['expansion', 'printing', 'card'],
   );
-  const pages = pageCount(total);
+
+  const results = useMemo(
+    () => sortCatalog(filterCatalog(entries, filters), sort),
+    [entries, filters, sort],
+  );
+  const pages = pageCount(results.length);
   // Le Catalogue a rétréci sous la page courante : on revient à la dernière page.
   if (page > pages) setPage(pages);
   const currentPage = Math.min(page, pages);
-
-  const printings = useReactiveQuery(
-    () => selectCatalogPage(db, filters, currentPage).all(),
-    [db, filters, currentPage],
-    CATALOG_TABLES,
-  );
-  const chips = useReactiveQuery(
-    () => selectExpansionChips(db, filters.showPromo).all(),
-    [db, filters.showPromo],
-    ['expansion'],
-  );
+  const items = pageOf(results, currentPage);
 
   // Préchargement des images de la page suivante (spec § 6).
   useEffect(() => {
-    if (currentPage >= pages) return;
-    const next = selectCatalogPage(db, filters, currentPage + 1).all();
-    const urls = next.map(gridImageUri).filter((url) => url !== null);
+    const urls = pageOf(results, currentPage + 1)
+      .map(gridImageUri)
+      .filter((url) => url !== null);
+    if (urls.length === 0) return;
     Image.prefetch(urls, 'disk').catch(() => {
       // Le préchargement n'est qu'une aide : l'image sera chargée à l'affichage.
     });
-  }, [db, filters, currentPage, pages]);
+  }, [results, currentPage]);
 
-  const updateFilters = (change: Partial<CatalogFilters>) => {
-    setFilters({ ...filters, ...change });
+  const changeFilters = (next: CatalogFilters) => {
+    setFilters(next);
     setPage(1);
   };
-  const toggleExpansion = (code: string) => {
-    const selected = filters.expansionCodes.includes(code);
-    updateFilters({
-      expansionCodes: selected
+  const toggleExpansion = (code: string) =>
+    changeFilters({
+      ...filters,
+      expansionCodes: filters.expansionCodes.includes(code)
         ? filters.expansionCodes.filter((c) => c !== code)
         : [...filters.expansionCodes, code],
     });
-  };
+  const activeCount = activeFilters(filters).length;
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <PrintingGrid
-        items={printings}
+        items={items}
         page={currentPage}
         pageCount={pages}
         onPageChange={setPage}
-        onClearFilters={() => updateFilters(DEFAULT_CATALOG_FILTERS)}
+        onClearFilters={() => changeFilters(DEFAULT_CATALOG_FILTERS)}
         header={
           <View style={styles.header}>
             <TextInput
               value={filters.search}
-              onChangeText={(search) => updateFilters({ search })}
+              onChangeText={(search) => changeFilters({ ...filters, search })}
               placeholder="Rechercher un nom ou un code…"
               placeholderTextColor={colors.muted}
               autoCorrect={false}
@@ -98,9 +126,9 @@ export function CatalogScreen() {
               <Chip
                 label="Toutes"
                 selected={filters.expansionCodes.length === 0}
-                onPress={() => updateFilters({ expansionCodes: [] })}
+                onPress={() => changeFilters({ ...filters, expansionCodes: [] })}
               />
-              {chips.map((chip) => (
+              {options.expansions.map((chip) => (
                 <Chip
                   key={chip.code}
                   label={chip.name}
@@ -109,13 +137,68 @@ export function CatalogScreen() {
                 />
               ))}
             </ScrollView>
-            <Text style={styles.count}>
-              {formatCount(total)} {total > 1 ? 'versions' : 'version'}
-            </Text>
+            <View style={styles.toolbar}>
+              <Chip
+                label={activeCount > 0 ? `Filtres (${activeCount})` : 'Filtres'}
+                selected={activeCount > 0}
+                onPress={() => setSheetOpen(true)}
+              />
+              <SortMenu sort={sort} onChange={setSort} />
+              <Text style={styles.count}>
+                {formatCount(results.length)} {results.length > 1 ? 'versions' : 'version'}
+              </Text>
+            </View>
+            <ActiveFilterChips filters={filters} options={options} onChange={changeFilters} />
           </View>
         }
       />
+      <FilterSheet
+        visible={sheetOpen}
+        filters={filters}
+        options={options}
+        resultCount={results.length}
+        onChange={changeFilters}
+        onClose={() => setSheetOpen(false)}
+      />
     </SafeAreaView>
+  );
+}
+
+/** Menu de tri : un bouton qui ouvre la liste des tris. */
+function SortMenu({
+  sort,
+  onChange,
+}: {
+  sort: CatalogSort;
+  onChange: (sort: CatalogSort) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Chip label={`Tri : ${SORT_LABELS[sort]} ▾`} selected={false} onPress={() => setOpen(true)} />
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <Pressable style={styles.menuScrim} onPress={() => setOpen(false)}>
+          <View style={styles.menu}>
+            {(Object.keys(SORT_LABELS) as CatalogSort[]).map((value) => (
+              <Pressable
+                key={value}
+                accessibilityRole="button"
+                accessibilityState={{ selected: value === sort }}
+                onPress={() => {
+                  onChange(value);
+                  setOpen(false);
+                }}
+                style={styles.menuItem}
+              >
+                <Text style={[styles.menuLabel, value === sort && styles.menuLabelSelected]}>
+                  {SORT_LABELS[value]}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -124,6 +207,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: 8,
+    paddingBottom: 8,
     gap: 8,
     borderBottomWidth: 1,
     borderColor: colors.line,
@@ -139,5 +223,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   chips: { gap: 6 },
-  count: { color: colors.muted, fontSize: 13, paddingBottom: 8 },
+  toolbar: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  count: { flex: 1, textAlign: 'right', color: colors.muted, fontSize: 13 },
+  menuScrim: { flex: 1, backgroundColor: '#0008', justifyContent: 'center', padding: 48 },
+  menu: { ...controlStyles.idle, borderRadius: 12, overflow: 'hidden' },
+  menuItem: { paddingHorizontal: 16, paddingVertical: 14 },
+  menuLabel: { color: colors.text, fontSize: 16 },
+  menuLabelSelected: { color: colors.accent, fontWeight: '700' },
 });
