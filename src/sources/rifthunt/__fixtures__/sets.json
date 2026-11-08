@@ -1,0 +1,105 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "object": "set",
+      "id": "e6a7796f-6789-41dc-800b-f9bce955c55a",
+      "code": "sgn",
+      "name": "Secret Garden",
+      "names": { "en": "Secret Garden" },
+      "release_date": "2025-07-30T00:00:00.000Z",
+      "card_count": 3
+    },
+    {
+      "object": "set",
+      "id": "c7963fa4-99b7-41a2-9805-a323e3007f2d",
+      "code": "rwb",
+      "name": "Riftbound Worlds Bundle 2025",
+      "names": { "en": "Riftbound Worlds Bundle 2025" },
+      "release_date": "2025-10-28T00:00:00.000Z",
+      "card_count": 4
+    },
+    {
+      "object": "set",
+      "id": "a9f1b442-c018-488d-833f-2ce4c22425e9",
+      "code": "ogn",
+      "name": "Origins",
+      "names": { "en": "Origins" },
+      "release_date": "2025-10-31T00:00:00.000Z",
+      "card_count": 352
+    },
+    {
+      "object": "set",
+      "id": "5bd75a73-a436-489d-b383-bde3af043792",
+      "code": "ogs",
+      "name": "Proving Grounds",
+      "names": { "en": "Proving Grounds" },
+      "release_date": "2025-10-31T00:00:00.000Z",
+      "card_count": 24
+    },
+    {
+      "object": "set",
+      "id": "33a16e42-188b-4373-98c2-509279012241",
+      "code": "opp",
+      "name": "Riftbound Organized Play Promotional Cards",
+      "names": { "en": "Riftbound Organized Play Promotional Cards" },
+      "release_date": "2025-10-31T00:00:00.000Z",
+      "card_count": 221
+    },
+    {
+      "object": "set",
+      "id": "929a16b3-a0be-49d3-a939-33c35b1ffd6b",
+      "code": "pr",
+      "name": "Riftbound Promotional Cards",
+      "names": { "en": "Riftbound Promotional Cards" },
+      "release_date": "2025-10-31T00:00:00.000Z",
+      "card_count": 12
+    },
+    {
+      "object": "set",
+      "id": "af4f8185-bb5f-43a0-93e9-f3bdb3764e10",
+      "code": "jdg",
+      "name": "Riftbound Judge Promotional Cards",
+      "names": { "en": "Riftbound Judge Promotional Cards" },
+      "release_date": "2025-12-01T00:00:00.000Z",
+      "card_count": 4
+    },
+    {
+      "object": "set",
+      "id": "997a8ad0-40e5-466b-8ff9-ca4f4816cc2a",
+      "code": "sfd",
+      "name": "Spiritforged",
+      "names": { "en": "Spiritforged" },
+      "release_date": "2026-02-13T00:00:00.000Z",
+      "card_count": 306
+    },
+    {
+      "object": "set",
+      "id": "af83a0e9-50e8-424c-9c6d-e8e166b83245",
+      "code": "unl",
+      "name": "Unleashed",
+      "names": { "en": "Unleashed" },
+      "release_date": "2026-05-08T00:00:00.000Z",
+      "card_count": 306
+    },
+    {
+      "object": "set",
+      "id": "9113d9eb-10d6-4bb9-afbf-b0d8595f8a82",
+      "code": "ven",
+      "name": "Vendetta",
+      "names": { "en": "Vendetta" },
+      "release_date": "2026-07-31T00:00:00.000Z",
+      "card_count": 243
+    },
+    {
+      "object": "set",
+      "id": "d1a8294f-92ad-4bea-93cd-744ce3f56ba2",
+      "code": "rad",
+      "name": "Radiance",
+      "names": { "en": "Radiance" },
+      "release_date": "2026-10-23T00:00:00.000Z",
+      "card_count": 250
+    }
+  ]
+}
