@@ -1,10 +1,3 @@
-import { PlaceholderScreen } from '@/ui/PlaceholderScreen';
+import { CatalogScreen } from '@/features/catalog/CatalogScreen';
 
-export default function CatalogScreen() {
-  return (
-    <PlaceholderScreen
-      title="Catalogue"
-      description="Toutes les cartes Riftbound, avec recherche, filtres et prix."
-    />
-  );
-}
+export default CatalogScreen;
