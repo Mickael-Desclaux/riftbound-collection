@@ -32,7 +32,7 @@ export function selectExpansionChips(db: AppDatabase, showPromo: boolean) {
 /**
  * Toutes les Versions du Catalogue, avec leur Carte et leur Extension.
  * `ownedQuantity` vaut 0 : les quantités viennent de `readOwnedQuantities`, lu à
- * part pour qu'un ✓ ne relise pas les 1 725 Versions (voir `withOwnedQuantities`).
+ * part pour qu'un ✓ ne relise pas les 1 725 Versions (voir `withOwnedQuantities` dans `domain/`).
  */
 export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
   const rank = new Map(
@@ -69,14 +69,6 @@ export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
 export function readOwnedQuantities(db: AppDatabase): Map<string, number> {
   const rows = db.select().from(collectionEntry).all();
   return new Map(rows.map((row) => [row.printingCode, row.quantity]));
-}
-
-/** Les Versions, avec la quantité possédée de chacune. */
-export function withOwnedQuantities(
-  entries: CatalogEntry[],
-  owned: Map<string, number>,
-): CatalogEntry[] {
-  return entries.map((entry) => ({ ...entry, ownedQuantity: owned.get(entry.printingCode) ?? 0 }));
 }
 
 /** Valeurs proposées par la feuille de filtres : celles présentes dans le Catalogue. */

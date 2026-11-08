@@ -9,27 +9,27 @@ import {
   readFilterOptions,
   readOwnedQuantities,
   selectExpansionChips,
-  withOwnedQuantities,
 } from '@/data/catalogGrid';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
+import { withOwnedQuantities } from '@/domain/catalogEntry';
 import {
   activeFilters,
   DEFAULT_CATALOG_FILTERS,
   filterCatalog,
+  toggled,
   type CatalogFilters,
 } from '@/domain/catalogFilters';
 import { DEFAULT_CATALOG_SORT, sortCatalog, type CatalogSort } from '@/domain/catalogSort';
 import { pageCount, pageOf } from '@/domain/pagination';
 import { Chip, controlStyles } from '@/ui/controls';
+import { formatPrintingCount } from '@/ui/format';
 import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { colors } from '@/ui/theme';
 
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';
-
-const formatCount = new Intl.NumberFormat('fr-FR').format;
 
 const SORT_LABELS: Record<CatalogSort, string> = { number: 'Numéro', name: 'Nom' };
 
@@ -59,7 +59,7 @@ export function CatalogScreen() {
       };
     },
     [db],
-    ['expansion', 'printing', 'card'],
+    CATALOG_ENTRY_TABLES,
   );
 
   const results = useMemo(
@@ -88,12 +88,11 @@ export function CatalogScreen() {
     setPage(1);
   };
   const toggleExpansion = (code: string) =>
-    changeFilters({
-      ...filters,
-      expansionCodes: filters.expansionCodes.includes(code)
-        ? filters.expansionCodes.filter((c) => c !== code)
-        : [...filters.expansionCodes, code],
-    });
+    changeFilters({ ...filters, expansionCodes: toggled(filters.expansionCodes, code) });
+  const changeSort = (next: CatalogSort) => {
+    setSort(next);
+    setPage(1);
+  };
   const activeCount = activeFilters(filters).length;
 
   return (
@@ -143,10 +142,8 @@ export function CatalogScreen() {
                 selected={activeCount > 0}
                 onPress={() => setSheetOpen(true)}
               />
-              <SortMenu sort={sort} onChange={setSort} />
-              <Text style={styles.count}>
-                {formatCount(results.length)} {results.length > 1 ? 'versions' : 'version'}
-              </Text>
+              <SortMenu sort={sort} onChange={changeSort} />
+              <Text style={styles.count}>{formatPrintingCount(results.length)}</Text>
             </View>
             <ActiveFilterChips filters={filters} options={options} onChange={changeFilters} />
           </View>

@@ -4,15 +4,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PrintingVariant } from '@/domain/catalog';
 import {
   DEFAULT_CATALOG_FILTERS,
+  toggled,
+  withPromoShown,
   type CatalogFilters,
   type Ownership,
 } from '@/domain/catalogFilters';
 import { Button, Chip } from '@/ui/controls';
+import { formatPrintingCount } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
-import { domainLabel, rarityLabel, typeLabel, VARIANTS } from './filterLabels';
-
-const formatCount = new Intl.NumberFormat('fr-FR').format;
+import {
+  domainLabel,
+  orderedDomains,
+  orderedRarities,
+  orderedTypes,
+  rarityLabel,
+  typeLabel,
+  VARIANTS,
+} from './filterLabels';
 
 export type FilterOptions = {
   expansions: { code: string; name: string }[];
@@ -37,10 +46,6 @@ const OWNERSHIP: { value: Ownership; label: string }[] = [
   { value: 'owned', label: 'Possédées' },
   { value: 'missing', label: 'Manquantes' },
 ];
-
-function toggled<T>(values: T[], value: T): T[] {
-  return values.includes(value) ? values.filter((v) => v !== value) : [...values, value];
-}
 
 /**
  * Feuille de filtres (spec § 2.1), qui monte du bas. Les choix s'appliquent
@@ -69,17 +74,7 @@ export function FilterSheet({ visible, filters, options, resultCount, onChange, 
             <Switch
               accessibilityLabel="Afficher les extensions promo"
               value={filters.showPromo}
-              onValueChange={(showPromo) =>
-                update({
-                  showPromo,
-                  // Masquer les promos retire aussi celles qui étaient choisies.
-                  expansionCodes: showPromo
-                    ? filters.expansionCodes
-                    : filters.expansionCodes.filter(
-                        (code) => !options.promoExpansions.some((p) => p.code === code),
-                      ),
-                })
-              }
+              onValueChange={(shown) => onChange(withPromoShown(filters, shown))}
               trackColor={{ true: colors.accent, false: colors.line }}
             />
           </View>
@@ -98,7 +93,7 @@ export function FilterSheet({ visible, filters, options, resultCount, onChange, 
             </View>
           )}
           <Section title="Rareté">
-            {options.rarities.map((value) => (
+            {orderedRarities(options.rarities).map((value) => (
               <Chip
                 key={value}
                 label={rarityLabel(value)}
@@ -118,7 +113,7 @@ export function FilterSheet({ visible, filters, options, resultCount, onChange, 
             ))}
           </Section>
           <Section title="Type">
-            {options.types.map((value) => (
+            {orderedTypes(options.types).map((value) => (
               <Chip
                 key={value}
                 label={typeLabel(value)}
@@ -128,7 +123,7 @@ export function FilterSheet({ visible, filters, options, resultCount, onChange, 
             ))}
           </Section>
           <Section title="Domaine">
-            {options.domains.map((value) => (
+            {orderedDomains(options.domains).map((value) => (
               <Chip
                 key={value}
                 label={domainLabel(value)}
@@ -154,7 +149,7 @@ export function FilterSheet({ visible, filters, options, resultCount, onChange, 
             onPress={() => onChange({ ...DEFAULT_CATALOG_FILTERS, search: filters.search })}
           />
           <Button
-            label={`Voir ${formatCount(resultCount)} ${resultCount > 1 ? 'versions' : 'version'}`}
+            label={`Voir ${formatPrintingCount(resultCount)}`}
             onPress={onClose}
             variant="primary"
           />

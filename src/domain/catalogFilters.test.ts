@@ -1,4 +1,5 @@
 import type { CatalogEntry } from './catalogEntry';
+import { entry } from './testing/catalogEntries';
 import {
   activeFilters,
   DEFAULT_CATALOG_FILTERS,
@@ -6,29 +7,6 @@ import {
   removeActiveFilter,
   type CatalogFilters,
 } from './catalogFilters';
-import { sortCatalog } from './catalogSort';
-import type { PrintingCode } from './printingCode';
-
-/** Une Version de test ; les valeurs reprennent celles de RiftHunt. */
-function entry(code: string, overrides: Partial<CatalogEntry> = {}): CatalogEntry {
-  const [expansionCode = '', collectorNumber = ''] = code.split('-');
-  return {
-    printingCode: code as PrintingCode,
-    name: code,
-    expansionCode,
-    expansionRank: 0,
-    isPromo: false,
-    collectorNumber,
-    rarity: 'common',
-    variant: 'normal',
-    type: 'Unit',
-    domains: ['fury'],
-    ownedQuantity: 0,
-    imageSmall: null,
-    imageNormal: null,
-    ...overrides,
-  };
-}
 
 const filters = (overrides: Partial<CatalogFilters> = {}): CatalogFilters => ({
   ...DEFAULT_CATALOG_FILTERS,
@@ -100,43 +78,14 @@ describe('filterCatalog', () => {
     expect(codes(filterCatalog(entries, filters({ search: 'ogn-303' })))).toEqual(['OGN-303s']);
     expect(filterCatalog(entries, filters({ search: '%' }))).toEqual([]);
   });
-});
 
-describe('sortCatalog', () => {
-  const entries = [
-    entry('SFD-001', { expansionRank: 1, name: 'Ahri, Alluring' }),
-    entry('OPP-017-298', { expansionRank: 2, collectorNumber: '017', name: 'Zed' }),
-    entry('OGN-030a', { expansionRank: 0, name: 'Jinx, Demolitionist' }),
-    entry('OPP-017-024', { expansionRank: 2, collectorNumber: '017', name: 'Annie' }),
-    entry('OGN-001', { expansionRank: 0, name: 'Jinx, Demolitionist' }),
-  ];
+  it('confond les apostrophes et ignore les espaces en trop', () => {
+    const entries = [entry('SFD-120', { name: "Kai'Sa, Daughter of the Void" })];
 
-  it('par numéro : Extension dans l’ordre de sortie, numéro, puis Code de version', () => {
-    expect(codes(sortCatalog(entries, 'number'))).toEqual([
-      'OGN-001',
-      'OGN-030a',
-      'SFD-001',
-      'OPP-017-024',
-      'OPP-017-298',
+    expect(codes(filterCatalog(entries, filters({ search: 'kai’sa' })))).toEqual(['SFD-120']);
+    expect(codes(filterCatalog(entries, filters({ search: 'daughter   of' })))).toEqual([
+      'SFD-120',
     ]);
-  });
-
-  it('par nom, puis par Code de version pour les homonymes', () => {
-    expect(codes(sortCatalog(entries, 'name'))).toEqual([
-      'SFD-001',
-      'OPP-017-024',
-      'OGN-001',
-      'OGN-030a',
-      'OPP-017-298',
-    ]);
-  });
-
-  it('ne modifie pas la liste reçue', () => {
-    const before = codes(entries);
-
-    sortCatalog(entries, 'name');
-
-    expect(codes(entries)).toEqual(before);
   });
 });
 
@@ -169,5 +118,13 @@ describe('activeFilters', () => {
     expect(afterRare.search).toBe('jinx');
     expect(afterPromo.showPromo).toBe(false);
     expect(afterOwnership.ownership).toBe('all');
+  });
+
+  it('retirer « Extensions promo » retire aussi les Extensions promo choisies', () => {
+    const withOpp = filters({ showPromo: true, expansionCodes: ['OGN', 'OPP'] });
+
+    const result = removeActiveFilter(withOpp, { criterion: 'promo', value: 'shown' });
+
+    expect(result).toMatchObject({ showPromo: false, expansionCodes: ['OGN'] });
   });
 });

@@ -20,3 +20,11 @@ export type CatalogEntry = {
   imageSmall: string | null;
   imageNormal: string | null;
 };
+
+/** Les Versions, avec la quantité possédée de chacune (0 si absente de la Collection). */
+export function withOwnedQuantities(
+  entries: CatalogEntry[],
+  owned: Map<string, number>,
+): CatalogEntry[] {
+  return entries.map((entry) => ({ ...entry, ownedQuantity: owned.get(entry.printingCode) ?? 0 }));
+}

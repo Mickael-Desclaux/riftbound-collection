@@ -67,6 +67,32 @@ describe('FilterSheet', () => {
     expect(onChange).toHaveBeenCalledWith({ ...DEFAULT_CATALOG_FILTERS, search: 'jinx' });
   });
 
+  it('range les raretés dans l’ordre du jeu, les inconnues à la fin', async () => {
+    const onChange = jest.fn();
+    await render(
+      <FilterSheet
+        visible
+        filters={DEFAULT_CATALOG_FILTERS}
+        options={{
+          ...options,
+          rarities: ['showcase', 'common', 'mythic', 'rare', 'epic', 'uncommon'],
+        }}
+        resultCount={1}
+        onChange={onChange}
+        onClose={jest.fn()}
+      />,
+    );
+
+    const labels = ['Commune', 'Peu commune', 'Rare', 'Épique', 'Showcase', 'mythic'];
+    expect(
+      screen
+        .getAllByText(/^(Commune|Peu commune|Rare|Épique|Showcase|mythic)$/)
+        .map((node) => node.props.children)
+        // La section Version a aussi une puce « Showcase », plus bas.
+        .slice(0, labels.length),
+    ).toEqual(labels);
+  });
+
   it('annonce le nombre de résultats et ferme la feuille', async () => {
     const { onClose } = await setup();
 

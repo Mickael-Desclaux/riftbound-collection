@@ -1,5 +1,5 @@
 /** Filtres des grilles de Versions (spec § 2.1), en règles pures. */
-import type { PrintingVariant } from './catalog';
+import { isPromoExpansion, type PrintingVariant } from './catalog';
 import type { CatalogEntry } from './catalogEntry';
 
 /**
@@ -38,11 +38,16 @@ function allows<T>(chosen: T[], value: T): boolean {
   return chosen.length === 0 || chosen.includes(value);
 }
 
-/** Minuscules sans accents, pour comparer des recherches. */
+/**
+ * Forme comparable d'un texte de recherche : minuscules, sans accents, une seule
+ * sorte d'apostrophe (le clavier tape souvent ’ là où les noms ont '), espaces réduits.
+ */
 function normalized(text: string): string {
   return text
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
+    .replace(/[’‘`]/g, "'")
+    .replace(/\s+/g, ' ')
     .toLowerCase()
     .trim();
 }
@@ -98,13 +103,32 @@ export function activeFilters(filters: CatalogFilters): ActiveFilter[] {
 
 const without = <T>(values: T[], value: T) => values.filter((v) => v !== value);
 
+/** Ajoute `value` à la liste, ou l'en retire si elle y est déjà. */
+export function toggled<T>(values: T[], value: T): T[] {
+  return values.includes(value) ? without(values, value) : [...values, value];
+}
+
+/**
+ * Affiche ou masque les Extensions promo. Les masquer retire aussi celles qui
+ * étaient choisies : sinon la grille resterait vide sans raison visible.
+ */
+export function withPromoShown(filters: CatalogFilters, shown: boolean): CatalogFilters {
+  return {
+    ...filters,
+    showPromo: shown,
+    expansionCodes: shown
+      ? filters.expansionCodes
+      : filters.expansionCodes.filter((code) => !isPromoExpansion(code)),
+  };
+}
+
 /** Les filtres sans `active`. */
 export function removeActiveFilter(filters: CatalogFilters, active: ActiveFilter): CatalogFilters {
   switch (active.criterion) {
     case 'expansion':
       return { ...filters, expansionCodes: without(filters.expansionCodes, active.value) };
     case 'promo':
-      return { ...filters, showPromo: false };
+      return withPromoShown(filters, false);
     case 'rarity':
       return { ...filters, rarities: without(filters.rarities, active.value) };
     case 'variant':
