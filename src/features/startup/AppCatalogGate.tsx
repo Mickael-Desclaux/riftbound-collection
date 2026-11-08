@@ -5,8 +5,10 @@ import { AppState } from 'react-native';
 import { hasCatalog } from '@/data/catalog';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
+import { syncAll } from '@/sync/syncAll';
 
 import { CatalogGate } from './CatalogGate';
+import { SyncContext } from './SyncContext';
 
 /**
  * Prévient quand une nouvelle tentative a des chances de réussir : retour du
@@ -31,8 +33,9 @@ function subscribeToOnline(listener: () => void): () => void {
  * l'horloge sont créés puis injectés dans `sync/`.
  *
  * - Catalogue absent : premier téléchargement, piloté par `CatalogGate`.
- * - Catalogue présent : vérification à l'ouverture et à chaque retour dans
- *   l'app. Les échecs sont notés dans `source_state` et réessayés la fois suivante.
+ * - Catalogue présent : toutes les sources (`syncAll`) sont vérifiées à
+ *   l'ouverture, à chaque retour dans l'app et au tirer-pour-rafraîchir. Les
+ *   échecs sont notés dans `source_state` et réessayés la fois suivante.
  */
 export function AppCatalogGate({ children }: { children: ReactNode }) {
   const db = useDatabase();
@@ -45,41 +48,51 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
   const [hadCatalogAtStart] = useState(() => hasCatalog(db));
   const catalogReady = useRef(hadCatalogAtStart);
 
-  useEffect(() => {
-    let refreshing = false;
-    const refresh = () => {
-      if (!catalogReady.current || refreshing) return;
-      refreshing = true;
-      syncCatalog(deps)
-        .catch(() => {
-          // Déjà noté dans source_state ; l'écran « État des sources » (#40) l'affichera.
-        })
+  // Une seule synchronisation à la fois ; un appel pendant qu'elle tourne la rejoint.
+  // Les échecs sont déjà notés dans source_state (écran « État des sources », #40).
+  const running = useRef<Promise<void> | null>(null);
+  const synchronize = useCallback(
+    (refresh: boolean): Promise<void> => {
+      if (!catalogReady.current) return Promise.resolve();
+      running.current ??= syncAll(deps, { refresh })
+        .then(() => undefined)
         .finally(() => {
-          refreshing = false;
+          running.current = null;
         });
-    };
-    refresh();
+      return running.current;
+    },
+    [deps],
+  );
+
+  useEffect(() => {
+    void synchronize(false);
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') refresh();
+      if (state === 'active') void synchronize(false);
     });
     return () => subscription.remove();
-  }, [deps]);
+  }, [synchronize]);
+
+  const sync = useMemo(() => ({ refresh: () => synchronize(true) }), [synchronize]);
 
   const runFirstSync = useCallback(
     async (onProgress: OnProgress) => {
       await syncCatalog(deps, { onProgress });
       catalogReady.current = true;
+      // Les prix suivent en arrière-plan : seul le Catalogue est bloquant (spec § 6).
+      void synchronize(false);
     },
-    [deps],
+    [deps, synchronize],
   );
 
   return (
-    <CatalogGate
-      hasCatalog={hadCatalogAtStart}
-      runFirstSync={runFirstSync}
-      subscribeToOnline={subscribeToOnline}
-    >
-      {children}
-    </CatalogGate>
+    <SyncContext.Provider value={sync}>
+      <CatalogGate
+        hasCatalog={hadCatalogAtStart}
+        runFirstSync={runFirstSync}
+        subscribeToOnline={subscribeToOnline}
+      >
+        {children}
+      </CatalogGate>
+    </SyncContext.Provider>
   );
 }

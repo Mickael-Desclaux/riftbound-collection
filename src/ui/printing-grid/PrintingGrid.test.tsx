@@ -50,6 +50,16 @@ describe('PrintingGrid', () => {
     expect(onPageChange.mock.calls).toEqual([[3], [1]]);
   });
 
+  it('rafraîchit quand on tire la grille vers le bas', async () => {
+    const onRefresh = jest.fn();
+    await setup({ onRefresh, refreshing: false });
+
+    const refreshControl = screen.getByTestId('printing-grid').props.refreshControl;
+    refreshControl.props.onRefresh();
+
+    expect(onRefresh).toHaveBeenCalled();
+  });
+
   it('propose d’effacer les filtres quand rien ne correspond', async () => {
     const { onClearFilters } = await setup({ items: [], pageCount: 1 });
 

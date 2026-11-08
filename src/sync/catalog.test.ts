@@ -199,4 +199,17 @@ describe('syncCatalog', () => {
     // … puis tout redevient normal.
     expect(await syncCatalog({ db, fetch, now: dayBefore })).toBe('skipped');
   });
+
+  it('vérifie /sets tout de suite sur demande, sans retélécharger un Catalogue inchangé', async () => {
+    const db = await syncedDatabase();
+    const { fetch, requests } = fakeFetch(rifthunt);
+
+    const outcome = await syncCatalog(
+      { db, fetch, now: at('2026-11-08T12:00:00Z') },
+      { checkNow: true },
+    );
+
+    expect(outcome).toBe('unchanged');
+    expect(requests.map((r) => r.url)).toEqual([SETS_URL]);
+  });
 });

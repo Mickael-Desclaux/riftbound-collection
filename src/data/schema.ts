@@ -125,7 +125,7 @@ export const exchangeRate = sqliteTable(
   (t) => [primaryKey({ columns: [t.baseCurrency, t.quoteCurrency, t.date] })],
 );
 
-export const SOURCE_IDS = ['rifthunt-sets', 'rifthunt-catalog'] as const;
+export const SOURCE_IDS = ['rifthunt-sets', 'rifthunt-catalog', 'rifthunt-prices'] as const;
 export type SourceId = (typeof SOURCE_IDS)[number];
 
 /**
@@ -137,6 +137,8 @@ export const sourceState = sqliteTable('source_state', {
   lastSuccessAt: text('last_success_at').$type<IsoDateTime>(),
   lastErrorAt: text('last_error_at').$type<IsoDateTime>(),
   lastErrorMessage: text('last_error_message'),
+  /** En-tête `Last-Modified` de la dernière réponse, pour ne pas retélécharger un fichier inchangé. */
+  lastModified: text('last_modified'),
 });
 
 // ---------------------------------------------------------------------------

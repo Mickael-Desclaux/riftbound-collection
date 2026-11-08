@@ -28,6 +28,8 @@ import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { colors } from '@/ui/theme';
 
+import { useSync } from '@/features/startup/SyncContext';
+
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';
 
@@ -44,6 +46,12 @@ export function CatalogScreen() {
   const [sort, setSort] = useState<CatalogSort>(DEFAULT_CATALOG_SORT);
   const [page, setPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { refresh } = useSync();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    refresh().finally(() => setRefreshing(false));
+  };
 
   const catalog = useReactiveQuery(() => readCatalogEntries(db), [db], CATALOG_ENTRY_TABLES);
   const owned = useReactiveQuery(() => readOwnedQuantities(db), [db], ['collection_entry']);
@@ -103,6 +111,8 @@ export function CatalogScreen() {
         pageCount={pages}
         onPageChange={setPage}
         onClearFilters={() => changeFilters(DEFAULT_CATALOG_FILTERS)}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
         header={
           <View style={styles.header}>
             <TextInput

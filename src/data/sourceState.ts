@@ -12,10 +12,18 @@ export function getSourceState(db: AppDatabase, source: SourceId): SourceState |
   return db.select().from(sourceState).where(eq(sourceState.source, source)).get();
 }
 
-export function recordSourceSuccess(db: AppDatabase, source: SourceId, at: IsoDateTime): void {
+/** Note une réussite ; `lastModified` n'est remplacé que s'il est fourni. */
+export function recordSourceSuccess(
+  db: AppDatabase,
+  source: SourceId,
+  at: IsoDateTime,
+  { lastModified }: { lastModified?: string | null } = {},
+): void {
+  const set =
+    lastModified === undefined ? { lastSuccessAt: at } : { lastSuccessAt: at, lastModified };
   db.insert(sourceState)
-    .values({ source, lastSuccessAt: at })
-    .onConflictDoUpdate({ target: sourceState.source, set: { lastSuccessAt: at } })
+    .values({ source, ...set })
+    .onConflictDoUpdate({ target: sourceState.source, set })
     .run();
 }
 
