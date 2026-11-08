@@ -29,7 +29,8 @@ src/
 ## Tests
 
 - `domain/` : TDD, tests unitaires à côté du fichier (`*.test.ts`).
-- `data/` et `sync/` : tests d'intégration sur SQLite en mémoire (better-sqlite3, mêmes migrations), avec de vrais fichiers de réponse enregistrés comme fixtures.
+- `data/` et `sync/` : tests d'intégration sur SQLite en mémoire (`createTestDatabase()` de `src/data/testing/`, better-sqlite3, mêmes migrations), avec de vrais fichiers de réponse enregistrés comme fixtures.
+- Jest a deux projets : `node` (Node pur, pour `domain/`, `sources/`, `data/`, `sync/`) et `app` (jest-expo, pour l'interface). better-sqlite3 ne fonctionne pas sous jest-expo.
 - Interface : quelques tests ciblés avec Testing Library.
 
 ## Commandes
@@ -38,6 +39,7 @@ src/
 pnpm install
 pnpm start              # serveur de développement (app de développement sur le téléphone)
 pnpm check              # types + lint + formatage + tests : à faire passer avant chaque PR
+pnpm db:generate        # crée la migration après une modification de src/data/schema.ts
 pnpm expo install <pkg> # TOUJOURS pour ajouter une dépendance : choisit la version compatible avec le SDK
 pnpm dlx expo-doctor    # diagnostic de la configuration Expo
 ```

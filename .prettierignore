@@ -2,3 +2,4 @@ legacy/
 .expo/
 .prototype-preview/
 pnpm-lock.yaml
+src/data/migrations/
