@@ -1,8 +1,10 @@
 module.exports = function (api) {
-  api.cache(true);
+  const isTest = api.env('test');
+  api.cache.using(() => isTest);
   return {
     presets: ['babel-preset-expo'],
-    // Les migrations Drizzle importent leurs fichiers .sql comme du texte.
-    plugins: [['inline-import', { extensions: ['.sql'] }]],
+    // Dans l'app, les migrations Drizzle embarquent leurs fichiers .sql comme du
+    // texte. Sous Jest, c'est jest/sqlTransformer.js qui s'en charge.
+    plugins: isTest ? [] : [['inline-import', { extensions: ['.sql'] }]],
   };
 };

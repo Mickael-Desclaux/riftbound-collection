@@ -1,15 +1,10 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useCallback, useState } from 'react';
 
+import { parseSetting, type SettingKey, type SettingValue } from '@/domain/settings';
+
 import { useDatabase } from './DatabaseProvider';
-import {
-  getSetting,
-  parseSetting,
-  selectSetting,
-  setSetting,
-  type SettingKey,
-  type SettingValue,
-} from './settings';
+import { getSetting, selectSetting, setSetting } from './settings';
 
 /**
  * Lit un réglage et le tient à jour quand il change, depuis n'importe quel écran.

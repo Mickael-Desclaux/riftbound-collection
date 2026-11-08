@@ -1,11 +1,11 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c8707bdd-a892-4295-b332-24551d34d6b1",
+  "id": "2eb964be-de17-417e-b44a-72b84137ed02",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "binder_entry": {
-      "name": "binder_entry",
+    "binder_selection": {
+      "name": "binder_selection",
       "columns": {
         "printing_code": {
           "name": "printing_code",
@@ -126,8 +126,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "reference_value": {
-          "name": "reference_value",
+        "reference_metric_value": {
+          "name": "reference_metric_value",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
@@ -327,8 +327,8 @@
     "printing": {
       "name": "printing",
       "columns": {
-        "code": {
-          "name": "code",
+        "printing_code": {
+          "name": "printing_code",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
@@ -526,6 +526,13 @@
         "last_alert_price": {
           "name": "last_alert_price",
           "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_alert_source": {
+          "name": "last_alert_source",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
