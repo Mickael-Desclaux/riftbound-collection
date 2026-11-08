@@ -8,13 +8,10 @@ import { fetchJsonIfModified, type ConditionalResult, type Fetch } from '@/sourc
 export const RIFTHUNT_PRICES_URL = 'https://api.rifthunt.com/bulk/prices';
 
 const metric = z.number().nonnegative().nullable();
-const metricsSchema = z.object({
-  low: metric,
-  mid: metric,
-  high: metric,
-  market: metric,
-  directLow: metric,
-});
+/** Les indicateurs connus sont exigés ; un indicateur nouveau est gardé tel quel. */
+const metricsSchema = z
+  .object({ low: metric, mid: metric, high: metric, market: metric, directLow: metric })
+  .catchall(metric);
 
 const pricesSchema = z.object({
   source: z.literal('tcgplayer'),
@@ -48,7 +45,8 @@ export async function fetchTcgplayerPrices(
   if (!result.modified) return result;
   const data = result.data.prices.map((row) => ({
     tcgId: Number(row.tcgId),
-    publishedAt: row.updatedAt,
+    // Toujours au même format (ms comprises), pour comparer les dates entre elles.
+    publishedAt: new Date(row.updatedAt).toISOString(),
     finishes: FINISHES.flatMap((finish) => {
       const metrics = row.finishes[finish];
       if (!metrics || Object.values(metrics).every((value) => value === null)) return [];

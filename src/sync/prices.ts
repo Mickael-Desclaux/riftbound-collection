@@ -17,7 +17,7 @@ import { newPriceRecords, type CurrentPrice } from '@/domain/priceRecords';
 import { fetchTcgplayerPrices } from '@/sources/rifthunt/prices';
 
 import type { SyncDeps } from './catalog';
-import { hasPendingError, HOUR, isOlderThan, recorded } from './schedule';
+import { failuresRecorded, hasPendingError, HOUR, isOlderThan } from './schedule';
 
 const PRICES_MAX_AGE = 6 * HOUR;
 
@@ -26,55 +26,45 @@ export type PriceSyncOutcome = 'skipped' | 'unchanged' | 'refreshed';
 
 export async function syncTcgplayerPrices(
   { db, fetch, now }: SyncDeps,
-  { force = false }: { force?: boolean } = {},
+  /** `refresh` : l'utilisateur demande une mise à jour, sans attendre les 6 h. */
+  { refresh = false }: { refresh?: boolean } = {},
 ): Promise<PriceSyncOutcome> {
   // Les prix se rattachent aux Versions du Catalogue : sans lui, rien à faire.
   if (!hasCatalog(db)) return 'skipped';
   const at = now();
   const state = getSourceState(db, 'rifthunt-prices');
-  if (!force && !hasPendingError(state) && !isOlderThan(state, PRICES_MAX_AGE, at)) {
+  if (!refresh && !hasPendingError(state) && !isOlderThan(state, PRICES_MAX_AGE, at)) {
     return 'skipped';
   }
 
-  return recorded(
-    db,
-    'rifthunt-prices',
-    at,
-    async () => {
-      // Sans prix enregistrés, on retélécharge tout, même si le fichier n'a pas changé.
-      const lastModified =
-        currentPriceCount(db, 'tcgplayer') > 0 ? (state?.lastModified ?? null) : null;
-      const response = await fetchTcgplayerPrices(fetch, lastModified);
-      if (!response.modified) {
-        recordSourceSuccess(db, 'rifthunt-prices', at.toISOString());
-        return 'unchanged';
-      }
+  return failuresRecorded(db, 'rifthunt-prices', at, async () => {
+    // Sans prix enregistrés, on retélécharge tout, même si le fichier n'a pas changé.
+    const lastModified =
+      currentPriceCount(db, 'tcgplayer') > 0 ? (state?.lastModified ?? null) : null;
+    const response = await fetchTcgplayerPrices(fetch, lastModified);
+    if (!response.modified) {
+      recordSourceSuccess(db, 'rifthunt-prices', at.toISOString());
+      return 'unchanged';
+    }
 
-      const codes = printingCodesByTcgId(db);
-      const prices: CurrentPrice[] = response.data.flatMap((product) => {
-        const printingCode = codes.get(product.tcgId);
-        if (printingCode === undefined) return [];
-        return product.finishes.map(({ finish, metrics }) => ({
-          printingCode,
-          source: 'tcgplayer' as const,
-          finish,
-          referenceMetricValue: metrics[REFERENCE_METRIC.tcgplayer] ?? null,
-          metrics,
-          currency: 'USD' as const,
-          publishedAt: product.publishedAt,
-        }));
-      });
-      savePrices(
-        db,
-        'tcgplayer',
-        prices,
-        newPriceRecords(prices, lastPriceRecords(db, 'tcgplayer')),
-      );
-      recordSourceSuccess(db, 'rifthunt-prices', at.toISOString(), {
-        lastModified: response.lastModified,
-      });
-      return 'refreshed';
-    },
-    { recordSuccess: false },
-  );
+    const codes = printingCodesByTcgId(db);
+    const prices: CurrentPrice[] = response.data.flatMap((product) => {
+      const printingCode = codes.get(product.tcgId);
+      if (printingCode === undefined) return [];
+      return product.finishes.map(({ finish, metrics }) => ({
+        printingCode,
+        source: 'tcgplayer' as const,
+        finish,
+        referenceMetricValue: metrics[REFERENCE_METRIC.tcgplayer] ?? null,
+        metrics,
+        currency: 'USD' as const,
+        publishedAt: product.publishedAt,
+      }));
+    });
+    savePrices(db, 'tcgplayer', prices, newPriceRecords(prices, lastPriceRecords(db, 'tcgplayer')));
+    recordSourceSuccess(db, 'rifthunt-prices', at.toISOString(), {
+      lastModified: response.lastModified,
+    });
+    return 'refreshed';
+  });
 }

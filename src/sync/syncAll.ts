@@ -14,8 +14,8 @@ export async function syncAll(
   { refresh = false }: { refresh?: boolean } = {},
 ): Promise<SyncReport> {
   const steps = [
-    { source: 'catalog' as const, run: () => syncCatalog(deps, { checkNow: refresh }) },
-    { source: 'prices' as const, run: () => syncTcgplayerPrices(deps, { force: refresh }) },
+    { source: 'catalog' as const, run: () => syncCatalog(deps, { refresh }) },
+    { source: 'prices' as const, run: () => syncTcgplayerPrices(deps, { refresh }) },
   ];
   const failures: SyncReport['failures'] = [];
   for (const step of steps) {

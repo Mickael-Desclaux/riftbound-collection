@@ -26,9 +26,8 @@ import { Chip, controlStyles } from '@/ui/controls';
 import { formatPrintingCount } from '@/ui/format';
 import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
+import { useSync } from '@/ui/SyncContext';
 import { colors } from '@/ui/theme';
-
-import { useSync } from '@/features/startup/SyncContext';
 
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';

@@ -11,6 +11,7 @@ import {
 import type { PrintingCode } from '@/domain/printingCode';
 
 import type { AppDatabase } from './database';
+import { chunks } from './chunks';
 import { currentPrice, printing, priceRecord } from './schema';
 
 /** Code de version de chaque produit TCGplayer du Catalogue. */
@@ -63,16 +64,12 @@ export function savePrices(
 ): void {
   db.transaction((tx) => {
     tx.delete(currentPrice).where(eq(currentPrice.source, source)).run();
-    for (let i = 0; i < prices.length; i += 100) {
-      tx.insert(currentPrice)
-        .values(prices.slice(i, i + 100))
-        .run();
+    // Un produit répété dans le flux ne doit pas bloquer toute la mise à jour.
+    for (const rows of chunks(prices)) {
+      tx.insert(currentPrice).values(rows).onConflictDoNothing().run();
     }
-    for (let i = 0; i < records.length; i += 100) {
-      tx.insert(priceRecord)
-        .values(records.slice(i, i + 100))
-        .onConflictDoNothing()
-        .run();
+    for (const rows of chunks(records)) {
+      tx.insert(priceRecord).values(rows).onConflictDoNothing().run();
     }
   });
 }

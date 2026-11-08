@@ -7,7 +7,7 @@
  */
 import { hasCatalog as catalogIsStored, replaceCatalog, storedExpansions } from '@/data/catalog';
 import type { AppDatabase } from '@/data/database';
-import { getSourceState } from '@/data/sourceState';
+import { forgetLastModified, getSourceState } from '@/data/sourceState';
 import type { Expansion } from '@/domain/catalog';
 import { SourceError, type Fetch } from '@/sources/http';
 import { fetchCatalog, fetchExpansions, type OnProgress } from '@/sources/rifthunt/rifthunt';
@@ -32,10 +32,10 @@ const CATALOG_MAX_AGE = 7 * 24 * HOUR;
 export async function syncCatalog(
   { db, fetch, now }: SyncDeps,
   options: {
-    /** Retélécharge tout, même si rien n'a changé. */
-    force?: boolean;
-    /** Vérifie `/sets` tout de suite (tirer-pour-rafraîchir), sans forcer le Catalogue. */
-    checkNow?: boolean;
+    /** Retélécharge tout le Catalogue, même si rien n'a changé. */
+    redownload?: boolean;
+    /** L'utilisateur demande une mise à jour (tirer-pour-rafraîchir) : `/sets` est vérifié tout de suite. */
+    refresh?: boolean;
     onProgress?: OnProgress;
   } = {},
 ): Promise<CatalogSyncOutcome> {
@@ -45,8 +45,8 @@ export async function syncCatalog(
   const catalogRetry = hasPendingError(catalogState);
 
   const mustCheck =
-    options.force ||
-    options.checkNow ||
+    options.redownload ||
+    options.refresh ||
     !hasCatalog ||
     catalogRetry ||
     isOlderThan(getSourceState(db, 'rifthunt-sets'), SETS_MAX_AGE, at);
@@ -55,7 +55,7 @@ export async function syncCatalog(
   const expansions = await recorded(db, 'rifthunt-sets', at, () => fetchExpansions(fetch));
 
   const mustDownload =
-    options.force ||
+    options.redownload ||
     !hasCatalog ||
     catalogRetry ||
     expansionsChanged(storedExpansions(db), expansions) ||
@@ -75,6 +75,9 @@ export async function syncCatalog(
       );
     }
     replaceCatalog(db, { expansions, cards, printings });
+    // De nouvelles Versions attendent peut-être leur prix : le prochain
+    // téléchargement des prix sera complet, même si leur fichier n'a pas changé.
+    forgetLastModified(db, 'rifthunt-prices');
   });
   return 'refreshed';
 }

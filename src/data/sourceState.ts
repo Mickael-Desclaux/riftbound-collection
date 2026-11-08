@@ -41,3 +41,8 @@ export function recordSourceFailure(
     })
     .run();
 }
+
+/** Oublie `Last-Modified` : le prochain téléchargement de cette source sera complet. */
+export function forgetLastModified(db: AppDatabase, source: SourceId): void {
+  db.update(sourceState).set({ lastModified: null }).where(eq(sourceState.source, source)).run();
+}

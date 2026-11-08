@@ -59,4 +59,35 @@ describe('fetchTcgplayerPrices', () => {
 
     await expect(fetchTcgplayerPrices(fetch)).rejects.toMatchObject({ kind: 'format' });
   });
+
+  it('garde un indicateur inconnu, sans le perdre', async () => {
+    const [first, ...rest] = prices.prices;
+    const withNew = {
+      ...prices,
+      prices: [
+        { ...first, finishes: { foil: { ...first?.finishes.foil, average: 199 } } },
+        ...rest,
+      ],
+    };
+    const { fetch } = fakeFetch({ [RIFTHUNT_PRICES_URL]: { body: withNew } });
+
+    const result = await fetchTcgplayerPrices(fetch);
+
+    if (!result.modified) throw new Error('attendu : modifié');
+    expect(result.data[0]?.finishes[0]?.metrics).toMatchObject({ average: 199, market: 2.95 });
+  });
+
+  it('écrit toutes les dates au même format ISO, quelle que soit leur précision', async () => {
+    const [first, ...rest] = prices.prices;
+    const coarse = {
+      ...prices,
+      prices: [{ ...first, updatedAt: '2026-11-07T17:01:52Z' }, ...rest],
+    };
+    const { fetch } = fakeFetch({ [RIFTHUNT_PRICES_URL]: { body: coarse } });
+
+    const result = await fetchTcgplayerPrices(fetch);
+
+    if (!result.modified) throw new Error('attendu : modifié');
+    expect(result.data[0]?.publishedAt).toBe('2026-11-07T17:01:52.000Z');
+  });
 });

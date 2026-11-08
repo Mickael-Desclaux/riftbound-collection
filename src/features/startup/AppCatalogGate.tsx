@@ -6,9 +6,9 @@ import { hasCatalog } from '@/data/catalog';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
 import { syncAll } from '@/sync/syncAll';
+import { SyncContext } from '@/ui/SyncContext';
 
 import { CatalogGate } from './CatalogGate';
-import { SyncContext } from './SyncContext';
 
 /**
  * Prévient quand une nouvelle tentative a des chances de réussir : retour du
@@ -48,13 +48,18 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
   const [hadCatalogAtStart] = useState(() => hasCatalog(db));
   const catalogReady = useRef(hadCatalogAtStart);
 
-  // Une seule synchronisation à la fois ; un appel pendant qu'elle tourne la rejoint.
+  // Une seule synchronisation à la fois. Une vérification ordinaire demandée
+  // pendant qu'elle tourne la rejoint ; un tirer-pour-rafraîchir attend sa fin
+  // puis relance une mise à jour forcée.
   // Les échecs sont déjà notés dans source_state (écran « État des sources », #40).
   const running = useRef<Promise<void> | null>(null);
   const synchronize = useCallback(
-    (refresh: boolean): Promise<void> => {
+    function synchronize(refresh: boolean): Promise<void> {
       if (!catalogReady.current) return Promise.resolve();
-      running.current ??= syncAll(deps, { refresh })
+      if (running.current) {
+        return refresh ? running.current.then(() => synchronize(true)) : running.current;
+      }
+      running.current = syncAll(deps, { refresh })
         .then(() => undefined)
         .finally(() => {
           running.current = null;

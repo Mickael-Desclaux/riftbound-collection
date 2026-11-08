@@ -5,18 +5,10 @@ import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
 import type { Catalog, Expansion } from '@/domain/catalog';
 
 import type { AppDatabase } from './database';
+import { chunks } from './chunks';
 import { card, expansion, printing } from './schema';
 
-/** Lignes par requête, pour rester loin de la limite de paramètres de SQLite. */
-const CHUNK = 100;
-
 type Transaction = Parameters<Parameters<AppDatabase['transaction']>[0]>[0];
-
-function chunks<T>(items: T[]): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < items.length; i += CHUNK) result.push(items.slice(i, i + CHUNK));
-  return result;
-}
 
 /** Insère les lignes, ou met à jour les colonnes données si la clé existe déjà. */
 function upsertAll<T extends SQLiteTable>(

@@ -141,7 +141,7 @@ describe('syncCatalog', () => {
     const shrunk = { ...page2, total_cards: 5, data: page2.data.slice(0, 1) };
     const { fetch } = fakeFetch({ ...rifthunt, [pageUrl(2)]: { body: shrunk } });
 
-    await syncCatalog({ db, fetch, now: at('2026-11-09T10:00:00Z') }, { force: true });
+    await syncCatalog({ db, fetch, now: at('2026-11-09T10:00:00Z') }, { redownload: true });
 
     expect({
       collection: db.select().from(collectionEntry).all(),
@@ -169,7 +169,7 @@ describe('syncCatalog', () => {
       [pageUrl(2)]: { body: { ...page2, total_cards: 8 } },
     });
 
-    await syncCatalog({ db, fetch, now: at('2026-11-09T10:00:00Z') }, { force: true });
+    await syncCatalog({ db, fetch, now: at('2026-11-09T10:00:00Z') }, { redownload: true });
 
     const codes = db.select({ code: printing.printingCode }).from(printing).all();
     expect(codes.map((row) => row.code)).toContain('OPP-017-024-metal');
@@ -206,7 +206,7 @@ describe('syncCatalog', () => {
 
     const outcome = await syncCatalog(
       { db, fetch, now: at('2026-11-08T12:00:00Z') },
-      { checkNow: true },
+      { refresh: true },
     );
 
     expect(outcome).toBe('unchanged');

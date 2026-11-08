@@ -18,24 +18,30 @@ export function hasPendingError(state: SourceState | undefined): boolean {
   return !state.lastSuccessAt || Date.parse(state.lastErrorAt) >= Date.parse(state.lastSuccessAt);
 }
 
-/**
- * Exécute une étape et note son échec dans `source_state` ; la réussite est
- * notée par l'appelant (avec `Last-Modified` s'il y a lieu) ou ici par défaut.
- */
-export async function recorded<T>(
+/** Exécute une étape et note son échec dans `source_state` (sa réussite reste à noter). */
+export async function failuresRecorded<T>(
   db: AppDatabase,
   source: SourceId,
   at: Date,
   step: () => Promise<T>,
-  { recordSuccess = true }: { recordSuccess?: boolean } = {},
 ): Promise<T> {
   try {
-    const result = await step();
-    if (recordSuccess) recordSourceSuccess(db, source, at.toISOString());
-    return result;
+    return await step();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     recordSourceFailure(db, source, at.toISOString(), message);
     throw error;
   }
+}
+
+/** Exécute une étape et note sa réussite ou son échec dans `source_state`. */
+export async function recorded<T>(
+  db: AppDatabase,
+  source: SourceId,
+  at: Date,
+  step: () => Promise<T>,
+): Promise<T> {
+  const result = await failuresRecorded(db, source, at, step);
+  recordSourceSuccess(db, source, at.toISOString());
+  return result;
 }

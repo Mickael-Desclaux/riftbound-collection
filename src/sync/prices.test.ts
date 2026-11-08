@@ -106,7 +106,7 @@ describe('syncTcgplayerPrices', () => {
     const before = records(db);
     const { fetch } = fakeFetch(pricesResponse());
 
-    await syncTcgplayerPrices({ db, fetch, now: at('2026-11-08T18:00:00Z') }, { force: true });
+    await syncTcgplayerPrices({ db, fetch, now: at('2026-11-08T18:00:00Z') }, { refresh: true });
 
     expect(records(db)).toEqual(before);
   });
@@ -162,5 +162,28 @@ describe('syncTcgplayerPrices', () => {
     expect(
       await syncTcgplayerPrices({ db, fetch: retry.fetch, now: at('2026-11-08T18:05:00Z') }),
     ).toBe('refreshed');
+  });
+
+  it('retélécharge tout après un changement de Catalogue, pour donner un prix aux nouvelles Versions', async () => {
+    const db = await pricedDatabase();
+    await syncCatalog(
+      { db, fetch: fakeFetch(rifthuntResponses).fetch, now: at('2026-11-08T12:00:00Z') },
+      { redownload: true },
+    );
+    const { fetch, requests } = fakeFetch(pricesResponse());
+
+    await syncTcgplayerPrices({ db, fetch, now: at('2026-11-08T12:00:00Z') }, { refresh: true });
+
+    expect(requests[0]?.headers['if-modified-since']).toBeUndefined();
+  });
+
+  it('ne bloque pas sur un produit répété dans le flux', async () => {
+    const db = await catalogDatabase();
+    const repeated = { ...prices, prices: [...prices.prices, prices.prices[0]] };
+    const { fetch } = fakeFetch(pricesResponse(repeated));
+
+    await expect(syncTcgplayerPrices({ db, fetch, now: at('2026-11-08T11:00:00Z') })).resolves.toBe(
+      'refreshed',
+    );
   });
 });
