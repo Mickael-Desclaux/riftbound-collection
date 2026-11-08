@@ -7,4 +7,4 @@ Nous l'avons choisi pour qu'une Sauvegarde reste lisible et valable même si une
 ## Conséquences
 
 - Pas d'intégrité référentielle entre les deux familles. Une ligne de Collection peut viser un Code de version absent du Catalogue : l'interface l'affiche comme « version inconnue », elle ne la supprime pas.
-- Le calcul du Code de version (préfixe d'Extension, numéro avec suffixe, vague des promos OPP, suffixe d'édition `metal` / `top8` / `champion`) est une règle métier critique. Elle doit être déterministe et testée : la changer impose une migration des Données précieuses.
+- Le calcul du Code de version (préfixe d'Extension, numéro avec suffixe, vague des promos OPP, PR et JDG, suffixe d'édition `metal` / `top8` / `champion`) est une règle métier critique. Elle doit être déterministe et testée : la changer impose une migration des Données précieuses.

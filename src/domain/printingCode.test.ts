@@ -42,6 +42,18 @@ describe('printingCodeOf', () => {
     ).toBe('OPP-001-298');
   });
 
+  it.each([
+    ['pr', '036a', 'pr-036a-298', 'PR-036a-298'],
+    ['jdg', '111', 'jdg-111-298', 'JDG-111-298'],
+  ])(
+    'ajoute aussi la vague aux autres Extensions promo à plusieurs vagues : %s-%s',
+    (expansionCode, collectorNumber, riftboundId, expected) => {
+      expect(printingCodeOf({ expansionCode, collectorNumber, riftboundId, name: 'Promo' })).toBe(
+        expected,
+      );
+    },
+  );
+
   it("n'ajoute rien quand une Version OPP n'a pas de vague (runes)", () => {
     expect(
       printingCodeOf({
@@ -52,6 +64,15 @@ describe('printingCodeOf', () => {
       }),
     ).toBe('OPP-r04b');
   });
+
+  it.each(['ogn-001-298', 'opp-001-', 'opp-001-298-x', 'opp'])(
+    'refuse un riftbound_id au format inattendu : %s',
+    (riftboundId) => {
+      expect(() =>
+        printingCodeOf({ expansionCode: 'opp', collectorNumber: '001', riftboundId, name: 'X' }),
+      ).toThrow(/riftbound_id/);
+    },
+  );
 
   it.each([
     ['opp-017-024', '017', 'Annie, Dark Child', 'OPP-017-024'],

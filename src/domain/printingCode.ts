@@ -7,22 +7,23 @@
  */
 export type PrintingCode = string & { readonly __brand: 'PrintingCode' };
 
-/** Les champs d'une Version RiftHunt qui déterminent son Code de version. */
+/** Les champs d'une Version qui déterminent son Code de version. */
 export type PrintingCodeInput = {
-  /** Code d'Extension RiftHunt (`set`), ex. `ogn`. */
+  /** Code d'Extension, ex. `ogn`. */
   expansionCode: string;
-  /** Numéro avec son suffixe (`collector_number`), ex. `030a`. */
+  /** Numéro avec son suffixe, ex. `030a`. */
   collectorNumber: string;
-  /** Identifiant Riot (`riftbound_id`), ex. `opp-017-024`. */
+  /** Identifiant Riot de la Version (`riftbound_id`), ex. `opp-017-024`. */
   riftboundId: string;
   name: string;
 };
 
 /**
- * OPP réunit plusieurs vagues de promos, chacune avec sa propre numérotation :
- * la vague (3e segment de `riftbound_id`, ex. `opp-001-298`) fait partie du code.
+ * Extensions promo qui réunissent plusieurs vagues, chacune avec sa propre
+ * numérotation : la vague (3e segment de `riftbound_id`, ex. `opp-001-298`)
+ * fait partie du code, pour qu'une nouvelle vague ne change jamais un code.
  */
-const MULTI_WAVE_EXPANSIONS = new Set(['OPP']);
+const MULTI_WAVE_EXPANSIONS = new Set(['OPP', 'PR', 'JDG']);
 
 /**
  * Éditions promo signalées seulement par une mention à la fin du nom, ex.
@@ -40,10 +41,24 @@ function editionOf(name: string): string | undefined {
   return mention === undefined ? undefined : EDITION_SUFFIXES[mention];
 }
 
+/** `riftbound_id` : `{extension}-{numéro}` ou `{extension}-{numéro}-{vague}`. */
+const RIFTBOUND_ID = /^([a-z]+)-([^-]+)(?:-(\d+))?$/;
+
+/** La vague d'une Version, ou `undefined` si son `riftbound_id` n'en a pas (runes). */
+function waveOf({ riftboundId, expansionCode }: PrintingCodeInput): string | undefined {
+  const match = RIFTBOUND_ID.exec(riftboundId);
+  if (match === null || match[1] !== expansionCode.toLowerCase()) {
+    throw new Error(
+      `riftbound_id inattendu pour une Version de l'Extension ${expansionCode} : « ${riftboundId} »`,
+    );
+  }
+  return match[3];
+}
+
 export function printingCodeOf(printing: PrintingCodeInput): PrintingCode {
   const expansion = printing.expansionCode.toUpperCase();
   const parts = [expansion, printing.collectorNumber];
-  const wave = printing.riftboundId.split('-')[2];
+  const wave = waveOf(printing);
   if (MULTI_WAVE_EXPANSIONS.has(expansion) && wave !== undefined) {
     parts.push(wave);
   }
