@@ -2,9 +2,9 @@ import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/expo-sqlite/migrator';
 
-import type { AppDatabase } from '../database';
-import migrations from '../migrations/migrations';
-import * as schema from '../schema';
+import type { AppDatabase } from '@/data/database';
+import migrations from '@/data/migrations/migrations';
+import * as schema from '@/data/schema';
 
 /** Base SQLite en mémoire pour les tests, avec les mêmes migrations que l'app. */
 export async function createTestDatabase(): Promise<{
