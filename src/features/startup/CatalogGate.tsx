@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SourceError, type OnProgress } from '@/sync/catalog';
+import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
 export type CatalogGateProps = {
@@ -81,14 +82,14 @@ export function CatalogGate({
             Le catalogue doit être téléchargé une première fois (environ 6 Mo). Le téléchargement
             reprendra tout seul dès que le réseau sera revenu.
           </Text>
-          <Button label="Réessayer" onPress={start} />
+          <Button label="Réessayer" onPress={start} variant="primary" />
         </Screen>
       );
     case 'failed':
       return (
         <Screen title="Le catalogue n’a pas pu être téléchargé">
           <Text style={styles.text}>{state.message}</Text>
-          <Button label="Réessayer" onPress={start} />
+          <Button label="Réessayer" onPress={start} variant="primary" />
           <Details text={state.details} />
         </Screen>
       );
@@ -109,14 +110,6 @@ function Screen({ title, children }: { title: string; children: ReactNode }) {
       <Text style={styles.title}>{title}</Text>
       {children}
     </View>
-  );
-}
-
-function Button({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={styles.button}>
-      <Text style={styles.buttonLabel}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -148,13 +141,6 @@ const styles = StyleSheet.create({
   },
   title: { color: colors.text, fontSize: 22, fontWeight: '700', textAlign: 'center' },
   text: { color: colors.muted, fontSize: 15, textAlign: 'center' },
-  button: {
-    backgroundColor: colors.accent,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  buttonLabel: { color: colors.background, fontSize: 16, fontWeight: '600' },
   details: { alignItems: 'center', gap: 8, alignSelf: 'stretch' },
   link: { color: colors.muted, fontSize: 14, textDecorationLine: 'underline' },
   detailsText: { color: colors.muted, fontSize: 12, fontFamily: 'monospace' },

@@ -1,16 +1,20 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+
+import type { PrintingCode } from '@/domain/printingCode';
 
 import { PrintingGrid, type GridPrinting, type PrintingGridProps } from './PrintingGrid';
 
 const jinx: GridPrinting = {
-  printingCode: 'OGN-030a',
+  printingCode: 'OGN-030a' as PrintingCode,
   name: 'Jinx, Demolitionist',
   imageSmall: 'https://images.rifthunt.com/cards/small/ogn-030a.webp',
+  imageNormal: null,
 };
 const ahri: GridPrinting = {
-  printingCode: 'OGN-303s',
+  printingCode: 'OGN-303s' as PrintingCode,
   name: 'Ahri, Nine-Tailed Fox',
   imageSmall: 'https://images.rifthunt.com/cards/small/ogn-303s.webp',
+  imageNormal: null,
 };
 
 async function setup(props: Partial<PrintingGridProps> = {}) {
@@ -55,10 +59,11 @@ describe('PrintingGrid', () => {
     expect(onClearFilters).toHaveBeenCalled();
   });
 
-  it('n’annonce pas un résultat vide avant la première lecture', async () => {
-    await setup({ items: [], pageCount: 1, loading: true });
+  it('garde la pagination visible même s’il n’y a qu’une page', async () => {
+    await setup({ pageCount: 1 });
 
-    expect(screen.queryByText('Aucune version ne correspond.')).toBeNull();
+    expect(screen.getByLabelText('Page 1')).toBeTruthy();
+    expect(screen.getByLabelText('Page suivante')).toBeDisabled();
   });
 
   it('remplace une image indisponible par un cadre, et réessaie au toucher', async () => {
@@ -71,5 +76,24 @@ describe('PrintingGrid', () => {
 
     await fireEvent.press(screen.getByText('Image indisponible · toucher pour réessayer'));
     expect(screen.getByLabelText('Image de Jinx, Demolitionist')).toBeTruthy();
+  });
+
+  it('réessaie aussi tout seul, un peu plus tard', async () => {
+    jest.useFakeTimers();
+    try {
+      await setup({ items: [jinx] });
+      await fireEvent(screen.getByLabelText('Image de Jinx, Demolitionist'), 'error', {
+        nativeEvent: { error: 'HTTP 503' },
+      });
+      expect(screen.queryByLabelText('Image de Jinx, Demolitionist')).toBeNull();
+
+      await act(async () => {
+        jest.advanceTimersByTime(5_000);
+      });
+
+      expect(screen.getByLabelText('Image de Jinx, Demolitionist')).toBeTruthy();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

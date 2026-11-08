@@ -1,19 +1,29 @@
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/ui/theme';
 
-import type { GridPrinting } from './PrintingGrid';
+import { gridImageUri, type GridPrinting } from './gridPrinting';
 
 /** Format des cartes Riftbound (largeur / hauteur). */
 export const CARD_ASPECT_RATIO = 744 / 1039;
 
+/** Nouvelles tentatives automatiques d'une image indisponible, espacées de 5 s, 10 s, 15 s. */
+const AUTO_RETRIES = 3;
+const RETRY_DELAY_MS = 5_000;
+
 /** Une case de grille : image, nom et Code de version. */
 export function PrintingTile({ printing }: { printing: GridPrinting }) {
+  const uri = gridImageUri(printing);
   return (
-    <View style={styles.tile}>
-      <PrintingImage printing={printing} />
+    <View
+      accessible
+      accessibilityLabel={`${printing.name}, ${printing.printingCode}`}
+      style={styles.tile}
+    >
+      {/* `key` : une nouvelle adresse d'image repart d'un état neuf. */}
+      <PrintingImage key={uri} printing={printing} uri={uri} />
       <Text numberOfLines={1} style={styles.name}>
         {printing.name}
       </Text>
@@ -24,22 +34,26 @@ export function PrintingTile({ printing }: { printing: GridPrinting }) {
 
 /**
  * Image de la Version, chargée et mise en cache disque par expo-image. Si elle
- * est indisponible : un cadre avec le nom et le code ; un toucher relance.
+ * est indisponible : un cadre avec le nom et le code, une nouvelle tentative
+ * automatique un peu plus tard, et un toucher relance tout de suite (spec § 6).
  */
-function PrintingImage({ printing }: { printing: GridPrinting }) {
-  const uri = printing.imageNormal ?? printing.imageSmall;
+function PrintingImage({ printing, uri }: { printing: GridPrinting; uri: string | null }) {
+  const [failures, setFailures] = useState(0);
   const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!failed || failures > AUTO_RETRIES) return;
+    const timer = setTimeout(() => setFailed(false), RETRY_DELAY_MS * failures);
+    return () => clearTimeout(timer);
+  }, [failed, failures]);
 
   if (uri === null || failed) {
     return (
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={`Réessayer l'image de ${printing.name}`}
         disabled={uri === null}
-        onPress={() => {
-          setFailed(false);
-          setAttempt(attempt + 1);
-        }}
+        onPress={() => setFailed(false)}
         style={[styles.image, styles.frame]}
       >
         <Text style={styles.frameName}>{printing.name}</Text>
@@ -52,13 +66,17 @@ function PrintingImage({ printing }: { printing: GridPrinting }) {
   }
   return (
     <Image
-      key={attempt}
+      // Remonter l'image relance son chargement.
+      key={failures}
       accessibilityLabel={`Image de ${printing.name}`}
       source={{ uri }}
       cachePolicy="disk"
       contentFit="cover"
       transition={150}
-      onError={() => setFailed(true)}
+      onError={() => {
+        setFailures(failures + 1);
+        setFailed(true);
+      }}
       style={styles.image}
     />
   );

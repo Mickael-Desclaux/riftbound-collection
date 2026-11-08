@@ -1,13 +1,13 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { paginationItems } from '@/domain/pagination';
+import { controlStyles } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
 type Props = { page: number; pageCount: number; onPageChange: (page: number) => void };
 
 /** Pagination numérotée : ‹ 1 … 4 5 6 … 72 ›. */
 export function Pagination({ page, pageCount, onPageChange }: Props) {
-  if (pageCount <= 1) return null;
   return (
     <View style={styles.row}>
       <PageButton
@@ -72,18 +72,16 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   button: {
+    ...controlStyles.idle,
     minWidth: 36,
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
   },
-  current: { backgroundColor: colors.accent, borderColor: colors.accent },
+  current: controlStyles.selected,
   disabled: { opacity: 0.35 },
   label: { color: colors.text, fontSize: 15 },
-  currentLabel: { color: colors.background, fontWeight: '700' },
+  currentLabel: controlStyles.selectedLabel,
   gap: { color: colors.muted, paddingHorizontal: 4 },
 });

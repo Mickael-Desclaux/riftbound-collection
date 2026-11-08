@@ -1,46 +1,59 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { selectCatalogCount, selectCatalogPage, selectExpansionChips } from '@/data/catalogGrid';
 import { useDatabase } from '@/data/DatabaseProvider';
+import { useReactiveQuery } from '@/data/useReactiveQuery';
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '@/domain/catalogFilters';
 import { pageCount } from '@/domain/pagination';
+import { Chip } from '@/ui/controls';
+import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { colors } from '@/ui/theme';
 
 const formatCount = new Intl.NumberFormat('fr-FR').format;
+
+/** Tables lues par la grille du Catalogue (la requête les joint). */
+const CATALOG_TABLES = ['printing', 'card', 'expansion'];
 
 /** Onglet Catalogue : toutes les Versions, avec recherche, puces d'Extension et pagination. */
 export function CatalogScreen() {
   const db = useDatabase();
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_CATALOG_FILTERS);
   const [page, setPage] = useState(1);
-  const filtersKey = JSON.stringify(filters);
 
-  const total = useLiveQuery(selectCatalogCount(db, filters), [filtersKey]).data[0]?.count ?? 0;
+  const total = useReactiveQuery(
+    () => selectCatalogCount(db, filters).get()?.count ?? 0,
+    [db, filters],
+    CATALOG_TABLES,
+  );
   const pages = pageCount(total);
-  // Une page qui n'existe plus (le Catalogue a rétréci) ramène à la dernière.
+  // Le Catalogue a rétréci sous la page courante : on revient à la dernière page.
+  if (page > pages) setPage(pages);
   const currentPage = Math.min(page, pages);
-  const printings = useLiveQuery(selectCatalogPage(db, filters, currentPage), [
-    filtersKey,
-    currentPage,
-  ]);
-  const chips = useLiveQuery(selectExpansionChips(db, filters.showPromo), [filters.showPromo]).data;
+
+  const printings = useReactiveQuery(
+    () => selectCatalogPage(db, filters, currentPage).all(),
+    [db, filters, currentPage],
+    CATALOG_TABLES,
+  );
+  const chips = useReactiveQuery(
+    () => selectExpansionChips(db, filters.showPromo).all(),
+    [db, filters.showPromo],
+    ['expansion'],
+  );
 
   // Préchargement des images de la page suivante (spec § 6).
   useEffect(() => {
     if (currentPage >= pages) return;
     const next = selectCatalogPage(db, filters, currentPage + 1).all();
-    const urls = next.map((p) => p.imageNormal ?? p.imageSmall).filter((url) => url !== null);
+    const urls = next.map(gridImageUri).filter((url) => url !== null);
     Image.prefetch(urls, 'disk').catch(() => {
       // Le préchargement n'est qu'une aide : l'image sera chargée à l'affichage.
     });
-    // `filtersKey` résume `filters`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db, filtersKey, currentPage, pages]);
+  }, [db, filters, currentPage, pages]);
 
   const updateFilters = (change: Partial<CatalogFilters>) => {
     setFilters({ ...filters, ...change });
@@ -58,8 +71,7 @@ export function CatalogScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <PrintingGrid
-        items={printings.data}
-        loading={printings.updatedAt === undefined}
+        items={printings}
         page={currentPage}
         pageCount={pages}
         onPageChange={setPage}
@@ -107,27 +119,6 @@ export function CatalogScreen() {
   );
 }
 
-function Chip({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={[styles.chip, selected && styles.chipSelected]}
-    >
-      <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: {
@@ -148,16 +139,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   chips: { gap: 6 },
-  chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-  },
-  chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipLabel: { color: colors.text, fontSize: 13 },
-  chipLabelSelected: { color: colors.background, fontWeight: '600' },
   count: { color: colors.muted, fontSize: 13, paddingBottom: 8 },
 });

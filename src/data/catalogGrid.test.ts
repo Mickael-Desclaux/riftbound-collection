@@ -1,4 +1,5 @@
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '@/domain/catalogFilters';
+import type { PrintingCode } from '@/domain/printingCode';
 
 import { replaceCatalog } from './catalog';
 import { selectCatalogCount, selectCatalogPage, selectExpansionChips } from './catalogGrid';
@@ -47,7 +48,7 @@ describe('selectCatalogPage', () => {
 
     expect(page).toHaveLength(24);
     expect(codes(page).slice(0, 3)).toEqual(['OGN-001', 'OGN-002', 'OGN-003']);
-    expect(page[0]).toMatchObject({ name: 'Unit 1', expansionCode: 'OGN', collectorNumber: '001' });
+    expect(page[0]).toMatchObject({ printingCode: 'OGN-001', name: 'Unit 1' });
   });
 
   it('cherche par nom de Carte, sans tenir compte de la casse', async () => {
@@ -104,6 +105,27 @@ describe('selectCatalogPage', () => {
       'SFD-002',
       'SFD-003',
     ]);
+  });
+});
+
+describe('selectCatalogPage, départage', () => {
+  it('ordonne les Versions qui partagent un numéro par leur Code de version', async () => {
+    const { db } = await createTestDatabase();
+    const wave = (n: string, riftboundWave: string, name: string) => ({
+      ...printingOf('OPP', n, name),
+      printingCode: `OPP-${n}-${riftboundWave}` as PrintingCode,
+    });
+    replaceCatalog(
+      db,
+      catalogOf(
+        [expansionOf('OPP', { isPromo: true })],
+        [wave('017', '298', 'Zed'), wave('017', '024', 'Annie'), wave('017', '166', 'Morgana')],
+      ),
+    );
+
+    const page = selectCatalogPage(db, filters({ showPromo: true }), 1).all();
+
+    expect(codes(page)).toEqual(['OPP-017-024', 'OPP-017-166', 'OPP-017-298']);
   });
 });
 

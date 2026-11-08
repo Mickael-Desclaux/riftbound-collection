@@ -1,18 +1,15 @@
 import { useEffect, useRef, type ReactElement } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+
+import { Button } from '@/ui/controls';
 
 import { colors } from '@/ui/theme';
 
+import type { GridPrinting } from './gridPrinting';
 import { Pagination } from './Pagination';
 import { PrintingTile } from './PrintingTile';
 
-/** Ce qu'une case de grille affiche. */
-export type GridPrinting = {
-  printingCode: string;
-  name: string;
-  imageSmall: string | null;
-  imageNormal?: string | null;
-};
+export type { GridPrinting } from './gridPrinting';
 
 export type PrintingGridProps = {
   items: GridPrinting[];
@@ -20,8 +17,6 @@ export type PrintingGridProps = {
   pageCount: number;
   onPageChange: (page: number) => void;
   onClearFilters: () => void;
-  /** Vrai tant que la première lecture n'est pas arrivée : rien n'est affiché comme « vide ». */
-  loading?: boolean;
   /** Affiché au-dessus de la grille (recherche, puces, compteur…). */
   header?: ReactElement;
 };
@@ -36,7 +31,6 @@ export function PrintingGrid({
   pageCount,
   onPageChange,
   onClearFilters,
-  loading = false,
   header,
 }: PrintingGridProps) {
   const list = useRef<FlatList<GridPrinting>>(null);
@@ -56,7 +50,7 @@ export function PrintingGrid({
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.content}
         renderItem={({ item }) => <PrintingTile printing={item} />}
-        ListEmptyComponent={loading ? undefined : <EmptyResult onClearFilters={onClearFilters} />}
+        ListEmptyComponent={<EmptyResult onClearFilters={onClearFilters} />}
         ListFooterComponent={
           <Pagination page={page} pageCount={pageCount} onPageChange={onPageChange} />
         }
@@ -69,9 +63,7 @@ function EmptyResult({ onClearFilters }: { onClearFilters: () => void }) {
   return (
     <View style={styles.empty}>
       <Text style={styles.emptyText}>Aucune version ne correspond.</Text>
-      <Pressable accessibilityRole="button" onPress={onClearFilters} style={styles.button}>
-        <Text style={styles.buttonLabel}>Effacer les filtres</Text>
-      </Pressable>
+      <Button label="Effacer les filtres" onPress={onClearFilters} />
     </View>
   );
 }
@@ -82,13 +74,4 @@ const styles = StyleSheet.create({
   row: { gap: 12 },
   empty: { alignItems: 'center', gap: 12, paddingVertical: 48 },
   emptyText: { color: colors.muted, fontSize: 15 },
-  button: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  buttonLabel: { color: colors.text, fontSize: 15 },
 });

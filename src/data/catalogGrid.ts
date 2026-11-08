@@ -1,6 +1,7 @@
 /**
- * Requêtes des grilles de Versions (Catalogue, puis Collection et Souhaits).
- * Elles renvoient des requêtes Drizzle, à exécuter ou à passer à `useLiveQuery`.
+ * Requêtes des grilles de Versions. Elles renvoient des requêtes Drizzle, à
+ * exécuter avec `.all()` / `.get()` (ou via `useReactiveQuery` dans l'interface).
+ * Collection et Souhaits (#33, #35) y ajouteront leurs propres conditions.
  */
 import { and, asc, count, eq, inArray, or, sql, type SQL } from 'drizzle-orm';
 
@@ -10,15 +11,16 @@ import { PAGE_SIZE } from '@/domain/pagination';
 import type { AppDatabase } from './database';
 import { card, expansion, printing } from './schema';
 
-/** Ce qu'une case de grille affiche. */
-export const gridPrintingColumns = {
+/** Ce qu'une case de grille affiche (voir `GridPrinting` dans `ui/printing-grid`). */
+const gridPrintingColumns = {
   printingCode: printing.printingCode,
   name: card.name,
-  expansionCode: printing.expansionCode,
-  collectorNumber: printing.collectorNumber,
   imageSmall: printing.imageSmall,
   imageNormal: printing.imageNormal,
 };
+
+/** Ordre de sortie des Extensions ; celles sans date (souvent les promos) en dernier. */
+const expansionOrder = [sql`${expansion.releasedAt} IS NULL`, asc(expansion.releasedAt)];
 
 /** Motif LIKE qui cherche `text` tel quel (`%` et `_` ne sont pas des jokers). */
 function containing(text: string): string {
@@ -45,25 +47,26 @@ function conditions(filters: CatalogFilters): SQL | undefined {
   return and(...where);
 }
 
-/** Une page de Versions, dans l'ordre de sortie des Extensions puis des numéros. */
+/**
+ * Une page de Versions, dans l'ordre de sortie des Extensions puis des numéros.
+ * Le Code de version départage les Versions qui partagent un numéro (vagues OPP) :
+ * sans lui, une Version pourrait apparaître sur deux pages et une autre sur aucune.
+ */
 export function selectCatalogPage(db: AppDatabase, filters: CatalogFilters, page: number) {
-  return (
-    db
-      .select(gridPrintingColumns)
-      .from(printing)
-      .innerJoin(card, eq(card.oracleId, printing.cardOracleId))
-      .innerJoin(expansion, eq(expansion.code, printing.expansionCode))
-      .where(conditions(filters))
-      // Les Extensions sans date de sortie (souvent les promos) passent en dernier.
-      .orderBy(
-        sql`${expansion.releasedAt} IS NULL`,
-        asc(expansion.releasedAt),
-        asc(printing.expansionCode),
-        asc(printing.collectorNumber),
-      )
-      .limit(PAGE_SIZE)
-      .offset((page - 1) * PAGE_SIZE)
-  );
+  return db
+    .select(gridPrintingColumns)
+    .from(printing)
+    .innerJoin(card, eq(card.oracleId, printing.cardOracleId))
+    .innerJoin(expansion, eq(expansion.code, printing.expansionCode))
+    .where(conditions(filters))
+    .orderBy(
+      ...expansionOrder,
+      asc(printing.expansionCode),
+      asc(printing.collectorNumber),
+      asc(printing.printingCode),
+    )
+    .limit(PAGE_SIZE)
+    .offset((page - 1) * PAGE_SIZE);
 }
 
 /** Nombre de Versions qui correspondent aux filtres (compteur « N versions »). */
@@ -82,5 +85,5 @@ export function selectExpansionChips(db: AppDatabase, showPromo: boolean) {
     .select({ code: expansion.code, name: expansion.name })
     .from(expansion)
     .where(showPromo ? undefined : eq(expansion.isPromo, false))
-    .orderBy(sql`${expansion.releasedAt} IS NULL`, asc(expansion.releasedAt), asc(expansion.code));
+    .orderBy(...expansionOrder, asc(expansion.code));
 }
