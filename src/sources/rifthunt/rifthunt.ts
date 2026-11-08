@@ -3,17 +3,18 @@ import { z } from 'zod';
 
 import {
   isPromoExpansion,
+  printingVariantOf,
   type Card,
   type Expansion,
   type Printing,
-  type PrintingVariant,
 } from '@/domain/catalog';
-import { editionOf, printingCodeOf } from '@/domain/printingCode';
-import { fetchJson, SourceError } from '@/sources/http';
+import { printingCodeOf } from '@/domain/printingCode';
+import { fetchJson, SourceError, type Fetch } from '@/sources/http';
 
 const API = 'https://api.rifthunt.com';
+export const RIFTHUNT_SETS_URL = `${API}/sets`;
 
-const setsSchema = z.object({
+const rifthuntSetsSchema = z.object({
   object: z.literal('list'),
   data: z.array(
     z.object({
@@ -25,14 +26,14 @@ const setsSchema = z.object({
   ),
 });
 
-export async function fetchExpansions(fetch: typeof globalThis.fetch): Promise<Expansion[]> {
-  const sets = await fetchJson(fetch, `${API}/sets`, setsSchema);
-  return sets.data.map((set) => ({
-    code: set.code.toUpperCase(),
-    name: set.name,
-    releasedAt: set.release_date === null ? null : set.release_date.slice(0, 10),
-    isPromo: isPromoExpansion(set.code),
-    cardCount: set.card_count,
+export async function fetchExpansions(fetch: Fetch): Promise<Expansion[]> {
+  const response = await fetchJson(fetch, RIFTHUNT_SETS_URL, rifthuntSetsSchema);
+  return response.data.map((raw) => ({
+    code: raw.code.toUpperCase(),
+    name: raw.name,
+    releasedAt: raw.release_date === null ? null : raw.release_date.slice(0, 10),
+    isPromo: isPromoExpansion(raw.code),
+    cardCount: raw.card_count,
   }));
 }
 
@@ -70,26 +71,38 @@ const catalogPageSchema = z.object({
 /** Garde-fou contre une pagination qui ne finirait jamais (10 pages en 2026). */
 const MAX_PAGES = 50;
 
-const catalogPageUrl = (page: number) =>
+export const rifthuntCatalogPageUrl = (page: number) =>
   `${API}/cards/search?q=lang%3Aen&unique=prints&page=${page}`;
+
+/** Progression d'un téléchargement : Versions reçues sur le total annoncé. */
+export type OnProgress = (received: number, total: number) => void;
 
 /**
  * Télécharge le Catalogue complet, page par page.
  * `onProgress(reçues, total)` est appelé après chaque page.
  */
 export async function fetchCatalog(
-  fetch: typeof globalThis.fetch,
-  onProgress?: (received: number, total: number) => void,
+  fetch: Fetch,
+  onProgress?: OnProgress,
 ): Promise<{ cards: Card[]; printings: Printing[] }> {
   const rows: RiftHuntCard[] = [];
+  let announced = 0;
   for (let page = 1; ; page++) {
     if (page > MAX_PAGES) {
       throw new SourceError('format', 'Pagination inattendue du catalogue RiftHunt.');
     }
-    const response = await fetchJson(fetch, catalogPageUrl(page), catalogPageSchema);
+    const response = await fetchJson(fetch, rifthuntCatalogPageUrl(page), catalogPageSchema);
     rows.push(...response.data);
-    onProgress?.(rows.length, response.total_cards);
+    announced = response.total_cards;
+    onProgress?.(rows.length, announced);
     if (!response.has_more) break;
+  }
+  // Une réponse tronquée effacerait des Versions : on la refuse.
+  if (rows.length !== announced) {
+    throw new SourceError(
+      'format',
+      `Catalogue RiftHunt incomplet : ${rows.length} versions reçues sur ${announced} annoncées.`,
+    );
   }
   try {
     return { cards: cardsOf(rows), printings: rows.map(printingOf) };
@@ -127,7 +140,7 @@ function printingOf(row: RiftHuntCard): Printing {
     expansionCode: row.set.toUpperCase(),
     collectorNumber: row.collector_number,
     rarity: row.rarity,
-    variant: variantOf(row),
+    variant: printingVariantOf(row.name, row.variant),
     finishes: row.finishes ?? [],
     imageSmall: row.images.small ?? null,
     imageNormal: row.images.normal ?? null,
@@ -136,10 +149,4 @@ function printingOf(row: RiftHuntCard): Printing {
     rifthuntPrintingId: row.printing_id,
     tcgId: row.tcg_id === null ? null : Number(row.tcg_id),
   };
-}
-
-/** Les Versions Metal ne sont signalées que par leur nom (« … (Metal) »). */
-function variantOf(row: RiftHuntCard): PrintingVariant {
-  if (editionOf(row.name) === 'metal') return 'metal';
-  return row.variant ?? 'normal';
 }

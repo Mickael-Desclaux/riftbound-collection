@@ -1,7 +1,7 @@
 /** Le Catalogue, tel que l'app le manipule, quelle que soit la source. */
 import type { IsoDate } from './dates';
 import type { Finish } from './price';
-import type { PrintingCode } from './printingCode';
+import { editionOf, type PrintingCode } from './printingCode';
 
 /** Extensions promo, masquées par défaut dans le Catalogue (spec § 1). */
 const PROMO_EXPANSIONS = new Set(['OPP', 'PR', 'JDG', 'OGS', 'SGN', 'RWB']);
@@ -32,6 +32,18 @@ export type Card = {
 /** Le critère « version » des filtres (spec § 2.1). */
 export type PrintingVariant =
   'normal' | 'alternate' | 'overnumbered' | 'signature' | 'showcase' | 'metal';
+
+/**
+ * Le critère « version » d'une Version. Les Versions Metal ne sont signalées
+ * que par leur nom (« … (Metal) ») ; les autres variantes viennent de la source.
+ */
+export function printingVariantOf(
+  name: string,
+  sourceVariant: Exclude<PrintingVariant, 'normal' | 'metal'> | null,
+): PrintingVariant {
+  if (editionOf(name) === 'metal') return 'metal';
+  return sourceVariant ?? 'normal';
+}
 
 export type Printing = {
   printingCode: PrintingCode;

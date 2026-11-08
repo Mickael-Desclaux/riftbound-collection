@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import { SourceError } from '@/sources/http';
+import { SourceError } from '@/sync/catalog';
 
 import { CatalogGate, type CatalogGateProps } from './CatalogGate';
 

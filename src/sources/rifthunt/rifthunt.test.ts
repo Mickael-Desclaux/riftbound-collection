@@ -1,14 +1,9 @@
 import { SourceError } from '@/sources/http';
 import { fakeFetch } from '@/sources/testing/fakeFetch';
 
-import page1 from './__fixtures__/cards-page-1.json';
-import page2 from './__fixtures__/cards-page-2.json';
-import sets from './__fixtures__/sets.json';
 import { fetchCatalog, fetchExpansions } from './rifthunt';
+import { page1, page2, pageUrl, sets, SETS_URL } from './testing/rifthuntResponses';
 
-const SETS_URL = 'https://api.rifthunt.com/sets';
-const pageUrl = (page: number) =>
-  `https://api.rifthunt.com/cards/search?q=lang%3Aen&unique=prints&page=${page}`;
 const catalogResponses = { [pageUrl(1)]: { body: page1 }, [pageUrl(2)]: { body: page2 } };
 
 describe('fetchExpansions', () => {
@@ -121,6 +116,16 @@ describe('fetchCatalog', () => {
     await expect(fetchCatalog(fetch)).rejects.toMatchObject({
       kind: 'format',
       message: 'Format inattendu dans le catalogue RiftHunt.',
+    });
+  });
+
+  it('refuse un Catalogue incomplet', async () => {
+    const truncated = { ...page2, data: page2.data.slice(0, 2) };
+    const { fetch } = fakeFetch({ ...catalogResponses, [pageUrl(2)]: { body: truncated } });
+
+    await expect(fetchCatalog(fetch)).rejects.toMatchObject({
+      kind: 'format',
+      message: 'Catalogue RiftHunt incomplet : 6 versions reçues sur 9 annoncées.',
     });
   });
 });

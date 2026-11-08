@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { SourceError } from '@/sources/http';
+import { SourceError, type OnProgress } from '@/sync/catalog';
 import { colors } from '@/ui/theme';
 
 export type CatalogGateProps = {
   /** Le Catalogue est-il déjà enregistré sur l'appareil ? */
   hasCatalog: boolean;
   /** Lance le premier téléchargement du Catalogue. */
-  runFirstSync: (onProgress: (received: number, total: number) => void) => Promise<unknown>;
+  runFirstSync: (onProgress: OnProgress) => Promise<unknown>;
   /** Prévient quand le réseau revient ; renvoie de quoi se désabonner. */
   subscribeToOnline: (listener: () => void) => () => void;
   children: ReactNode;

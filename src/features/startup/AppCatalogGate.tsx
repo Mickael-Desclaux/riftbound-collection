@@ -2,23 +2,37 @@ import { addNetworkStateListener } from 'expo-network';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 
-import { storedExpansions } from '@/data/catalog';
+import { hasCatalog } from '@/data/catalog';
 import { useDatabase } from '@/data/DatabaseProvider';
-import { syncCatalog, type SyncDeps } from '@/sync/catalog';
+import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
 
 import { CatalogGate } from './CatalogGate';
 
+/**
+ * Prévient quand une nouvelle tentative a des chances de réussir : retour du
+ * réseau, ou retour dans l'app (le réseau a pu revenir pendant qu'elle était
+ * en arrière-plan, sans événement).
+ */
 function subscribeToOnline(listener: () => void): () => void {
-  const subscription = addNetworkStateListener(({ isConnected, isInternetReachable }) => {
+  const network = addNetworkStateListener(({ isConnected, isInternetReachable }) => {
     if (isInternetReachable ?? isConnected) listener();
   });
-  return () => subscription.remove();
+  const appState = AppState.addEventListener('change', (state) => {
+    if (state === 'active') listener();
+  });
+  return () => {
+    network.remove();
+    appState.remove();
+  };
 }
 
 /**
- * Branche `CatalogGate` sur l'app : premier téléchargement si le Catalogue
- * manque, puis vérification à l'ouverture et à chaque retour dans l'app
- * (les échecs sont notés dans `source_state` et réessayés la fois suivante).
+ * Branche `CatalogGate` sur l'app. C'est ici, à la racine, que `fetch` et
+ * l'horloge sont créés puis injectés dans `sync/`.
+ *
+ * - Catalogue absent : premier téléchargement, piloté par `CatalogGate`.
+ * - Catalogue présent : vérification à l'ouverture et à chaque retour dans
+ *   l'app. Les échecs sont notés dans `source_state` et réessayés la fois suivante.
  */
 export function AppCatalogGate({ children }: { children: ReactNode }) {
   const db = useDatabase();
@@ -26,38 +40,42 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
     () => ({ db, fetch: globalThis.fetch, now: () => new Date() }),
     [db],
   );
-  const [hasCatalog] = useState(() => storedExpansions(db).length > 0);
-  const inFlight = useRef<Promise<unknown> | null>(null);
-
-  const runOnce = useCallback((run: () => Promise<unknown>) => {
-    inFlight.current ??= run().finally(() => {
-      inFlight.current = null;
-    });
-    return inFlight.current;
-  }, []);
+  // Lu une seule fois au démarrage : l'écran n'a pas à réagir à ce changement,
+  // c'est `CatalogGate` qui passe à l'app à la fin du premier téléchargement.
+  const [hadCatalogAtStart] = useState(() => hasCatalog(db));
+  const catalogReady = useRef(hadCatalogAtStart);
 
   useEffect(() => {
+    let refreshing = false;
     const refresh = () => {
-      runOnce(() => syncCatalog(deps)).catch(() => {
-        // Déjà noté dans source_state ; l'écran « État des sources » (#40) l'affichera.
-      });
+      if (!catalogReady.current || refreshing) return;
+      refreshing = true;
+      syncCatalog(deps)
+        .catch(() => {
+          // Déjà noté dans source_state ; l'écran « État des sources » (#40) l'affichera.
+        })
+        .finally(() => {
+          refreshing = false;
+        });
     };
-    if (hasCatalog) refresh();
+    refresh();
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') refresh();
     });
     return () => subscription.remove();
-  }, [deps, hasCatalog, runOnce]);
+  }, [deps]);
 
   const runFirstSync = useCallback(
-    (onProgress: (received: number, total: number) => void) =>
-      runOnce(() => syncCatalog(deps, { onProgress })),
-    [deps, runOnce],
+    async (onProgress: OnProgress) => {
+      await syncCatalog(deps, { onProgress });
+      catalogReady.current = true;
+    },
+    [deps],
   );
 
   return (
     <CatalogGate
-      hasCatalog={hasCatalog}
+      hasCatalog={hadCatalogAtStart}
       runFirstSync={runFirstSync}
       subscribeToOnline={subscribeToOnline}
     >

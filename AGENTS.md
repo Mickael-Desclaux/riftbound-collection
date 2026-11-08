@@ -21,7 +21,7 @@ src/
 ```
 
 - L'interface lit SQLite par requêtes réactives et ne fait **jamais** d'appel réseau.
-- `fetch`, la base de données et l'horloge sont **injectés**, jamais créés dans le code métier.
+- `fetch`, la base de données et l'horloge sont **injectés**, jamais créés dans le code métier. Ils ne sont créés qu'à la racine de composition, `src/features/startup/` (`AppDatabaseProvider`, `AppCatalogGate`).
 - Données de référence (reconstructibles) et Données précieuses (jamais effacées) sont séparées ; les Données précieuses désignent les Versions par leur Code de version (ADR 0001).
 - On ne « devine » jamais le format d'une réponse externe : un format inattendu fait échouer cette source avec un message clair.
 - Import avec l'alias `@/` (ex. `import { colors } from '@/ui/theme'`).

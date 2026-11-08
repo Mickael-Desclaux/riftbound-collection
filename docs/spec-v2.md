@@ -158,7 +158,7 @@ Les noms de tables suivent les noms de code du glossaire (code en anglais). Les 
 | Table           | Contenu                                                                                                                                                                                    |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `expansion`     | code, nom, date de sortie, `isPromo`, nombre de Versions (`card_count`)                                                                                                                    |
-| `card`          | `oracle_id` RiftHunt, nom, type, sous-type, domaines, texte                                                                                                                                |
+| `card`          | `oracle_id` RiftHunt, nom, type, sous-type (non fourni par RiftHunt : vide pour l'instant), domaines, texte                                                                                |
 | `printing`      | Code de version (clé), carte, extension, numéro, rareté, variante, finitions existantes, images (small / normal / large), artiste, `tcgId`, `printing_id` RiftHunt, `idProduct` Cardmarket |
 | `current_price` | Version × source × Finition : tous les indicateurs du jour, devise d'origine, date de publication de la source                                                                             |
 | `exchange_rate` | date, devise de départ, devise d'arrivée, taux, source (Frankfurter / Banque du Canada)                                                                                                    |
