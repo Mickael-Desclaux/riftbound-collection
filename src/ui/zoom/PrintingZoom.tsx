@@ -54,12 +54,15 @@ type Measurable = {
 } | null;
 
 type Zoom = {
-  /** Lance l'agrandissement depuis la vue `from` (l'image d'une case). */
-  zoomFrom: (from: Measurable, uri: string | null) => void;
+  /**
+   * Lance l'agrandissement depuis la vue `from` (l'image d'une case), puis
+   * appelle `open` pour ouvrir la fiche.
+   */
+  zoomFrom: (from: Measurable, uri: string | null, open: () => void) => void;
 };
 
 /** Sans fournisseur (tests, écrans hors onglets), toucher une case ouvre la fiche sans animation. */
-const ZoomContext = createContext<Zoom>({ zoomFrom: () => {} });
+const ZoomContext = createContext<Zoom>({ zoomFrom: (_from, _uri, open) => open() });
 
 export function usePrintingZoom(): Zoom {
   return useContext(ZoomContext);
@@ -81,40 +84,49 @@ export function PrintingZoomProvider({ children }: Readonly<{ children: ReactNod
   const { width: windowWidth } = useWindowDimensions();
   const { top } = useSafeAreaInsets();
   const [uri, setUri] = useState<string | null>(null);
-  const start = useSharedValue<WindowRect>({ x: 0, y: 0, width: 0, height: 0 });
-  const end = useSharedValue<WindowRect>({ x: 0, y: 0, width: 0, height: 0 });
-  const progress = useSharedValue(0);
+  // L'image volante a la taille d'arrivée ; on ne l'anime que par `transform`
+  // (déplacement et échelle), sans recalcul de mise en page à chaque image.
+  const target = detailImageRect(windowWidth, top);
+  const start = useSharedValue<WindowRect>(target);
+  const progress = useSharedValue(1);
   const opacity = useSharedValue(0);
 
   const zoomFrom = useCallback(
-    (from: Measurable, nextUri: string | null) => {
-      if (!from || !nextUri) return;
+    (from: Measurable, nextUri: string | null, open: () => void) => {
+      if (!from || !nextUri) {
+        open();
+        return;
+      }
       from.measureInWindow((x, y, width, height) => {
         setUri(nextUri);
         start.value = { x, y, width, height };
-        end.value = detailImageRect(windowWidth, top);
         progress.value = 0;
         progress.value = withTiming(1, { duration: GROW_MS });
         opacity.value = withSequence(
           withTiming(1, { duration: 0 }),
           withDelay(GROW_MS + FADE_DELAY_MS, withTiming(0, { duration: FADE_MS })),
         );
+        // La fiche, plus lourde à construire, attend que l'image ait commencé à voler.
+        requestAnimationFrame(open);
       });
     },
-    [windowWidth, top, start, end, progress, opacity],
+    [start, progress, opacity],
   );
 
   const style = useAnimatedStyle(() => {
     const p = progress.value;
     const from = start.value;
-    const to = end.value;
+    const scale = from.width / target.width;
+    // Écarts entre le centre de la case et celui de l'image de la fiche.
+    const dx = from.x + from.width / 2 - (target.x + target.width / 2);
+    const dy = from.y + from.height / 2 - (target.y + target.height / 2);
     return {
       opacity: opacity.value,
-      left: interpolate(p, [0, 1], [from.x, to.x]),
-      top: interpolate(p, [0, 1], [from.y, to.y]),
-      width: interpolate(p, [0, 1], [from.width, to.width]),
-      height: interpolate(p, [0, 1], [from.height, to.height]),
-      borderRadius: interpolate(p, [0, 1], [8, 14]),
+      transform: [
+        { translateX: interpolate(p, [0, 1], [dx, 0]) },
+        { translateY: interpolate(p, [0, 1], [dy, 0]) },
+        { scale: interpolate(p, [0, 1], [scale, 1]) },
+      ],
     };
   });
 
@@ -128,7 +140,11 @@ export function PrintingZoomProvider({ children }: Readonly<{ children: ReactNod
           <Animated.View
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
-            style={[styles.flying, style]}
+            style={[
+              styles.flying,
+              { left: target.x, top: target.y, width: target.width, height: target.height },
+              style,
+            ]}
           >
             {uri && (
               <Image
@@ -148,6 +164,7 @@ export function PrintingZoomProvider({ children }: Readonly<{ children: ReactNod
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  flying: { position: 'absolute', overflow: 'hidden' },
+  // À la taille de la fiche, ce rayon donne celui de la case une fois réduit.
+  flying: { position: 'absolute', overflow: 'hidden', borderRadius: 14 },
   image: { width: '100%', height: '100%' },
 });

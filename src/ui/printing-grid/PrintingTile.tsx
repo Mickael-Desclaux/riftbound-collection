@@ -26,10 +26,7 @@ export function PrintingTile({
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={() => {
-        zoomFrom(imageBox.current, uri);
-        onPress();
-      }}
+      onPress={() => zoomFrom(imageBox.current, uri, onPress)}
       accessibilityLabel={`${printing.name}, ${printing.printingCode}, ${
         printing.price === null ? 'prix inconnu' : price
       }`}
