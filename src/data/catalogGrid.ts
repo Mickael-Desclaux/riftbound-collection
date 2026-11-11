@@ -31,8 +31,10 @@ export function selectExpansionChips(db: AppDatabase, showPromo: boolean) {
 
 /**
  * Toutes les Versions du Catalogue, avec leur Carte et leur Extension.
- * `ownedQuantity` vaut 0 : les quantités viennent de `readOwnedQuantities`, lu à
- * part pour qu'un ✓ ne relise pas les 1 725 Versions (voir `withOwnedQuantities` dans `domain/`).
+ * `ownedQuantity` vaut 0 et `price` vaut `null` : quantités et prix sont lus à
+ * part (`readOwnedQuantities`, `readCurrentPrices`), pour qu'un ✓ ou un nouveau
+ * prix ne relise pas les 1 725 Versions (voir `withOwnedQuantities` et
+ * `withPrices` dans `domain/`).
  */
 export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
   const rank = new Map(
@@ -49,6 +51,7 @@ export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
       collectorNumber: printing.collectorNumber,
       rarity: printing.rarity,
       variant: printing.variant,
+      finishes: printing.finishes,
       type: card.type,
       domains: card.domains,
       imageSmall: printing.imageSmall,
@@ -62,6 +65,7 @@ export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
       ...row,
       expansionRank: rank.get(row.expansionCode) ?? rank.size,
       ownedQuantity: 0,
+      price: null,
     }));
 }
 

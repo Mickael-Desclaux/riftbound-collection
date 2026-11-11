@@ -1,4 +1,14 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { PrintingVariant } from '@/domain/catalog';
@@ -9,6 +19,8 @@ import {
   type CatalogFilters,
   type Ownership,
 } from '@/domain/catalogFilters';
+import type { Currency } from '@/domain/price';
+import { currencySymbol, parseAmount } from '@/domain/priceDisplay';
 import { Button, Chip } from '@/ui/controls';
 import { formatPrintingCount } from '@/ui/format';
 import { colors } from '@/ui/theme';
@@ -37,6 +49,8 @@ type Props = {
   options: FilterOptions;
   /** Nombre de Versions qui correspondent aux filtres en cours. */
   resultCount: number;
+  /** Devise de la fourchette de prix. */
+  displayCurrency: Currency;
   onChange: (filters: CatalogFilters) => void;
   onClose: () => void;
 };
@@ -56,6 +70,7 @@ export function FilterSheet({
   filters,
   options,
   resultCount,
+  displayCurrency,
   onChange,
   onClose,
 }: Readonly<Props>) {
@@ -149,6 +164,24 @@ export function FilterSheet({
               />
             ))}
           </Section>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Prix ({currencySymbol(displayCurrency)})</Text>
+            <View style={styles.priceRow}>
+              <AmountInput
+                label="Prix minimum"
+                placeholder="min"
+                value={filters.priceRange.min}
+                onChange={(min) => update({ priceRange: { ...filters.priceRange, min } })}
+              />
+              <Text style={styles.priceDash}>–</Text>
+              <AmountInput
+                label="Prix maximum"
+                placeholder="max"
+                value={filters.priceRange.max}
+                onChange={(max) => update({ priceRange: { ...filters.priceRange, max } })}
+              />
+            </View>
+          </View>
         </ScrollView>
         <View style={styles.actions}>
           <Button
@@ -163,6 +196,47 @@ export function FilterSheet({
         </View>
       </SafeAreaView>
     </Modal>
+  );
+}
+
+const amountText = (value: number | null) =>
+  value === null ? '' : String(value).replace('.', ',');
+
+/**
+ * Champ de montant : garde le texte tapé (« 12, » en cours de saisie) et ne
+ * transmet que sa valeur lue ; se remet à jour si la valeur change ailleurs
+ * (Réinitialiser, puce retirée).
+ */
+function AmountInput({
+  label,
+  placeholder,
+  value,
+  onChange,
+}: Readonly<{
+  label: string;
+  placeholder: string;
+  value: number | null;
+  onChange: (value: number | null) => void;
+}>) {
+  const [text, setText] = useState(amountText(value));
+  const [shownValue, setShownValue] = useState(value);
+  if (value !== shownValue) {
+    setShownValue(value);
+    if (parseAmount(text) !== value) setText(amountText(value));
+  }
+  return (
+    <TextInput
+      accessibilityLabel={label}
+      value={text}
+      onChangeText={(next) => {
+        setText(next);
+        onChange(parseAmount(next));
+      }}
+      placeholder={placeholder}
+      placeholderTextColor={colors.muted}
+      keyboardType="decimal-pad"
+      style={styles.amount}
+    />
   );
 }
 
@@ -193,6 +267,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  priceDash: { color: colors.muted, fontSize: 15 },
+  amount: {
+    flex: 1,
+    color: colors.text,
+    backgroundColor: colors.background,
+    borderColor: colors.line,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 15,
+  },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   switchLabel: { color: colors.text, fontSize: 15 },
   actions: {

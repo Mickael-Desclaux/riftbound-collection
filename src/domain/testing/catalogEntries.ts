@@ -16,6 +16,8 @@ export function entry(code: string, overrides: Partial<CatalogEntry> = {}): Cata
     type: 'Unit',
     domains: ['fury'],
     ownedQuantity: 0,
+    finishes: ['normal', 'foil'],
+    price: null,
     imageSmall: null,
     imageNormal: null,
     ...overrides,

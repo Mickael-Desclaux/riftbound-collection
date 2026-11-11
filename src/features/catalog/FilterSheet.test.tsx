@@ -25,6 +25,7 @@ async function setup(filters: Partial<CatalogFilters> = {}) {
       filters={{ ...DEFAULT_CATALOG_FILTERS, ...filters }}
       options={options}
       resultCount={12}
+      displayCurrency="CAD"
       onChange={onChange}
       onClose={onClose}
     />,
@@ -78,6 +79,7 @@ describe('FilterSheet', () => {
           rarities: ['showcase', 'common', 'mythic', 'rare', 'epic', 'uncommon'],
         }}
         resultCount={1}
+        displayCurrency="CAD"
         onChange={onChange}
         onClose={jest.fn()}
       />,
@@ -102,6 +104,29 @@ describe('FilterSheet', () => {
   });
 });
 
+describe('FilterSheet : fourchette de prix', () => {
+  it('lit une borne saisie à la française, dans la Devise d’affichage', async () => {
+    const { onChange } = await setup();
+
+    expect(screen.getByText(/Prix \(\$ CA\)/)).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText('Prix minimum'), '2,5');
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ priceRange: { min: 2.5, max: null } }),
+    );
+  });
+
+  it('vide la borne effacée', async () => {
+    const { onChange } = await setup({ priceRange: { min: 2, max: 10 } });
+
+    await fireEvent.changeText(screen.getByLabelText('Prix maximum'), '');
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ priceRange: { min: 2, max: null } }),
+    );
+  });
+});
+
 describe('ActiveFilterChips', () => {
   it('montre chaque filtre actif et le retire d’un toucher', async () => {
     const onChange = jest.fn();
@@ -110,11 +135,32 @@ describe('ActiveFilterChips', () => {
       expansionCodes: ['SFD'],
       variants: ['metal' as const],
     };
-    await render(<ActiveFilterChips filters={filters} options={options} onChange={onChange} />);
+    await render(
+      <ActiveFilterChips
+        filters={filters}
+        options={options}
+        displayCurrency="CAD"
+        onChange={onChange}
+      />,
+    );
 
     expect(screen.getByLabelText('Retirer le filtre Spiritforged')).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('Retirer le filtre Metal'));
 
     expect(onChange).toHaveBeenCalledWith({ ...filters, variants: [] });
+  });
+
+  it('montre la fourchette de prix dans la Devise d’affichage', async () => {
+    const filters = { ...DEFAULT_CATALOG_FILTERS, priceRange: { min: 5, max: null } };
+    await render(
+      <ActiveFilterChips
+        filters={filters}
+        options={options}
+        displayCurrency="CAD"
+        onChange={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText('Retirer le filtre ≥ 5,00\u00a0$\u00a0CA')).toBeTruthy();
   });
 });

@@ -33,6 +33,36 @@ describe('sortCatalog', () => {
     ]);
   });
 
+  describe('par prix', () => {
+    const priced = [
+      entry('OGN-001', { price: 3 }),
+      entry('OGN-002', { price: null }),
+      entry('OGN-003', { price: 0.5 }),
+      entry('OGN-004', { price: 3 }),
+      entry('OGN-005', { price: 12 }),
+    ];
+
+    it('croissant, les prix absents en dernier', () => {
+      expect(codes(sortCatalog(priced, 'priceAsc'))).toEqual([
+        'OGN-003',
+        'OGN-001',
+        'OGN-004',
+        'OGN-005',
+        'OGN-002',
+      ]);
+    });
+
+    it('décroissant, les prix absents toujours en dernier', () => {
+      expect(codes(sortCatalog(priced, 'priceDesc'))).toEqual([
+        'OGN-005',
+        'OGN-001',
+        'OGN-004',
+        'OGN-003',
+        'OGN-002',
+      ]);
+    });
+  });
+
   it('ne modifie pas la liste reçue', () => {
     const before = codes(entries);
 

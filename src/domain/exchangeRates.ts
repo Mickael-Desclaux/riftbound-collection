@@ -81,3 +81,17 @@ function latestQuote(
   }
   return found;
 }
+
+/**
+ * Le dernier taux de chaque paire. Pour convertir beaucoup de prix du jour, on
+ * réduit les taux une fois, plutôt que de parcourir tout l'historique par prix.
+ */
+export function latestRatePerPair(rates: readonly ExchangeRate[]): ExchangeRate[] {
+  const latest = new Map<string, ExchangeRate>();
+  for (const r of rates) {
+    const pair = `${r.baseCurrency}>${r.quoteCurrency}`;
+    const known = latest.get(pair);
+    if (!known || r.date > known.date) latest.set(pair, r);
+  }
+  return [...latest.values()];
+}

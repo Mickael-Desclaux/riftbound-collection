@@ -1,8 +1,8 @@
 import { useEffect, useRef, type ReactElement } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import type { Currency } from '@/domain/price';
 import { Button } from '@/ui/controls';
-
 import { colors } from '@/ui/theme';
 
 import type { GridPrinting } from './gridPrinting';
@@ -13,6 +13,8 @@ export type { GridPrinting } from './gridPrinting';
 
 export type PrintingGridProps = {
   items: GridPrinting[];
+  /** Devise des prix de `items`. */
+  displayCurrency: Currency;
   page: number;
   pageCount: number;
   onPageChange: (page: number) => void;
@@ -30,6 +32,7 @@ export type PrintingGridProps = {
  */
 export function PrintingGrid({
   items,
+  displayCurrency,
   page,
   pageCount,
   onPageChange,
@@ -65,7 +68,9 @@ export function PrintingGrid({
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.content}
-        renderItem={({ item }) => <PrintingTile printing={item} />}
+        renderItem={({ item }) => (
+          <PrintingTile printing={item} displayCurrency={displayCurrency} />
+        )}
         ListEmptyComponent={<EmptyResult onClearFilters={onClearFilters} />}
         ListFooterComponent={
           <Pagination page={page} pageCount={pageCount} onPageChange={onPageChange} />

@@ -1,4 +1,4 @@
-import { rateOnOrBefore, type ExchangeRate } from './exchangeRates';
+import { latestRatePerPair, rateOnOrBefore, type ExchangeRate } from './exchangeRates';
 
 const usd = (date: string, quoteCurrency: 'CAD' | 'EUR', rate: number): ExchangeRate => ({
   date,
@@ -81,5 +81,14 @@ describe('rateOnOrBefore', () => {
   it('ne donne rien sans taux pour l’une des deux devises', () => {
     const cadOnly = rates.filter((r) => r.quoteCurrency === 'CAD');
     expect(rateOnOrBefore(cadOnly, 'EUR', 'CAD', '2026-11-09')).toBeUndefined();
+  });
+});
+
+describe('latestRatePerPair', () => {
+  it('ne garde que le dernier taux de chaque paire', () => {
+    expect(latestRatePerPair(rates)).toEqual([
+      usd('2026-11-10', 'CAD', 1.4136),
+      usd('2026-11-10', 'EUR', 0.89174),
+    ]);
   });
 });

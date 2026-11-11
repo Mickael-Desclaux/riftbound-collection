@@ -1,9 +1,10 @@
 /** Prix du jour (Données de référence) et historique des Relevés de prix (Données précieuses). */
-import { count, eq, isNotNull, min, sql } from 'drizzle-orm';
+import { count, eq, isNotNull, max, min, sql } from 'drizzle-orm';
 
-import { toIsoDate, type IsoDate } from '@/domain/dates';
+import { toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dates';
 
 import type { PriceSource } from '@/domain/price';
+import type { FinishPrices } from '@/domain/priceDisplay';
 import {
   priceKey,
   type CurrentPrice,
@@ -83,4 +84,34 @@ export function earliestPriceRecordDate(db: AppDatabase): IsoDate | undefined {
     .from(priceRecord)
     .get()?.first;
   return first ? toIsoDate(new Date(first)) : undefined;
+}
+
+/** Prix du jour d'une source, par Code de version puis par Finition. */
+export function readCurrentPrices(db: AppDatabase, source: PriceSource): Map<string, FinishPrices> {
+  const rows = db
+    .select({
+      printingCode: currentPrice.printingCode,
+      finish: currentPrice.finish,
+      value: currentPrice.referenceMetricValue,
+      currency: currentPrice.currency,
+    })
+    .from(currentPrice)
+    .where(eq(currentPrice.source, source))
+    .all();
+  const prices = new Map<string, FinishPrices>();
+  for (const { printingCode, finish, value, currency } of rows) {
+    prices.set(printingCode, { ...prices.get(printingCode), [finish]: { value, currency } });
+  }
+  return prices;
+}
+
+/** La date de publication la plus récente des prix du jour d'une source. */
+export function latestPublishedAt(db: AppDatabase, source: PriceSource): IsoDateTime | undefined {
+  return (
+    db
+      .select({ latest: max(currentPrice.publishedAt) })
+      .from(currentPrice)
+      .where(eq(currentPrice.source, source))
+      .get()?.latest ?? undefined
+  );
 }

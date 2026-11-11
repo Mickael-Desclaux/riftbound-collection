@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { activeFilters, removeActiveFilter, type CatalogFilters } from '@/domain/catalogFilters';
+import type { Currency } from '@/domain/price';
 import { controlStyles } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
@@ -10,11 +11,17 @@ import { activeFilterLabel } from './filterLabels';
 type Props = {
   filters: CatalogFilters;
   options: Pick<FilterOptions, 'expansions' | 'promoExpansions'>;
+  displayCurrency: Currency;
   onChange: (filters: CatalogFilters) => void;
 };
 
 /** Puces des filtres actifs, sous l'en-tête : un toucher retire le filtre. */
-export function ActiveFilterChips({ filters, options, onChange }: Readonly<Props>) {
+export function ActiveFilterChips({
+  filters,
+  options,
+  displayCurrency,
+  onChange,
+}: Readonly<Props>) {
   const active = activeFilters(filters);
   if (active.length === 0) return null;
   const expansions = [...options.expansions, ...options.promoExpansions];
@@ -27,10 +34,10 @@ export function ActiveFilterChips({ filters, options, onChange }: Readonly<Props
       contentContainerStyle={styles.row}
     >
       {active.map((filter) => {
-        const label = activeFilterLabel(filter, expansionName);
+        const label = activeFilterLabel(filter, expansionName, displayCurrency);
         return (
           <Pressable
-            key={`${filter.criterion}:${filter.value}`}
+            key={`${filter.criterion}:${JSON.stringify(filter.value)}`}
             accessibilityRole="button"
             accessibilityLabel={`Retirer le filtre ${label}`}
             onPress={() => onChange(removeActiveFilter(filters, filter))}
