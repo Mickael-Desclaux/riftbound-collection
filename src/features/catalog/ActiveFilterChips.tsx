@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { activeFilters, removeActiveFilter, type CatalogFilters } from '@/domain/catalogFilters';
-import type { Currency } from '@/domain/price';
+import type { DisplayCurrency } from '@/domain/price';
 import { controlStyles } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
@@ -11,7 +11,7 @@ import { activeFilterLabel } from './filterLabels';
 type Props = {
   filters: CatalogFilters;
   options: Pick<FilterOptions, 'expansions' | 'promoExpansions'>;
-  displayCurrency: Currency;
+  displayCurrency: DisplayCurrency;
   onChange: (filters: CatalogFilters) => void;
 };
 

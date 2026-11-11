@@ -1,18 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CURRENCIES, PRICE_SOURCES, type Currency, type PriceSource } from '@/domain/price';
+import { CURRENCIES, PRICE_SOURCES, type DisplayCurrency, type PriceSource } from '@/domain/price';
 import { Chip } from '@/ui/controls';
+import { PRICE_SOURCE_LABELS } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
-const SOURCE_LABELS: Record<PriceSource, string> = {
-  tcgplayer: 'TCGplayer',
-  cardmarket: 'Cardmarket',
-};
-
 type Props = {
-  displayCurrency: Currency;
+  displayCurrency: DisplayCurrency;
   priceSource: PriceSource;
-  onDisplayCurrencyChange: (currency: Currency) => void;
+  onDisplayCurrencyChange: (currency: DisplayCurrency) => void;
   onPriceSourceChange: (source: PriceSource) => void;
 };
 
@@ -41,7 +37,7 @@ export function PriceSettings({
         {PRICE_SOURCES.map((source) => (
           <Chip
             key={source}
-            label={SOURCE_LABELS[source]}
+            label={PRICE_SOURCE_LABELS[source]}
             selected={source === priceSource}
             onPress={() => onPriceSourceChange(source)}
           />

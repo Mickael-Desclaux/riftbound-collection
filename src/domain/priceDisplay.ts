@@ -1,7 +1,7 @@
 /** Règles d'affichage des prix (spec § 3). */
 import { toIsoDate, type IsoDate, type IsoDateTime } from './dates';
 import { rateOnOrBefore, type ExchangeRate } from './exchangeRates';
-import { FINISHES, type Currency, type Finish } from './price';
+import { FINISHES, type Currency, type DisplayCurrency, type Finish } from './price';
 
 /** Aucun taux n'est daté au-delà : « le dernier taux connu ». */
 const LATEST: IsoDate = '9999-12-31';
@@ -53,20 +53,13 @@ export type FinishPrices = Partial<Record<Finish, { value: number | null; curren
 export function referencePrice(
   finishes: readonly Finish[],
   prices: FinishPrices | undefined,
-  displayCurrency: Currency,
+  displayCurrency: DisplayCurrency,
   rates: readonly ExchangeRate[],
 ): number | null {
   const finish = referenceFinish(finishes);
   const price = finish && prices?.[finish];
   if (!price) return null;
   return convertCurrentPrice(price.value, price.currency, displayCurrency, rates);
-}
-
-/** Un montant saisi (« 12,5 » ou « 12.5 ») ; `null` si la saisie est vide ou illisible. */
-export function parseAmount(text: string): number | null {
-  const trimmed = text.trim().replace(',', '.');
-  if (!/^\d+(\.\d*)?$/.test(trimmed)) return null;
-  return Number(trimmed);
 }
 
 const STALE_AFTER_MS = 48 * 60 * 60 * 1000;
@@ -78,31 +71,6 @@ const STALE_AFTER_MS = 48 * 60 * 60 * 1000;
 export function arePricesStale(latestPublishedAt: IsoDateTime | undefined, now: Date): boolean {
   if (latestPublishedAt === undefined) return false;
   return now.getTime() - Date.parse(latestPublishedAt) > STALE_AFTER_MS;
-}
-
-/** Espace insécable : le montant et sa devise ne se séparent jamais. */
-const NBSP = '\u00a0';
-
-const CURRENCY_SUFFIX: Record<Currency, string> = {
-  CAD: `$${NBSP}CA`,
-  USD: `$${NBSP}US`,
-  EUR: '€',
-};
-
-const formatAmount = new Intl.NumberFormat('fr-FR', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-}).format;
-
-/** Ce qui suit un montant : « $ CA », « $ US », « € ». */
-export function currencySymbol(currency: Currency): string {
-  return CURRENCY_SUFFIX[currency];
-}
-
-/** « 12,40 $ CA », « 12,40 $ US », « 12,40 € » ; « — » pour un prix absent. */
-export function formatPrice(amount: number | null, currency: Currency): string {
-  if (amount === null) return '—';
-  return `${formatAmount(amount)}${NBSP}${CURRENCY_SUFFIX[currency]}`;
 }
 
 /** Finition de référence : normale si elle existe, sinon foil. */

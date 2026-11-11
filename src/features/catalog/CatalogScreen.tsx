@@ -63,6 +63,13 @@ export function CatalogScreen() {
   const catalog = useReactiveQuery(() => readCatalogEntries(db), [db], CATALOG_ENTRY_TABLES);
   const owned = useReactiveQuery(() => readOwnedQuantities(db), [db], ['collection_entry']);
   const [displayCurrency] = useSetting('displayCurrency');
+  // Une fourchette de prix est exprimée dans la Devise d'affichage : elle n'a
+  // plus de sens dans une autre devise, on la retire.
+  const [rangeCurrency, setRangeCurrency] = useState(displayCurrency);
+  if (rangeCurrency !== displayCurrency) {
+    setRangeCurrency(displayCurrency);
+    setFilters((current) => ({ ...current, priceRange: DEFAULT_CATALOG_FILTERS.priceRange }));
+  }
   const [priceSource] = useSetting('priceSource');
   const prices = useReactiveQuery(
     () => readCurrentPrices(db, priceSource),

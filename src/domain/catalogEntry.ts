@@ -1,6 +1,6 @@
 import type { PrintingVariant } from './catalog';
 import { latestRatePerPair, type ExchangeRate } from './exchangeRates';
-import type { Currency, Finish } from './price';
+import type { DisplayCurrency, Finish } from './price';
 import { referencePrice, type FinishPrices } from './priceDisplay';
 import type { PrintingCode } from './printingCode';
 
@@ -43,7 +43,7 @@ export function withOwnedQuantities(
 export function withPrices(
   entries: CatalogEntry[],
   prices: Map<string, FinishPrices>,
-  displayCurrency: Currency,
+  displayCurrency: DisplayCurrency,
   rates: readonly ExchangeRate[],
 ): CatalogEntry[] {
   // Les prix du jour prennent le dernier taux : inutile de garder l'historique.

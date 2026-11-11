@@ -1,10 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { View, type ColorValue } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import type { ColorValue } from 'react-native';
 
-import { StalePricesBanner } from '@/features/prices/StalePricesBanner';
+import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
 import { colors } from '@/ui/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -22,37 +21,32 @@ function tabIcon(name: IconName) {
 
 export default function TabsLayout() {
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Bandeau global : il prend la marge du haut. Le second SafeAreaProvider
-          calcule les marges à sa propre position : sous le bandeau, plus de marge du haut. */}
-      <StalePricesBanner />
-      <SafeAreaProvider style={{ flex: 1 }}>
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: colors.accent,
-            tabBarInactiveTintColor: colors.muted,
-            tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
-          }}
-        >
-          <Tabs.Screen
-            name="catalog"
-            options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
-          />
-          <Tabs.Screen
-            name="collection"
-            options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
-          />
-          <Tabs.Screen
-            name="wishlist"
-            options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
-          />
-          <Tabs.Screen
-            name="settings"
-            options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
-          />
-        </Tabs>
-      </SafeAreaProvider>
-    </View>
+    <StalePricesFrame>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.muted,
+          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
+        }}
+      >
+        <Tabs.Screen
+          name="catalog"
+          options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
+        />
+        <Tabs.Screen
+          name="collection"
+          options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
+        />
+        <Tabs.Screen
+          name="wishlist"
+          options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
+        />
+      </Tabs>
+    </StalePricesFrame>
   );
 }

@@ -19,10 +19,9 @@ import {
   type CatalogFilters,
   type Ownership,
 } from '@/domain/catalogFilters';
-import type { Currency } from '@/domain/price';
-import { currencySymbol, parseAmount } from '@/domain/priceDisplay';
+import type { DisplayCurrency } from '@/domain/price';
 import { Button, Chip } from '@/ui/controls';
-import { formatPrintingCount } from '@/ui/format';
+import { currencySymbol, formatPrintingCount, parseAmount } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
 import {
@@ -50,7 +49,7 @@ type Props = {
   /** Nombre de Versions qui correspondent aux filtres en cours. */
   resultCount: number;
   /** Devise de la fourchette de prix. */
-  displayCurrency: Currency;
+  displayCurrency: DisplayCurrency;
   onChange: (filters: CatalogFilters) => void;
   onClose: () => void;
 };

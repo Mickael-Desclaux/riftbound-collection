@@ -16,3 +16,6 @@ export type Finish = (typeof FINISHES)[number];
 /** Devises des prix d'origine et des taux de change. */
 export const CURRENCIES = ['CAD', 'USD', 'EUR'] as const;
 export type Currency = (typeof CURRENCIES)[number];
+
+/** Devise d'affichage : celle que l'utilisateur choisit pour voir les prix. */
+export type DisplayCurrency = Currency;

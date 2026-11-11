@@ -22,10 +22,10 @@ export function StalePricesBanner() {
     ['current_price'],
   );
   // Les prix vieillissent même sans changement en base : on relit l'heure au retour dans l'app.
-  const [, setResumedAt] = useState(0);
+  const [, setResumeCount] = useState(0);
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') setResumedAt(Date.now());
+      if (state === 'active') setResumeCount((n) => n + 1);
     });
     return () => subscription.remove();
   }, []);

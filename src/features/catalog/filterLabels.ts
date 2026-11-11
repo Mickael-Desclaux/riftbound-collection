@@ -4,8 +4,8 @@
  */
 import type { PrintingVariant } from '@/domain/catalog';
 import type { ActiveFilter, PriceRange } from '@/domain/catalogFilters';
-import type { Currency } from '@/domain/price';
-import { formatPrice } from '@/domain/priceDisplay';
+import type { Currency, DisplayCurrency } from '@/domain/price';
+import { formatPrice } from '@/ui/format';
 
 const RARITIES: Record<string, string> = {
   common: 'Commune',
@@ -74,7 +74,7 @@ export function priceRangeLabel({ min, max }: PriceRange, currency: Currency): s
 export function activeFilterLabel(
   active: ActiveFilter,
   expansionName: (code: string) => string,
-  displayCurrency: Currency,
+  displayCurrency: DisplayCurrency,
 ): string {
   switch (active.criterion) {
     case 'expansion':
