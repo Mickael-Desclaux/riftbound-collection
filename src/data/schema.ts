@@ -22,10 +22,9 @@ import {
 // Imports relatifs : drizzle-kit charge ce fichier sans l'alias `@/`.
 import type { PrintingVariant } from '../domain/catalog';
 import type { IsoDate, IsoDateTime } from '../domain/dates';
+import type { ExchangeRateSource } from '../domain/exchangeRates';
 import type { Currency, Finish, PriceSource } from '../domain/price';
 import type { PrintingCode } from '../domain/printingCode';
-
-export type ExchangeRateSource = 'frankfurter' | 'bank-of-canada';
 
 /** Le Code de version porte le même nom de colonne dans toutes les tables. */
 const printingCodeColumn = () => text('printing_code').$type<PrintingCode>();
@@ -125,7 +124,12 @@ export const exchangeRate = sqliteTable(
   (t) => [primaryKey({ columns: [t.baseCurrency, t.quoteCurrency, t.date] })],
 );
 
-export const SOURCE_IDS = ['rifthunt-sets', 'rifthunt-catalog', 'rifthunt-prices'] as const;
+export const SOURCE_IDS = [
+  'rifthunt-sets',
+  'rifthunt-catalog',
+  'rifthunt-prices',
+  'exchange-rates',
+] as const;
 export type SourceId = (typeof SOURCE_IDS)[number];
 
 /**

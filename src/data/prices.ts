@@ -1,5 +1,7 @@
 /** Prix du jour (Données de référence) et historique des Relevés de prix (Données précieuses). */
-import { count, eq, isNotNull, sql } from 'drizzle-orm';
+import { count, eq, isNotNull, min, sql } from 'drizzle-orm';
+
+import { toIsoDate, type IsoDate } from '@/domain/dates';
 
 import type { PriceSource } from '@/domain/price';
 import {
@@ -72,4 +74,13 @@ export function savePrices(
       tx.insert(priceRecord).values(rows).onConflictDoNothing().run();
     }
   });
+}
+
+/** La date (UTC) du plus ancien Relevé de prix, toutes sources confondues. */
+export function earliestPriceRecordDate(db: AppDatabase): IsoDate | undefined {
+  const first = db
+    .select({ first: min(priceRecord.recordedAt) })
+    .from(priceRecord)
+    .get()?.first;
+  return first ? toIsoDate(new Date(first)) : undefined;
 }
