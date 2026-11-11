@@ -1,0 +1,143 @@
+{
+  "terms": {
+    "url": "https://www.bankofcanada.ca/terms/"
+  },
+  "seriesDetail": {
+    "FXEURCAD": {
+      "label": "EUR/CAD",
+      "description": "Daily average exchange rate of the euro in Canadian dollars.",
+      "dimension": {
+        "key": "d",
+        "name": "Date"
+      },
+      "dateFormat": "daily",
+      "metadata": {
+        "unit": "Canadian dollars per euro",
+        "frequency": "Business daily"
+      }
+    },
+    "FXUSDCAD": {
+      "label": "USD/CAD",
+      "description": "Daily average exchange rate of the US dollar in Canadian dollars.",
+      "dimension": {
+        "key": "d",
+        "name": "Date"
+      },
+      "dateFormat": "daily",
+      "metadata": {
+        "unit": "Canadian dollars per US dollar",
+        "frequency": "Business daily"
+      }
+    }
+  },
+  "observations": [
+    {
+      "d": "2026-10-26",
+      "FXEURCAD": {
+        "v": "1.5687"
+      },
+      "FXUSDCAD": {
+        "v": "1.4025"
+      }
+    },
+    {
+      "d": "2026-10-27",
+      "FXEURCAD": {
+        "v": "1.5643"
+      },
+      "FXUSDCAD": {
+        "v": "1.4038"
+      }
+    },
+    {
+      "d": "2026-10-28",
+      "FXUSDCAD": {
+        "v": "1.4036"
+      },
+      "FXEURCAD": {
+        "v": "1.5636"
+      }
+    },
+    {
+      "d": "2026-10-29",
+      "FXUSDCAD": {
+        "v": "1.3985"
+      },
+      "FXEURCAD": {
+        "v": "1.5601"
+      }
+    },
+    {
+      "d": "2026-10-30",
+      "FXEURCAD": {
+        "v": "1.5582"
+      },
+      "FXUSDCAD": {
+        "v": "1.3960"
+      }
+    },
+    {
+      "d": "2026-11-02",
+      "FXEURCAD": {
+        "v": "1.5660"
+      },
+      "FXUSDCAD": {
+        "v": "1.3978"
+      }
+    },
+    {
+      "d": "2026-11-03",
+      "FXEURCAD": {
+        "v": "1.5661"
+      },
+      "FXUSDCAD": {
+        "v": "1.3994"
+      }
+    },
+    {
+      "d": "2026-11-04",
+      "FXEURCAD": {
+        "v": "1.5688"
+      },
+      "FXUSDCAD": {
+        "v": "1.3961"
+      }
+    },
+    {
+      "d": "2026-11-05",
+      "FXEURCAD": {
+        "v": "1.5703"
+      },
+      "FXUSDCAD": {
+        "v": "1.3989"
+      }
+    },
+    {
+      "d": "2026-11-06",
+      "FXEURCAD": {
+        "v": "1.5732"
+      },
+      "FXUSDCAD": {
+        "v": "1.4113"
+      }
+    },
+    {
+      "d": "2026-11-09",
+      "FXEURCAD": {
+        "v": "1.5823"
+      },
+      "FXUSDCAD": {
+        "v": "1.4123"
+      }
+    },
+    {
+      "d": "2026-11-10",
+      "FXEURCAD": {
+        "v": "1.5839"
+      },
+      "FXUSDCAD": {
+        "v": "1.4181"
+      }
+    }
+  ]
+}
