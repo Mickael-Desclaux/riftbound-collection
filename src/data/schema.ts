@@ -128,6 +128,8 @@ export const SOURCE_IDS = [
   'rifthunt-sets',
   'rifthunt-catalog',
   'rifthunt-prices',
+  'openrift-links',
+  'cardmarket-prices',
   'exchange-rates',
 ] as const;
 export type SourceId = (typeof SOURCE_IDS)[number];

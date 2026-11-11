@@ -9,6 +9,12 @@ export const REFERENCE_METRIC: Record<PriceSource, string> = {
   cardmarket: 'trend',
 };
 
+/** Devise d'origine de chaque Source de prix. */
+export const SOURCE_CURRENCY = { tcgplayer: 'USD', cardmarket: 'EUR' } as const satisfies Record<
+  PriceSource,
+  string
+>;
+
 /** Finitions, normale d'abord (c'est la Finition de référence quand elle existe). */
 export const FINISHES = ['normal', 'foil'] as const;
 export type Finish = (typeof FINISHES)[number];

@@ -1,8 +1,8 @@
 /** Écriture du Catalogue (Données de référence). Ne touche jamais aux Données précieuses. */
-import { count, getTableColumns, inArray, sql, type SQL } from 'drizzle-orm';
+import { count, eq, getTableColumns, inArray, sql, type SQL } from 'drizzle-orm';
 import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
 
-import type { Catalog, Expansion } from '@/domain/catalog';
+import type { CardmarketLinks, Catalog, Expansion } from '@/domain/catalog';
 
 import type { AppDatabase } from './database';
 import { chunks } from './chunks';
@@ -108,4 +108,30 @@ export function hasCatalog(db: AppDatabase): boolean {
 /** Extensions enregistrées, pour détecter un changement de Catalogue. */
 export function storedExpansions(db: AppDatabase): Pick<Expansion, 'code' | 'cardCount'>[] {
   return db.select({ code: expansion.code, cardCount: expansion.cardCount }).from(expansion).all();
+}
+
+/**
+ * Remplace la correspondance `tcgId` → `idProduct` Cardmarket de toutes les
+ * Versions : une Version sans correspondance n'a plus de produit Cardmarket.
+ * Seules les Versions qui changent sont réécrites.
+ */
+export function applyCardmarketLinks(db: AppDatabase, links: CardmarketLinks): void {
+  db.transaction((tx) => {
+    const rows = tx
+      .select({
+        printingCode: printing.printingCode,
+        tcgId: printing.tcgId,
+        current: printing.cardmarketProductId,
+      })
+      .from(printing)
+      .all();
+    for (const { printingCode, tcgId, current } of rows) {
+      const next = tcgId === null ? null : (links.get(tcgId) ?? null);
+      if (next === current) continue;
+      tx.update(printing)
+        .set({ cardmarketProductId: next })
+        .where(eq(printing.printingCode, printingCode))
+        .run();
+    }
+  });
 }

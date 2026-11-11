@@ -3,7 +3,7 @@ import { count, eq, isNotNull, max, min, sql } from 'drizzle-orm';
 
 import { toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dates';
 
-import type { PriceSource } from '@/domain/price';
+import type { Finish, PriceSource } from '@/domain/price';
 import type { FinishPrices } from '@/domain/priceDisplay';
 import {
   priceKey,
@@ -114,4 +114,25 @@ export function latestPublishedAt(db: AppDatabase, source: PriceSource): IsoDate
       .where(eq(currentPrice.source, source))
       .get()?.latest ?? undefined
   );
+}
+
+/** Une Version du Catalogue, avec les Finitions dans lesquelles elle existe. */
+export type PrintingFinishes = { printingCode: PrintingCode; finishes: Finish[] };
+
+/** Les Versions de chaque produit Cardmarket du Catalogue. */
+export function printingsByCardmarketId(db: AppDatabase): Map<number, PrintingFinishes[]> {
+  const rows = db
+    .select({
+      id: printing.cardmarketProductId,
+      printingCode: printing.printingCode,
+      finishes: printing.finishes,
+    })
+    .from(printing)
+    .where(isNotNull(printing.cardmarketProductId))
+    .all();
+  const byId = new Map<number, PrintingFinishes[]>();
+  for (const { id, ...priced } of rows) {
+    byId.set(id as number, [...(byId.get(id as number) ?? []), priced]);
+  }
+  return byId;
 }

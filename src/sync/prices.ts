@@ -1,20 +1,30 @@
 /**
- * Synchronisation des prix TCGplayer (spec § 3, § 5) : retéléchargés si le
- * dernier succès date de plus de 6 h (ou sur demande), sauf si le fichier n'a
- * pas changé (Last-Modified). Chaque changement de l'Indicateur de référence
- * ajoute un Relevé de prix.
+ * Synchronisation des prix TCGplayer et Cardmarket (spec § 3, § 5) : chaque
+ * source est retéléchargée si son dernier succès date de plus de 6 h (ou sur
+ * demande), sauf si le fichier n'a pas changé (Last-Modified). Chaque
+ * changement de l'Indicateur de référence ajoute un Relevé de prix.
  */
 import { hasCatalog } from '@/data/catalog';
+import type { AppDatabase } from '@/data/database';
 import {
   currentPriceCount,
   lastPriceRecords,
   printingCodesByTcgId,
+  printingsByCardmarketId,
   savePrices,
 } from '@/data/prices';
-import { getSourceState, recordSourceSuccess } from '@/data/sourceState';
-import { REFERENCE_METRIC } from '@/domain/price';
+import type { SourceId } from '@/data/schema';
+import { getSourceState, recordSourceSuccess, type SourceState } from '@/data/sourceState';
+import type { IsoDateTime } from '@/domain/dates';
+import { REFERENCE_METRIC, SOURCE_CURRENCY, type Finish, type PriceSource } from '@/domain/price';
 import { newPriceRecords, type CurrentPrice } from '@/domain/priceRecords';
-import { fetchTcgplayerPrices } from '@/sources/rifthunt/prices';
+import type { PrintingCode } from '@/domain/printingCode';
+import {
+  fetchCardmarketPriceGuide,
+  type CardmarketPriceGuide,
+} from '@/sources/cardmarket/priceGuide';
+import type { ConditionalResult } from '@/sources/http';
+import { fetchTcgplayerPrices, type TcgplayerPrice } from '@/sources/rifthunt/prices';
 
 import type { SyncDeps } from './catalog';
 import { failuresRecorded, hasPendingError, HOUR, isOlderThan } from './schedule';
@@ -24,47 +34,122 @@ const PRICES_MAX_AGE = 6 * HOUR;
 /** `skipped` : rien à faire ; `unchanged` : fichier inchangé (304) ; `refreshed` : prix enregistrés. */
 export type PriceSyncOutcome = 'skipped' | 'unchanged' | 'refreshed';
 
-export async function syncTcgplayerPrices(
-  { db, fetch, now }: SyncDeps,
+type PriceOptions = {
   /** `refresh` : l'utilisateur demande une mise à jour, sans attendre les 6 h. */
-  { refresh = false }: { refresh?: boolean } = {},
+  refresh?: boolean;
+};
+
+/** Ce qui distingue une source de prix des autres. */
+type PriceFeed<T> = {
+  source: PriceSource;
+  stateId: SourceId;
+  download: (
+    fetch: SyncDeps['fetch'],
+    lastModified: string | null,
+  ) => Promise<ConditionalResult<T>>;
+  /** Les prix du jour du fichier, rattachés aux Versions du Catalogue. */
+  toCurrentPrices: (db: AppDatabase, data: T) => CurrentPrice[];
+};
+
+/**
+ * Un téléchargement est dû après 6 h, après un échec, ou quand `Last-Modified`
+ * a été oublié (nouveau Catalogue, nouvelle correspondance) : des Versions
+ * attendent peut-être leur prix. Nos deux sources envoient toujours `Last-Modified`.
+ */
+function isDue(state: SourceState | undefined, at: Date): boolean {
+  if (!state) return true;
+  const forgotten = state.lastSuccessAt !== null && state.lastModified === null;
+  return forgotten || hasPendingError(state) || isOlderThan(state, PRICES_MAX_AGE, at);
+}
+
+async function syncPriceFeed<T>(
+  { db, fetch, now }: SyncDeps,
+  { refresh = false }: PriceOptions,
+  feed: PriceFeed<T>,
 ): Promise<PriceSyncOutcome> {
   // Les prix se rattachent aux Versions du Catalogue : sans lui, rien à faire.
   if (!hasCatalog(db)) return 'skipped';
   const at = now();
-  const state = getSourceState(db, 'rifthunt-prices');
-  if (!refresh && !hasPendingError(state) && !isOlderThan(state, PRICES_MAX_AGE, at)) {
-    return 'skipped';
-  }
+  const state = getSourceState(db, feed.stateId);
+  if (!refresh && !isDue(state, at)) return 'skipped';
 
-  return failuresRecorded(db, 'rifthunt-prices', at, async () => {
+  return failuresRecorded(db, feed.stateId, at, async () => {
     // Sans prix enregistrés, on retélécharge tout, même si le fichier n'a pas changé.
     const lastModified =
-      currentPriceCount(db, 'tcgplayer') > 0 ? (state?.lastModified ?? null) : null;
-    const response = await fetchTcgplayerPrices(fetch, lastModified);
+      currentPriceCount(db, feed.source) > 0 ? (state?.lastModified ?? null) : null;
+    const response = await feed.download(fetch, lastModified);
     if (!response.modified) {
-      recordSourceSuccess(db, 'rifthunt-prices', at.toISOString());
+      recordSourceSuccess(db, feed.stateId, at.toISOString());
       return 'unchanged';
     }
-
-    const codes = printingCodesByTcgId(db);
-    const prices: CurrentPrice[] = response.data.flatMap((product) => {
-      const printingCode = codes.get(product.tcgId);
-      if (printingCode === undefined) return [];
-      return product.finishes.map(({ finish, metrics }) => ({
-        printingCode,
-        source: 'tcgplayer' as const,
-        finish,
-        referenceMetricValue: metrics[REFERENCE_METRIC.tcgplayer] ?? null,
-        metrics,
-        currency: 'USD' as const,
-        publishedAt: product.publishedAt,
-      }));
-    });
-    savePrices(db, 'tcgplayer', prices, newPriceRecords(prices, lastPriceRecords(db, 'tcgplayer')));
-    recordSourceSuccess(db, 'rifthunt-prices', at.toISOString(), {
+    const prices = feed.toCurrentPrices(db, response.data);
+    savePrices(db, feed.source, prices, newPriceRecords(prices, lastPriceRecords(db, feed.source)));
+    recordSourceSuccess(db, feed.stateId, at.toISOString(), {
       lastModified: response.lastModified,
     });
     return 'refreshed';
   });
+}
+
+/** Le prix du jour d'une Version × Finition, avec son Indicateur de référence et sa devise. */
+function currentPriceOf(
+  printingCode: PrintingCode,
+  source: PriceSource,
+  finish: Finish,
+  metrics: Record<string, number | null>,
+  publishedAt: IsoDateTime,
+): CurrentPrice {
+  return {
+    printingCode,
+    source,
+    finish,
+    referenceMetricValue: metrics[REFERENCE_METRIC[source]] ?? null,
+    metrics,
+    currency: SOURCE_CURRENCY[source],
+    publishedAt,
+  };
+}
+
+const tcgplayer: PriceFeed<TcgplayerPrice[]> = {
+  source: 'tcgplayer',
+  stateId: 'rifthunt-prices',
+  download: fetchTcgplayerPrices,
+  toCurrentPrices: (db, products) => {
+    const codes = printingCodesByTcgId(db);
+    return products.flatMap((product) => {
+      const printingCode = codes.get(product.tcgId);
+      if (printingCode === undefined) return [];
+      return product.finishes.map(({ finish, metrics }) =>
+        currentPriceOf(printingCode, 'tcgplayer', finish, metrics, product.publishedAt),
+      );
+    });
+  },
+};
+
+const cardmarket: PriceFeed<CardmarketPriceGuide> = {
+  source: 'cardmarket',
+  stateId: 'cardmarket-prices',
+  download: fetchCardmarketPriceGuide,
+  toCurrentPrices: (db, { publishedAt, products }) => {
+    const printings = printingsByCardmarketId(db);
+    return products.flatMap((product) =>
+      (printings.get(product.idProduct) ?? []).flatMap(({ printingCode, finishes }) =>
+        // Les champs `-foil` selon la Finition réelle de la Version : pour une
+        // Version foil seulement, Cardmarket remplit aussi les champs normaux.
+        finishes.flatMap((finish) => {
+          const metrics = product.finishes[finish];
+          if (!metrics || Object.values(metrics).every((value) => value === null)) return [];
+          return [currentPriceOf(printingCode, 'cardmarket', finish, metrics, publishedAt)];
+        }),
+      ),
+    );
+  },
+};
+
+export function syncTcgplayerPrices(deps: SyncDeps, options: PriceOptions = {}) {
+  return syncPriceFeed(deps, options, tcgplayer);
+}
+
+export function syncCardmarketPrices(deps: SyncDeps, options: PriceOptions = {}) {
+  return syncPriceFeed(deps, options, cardmarket);
 }
