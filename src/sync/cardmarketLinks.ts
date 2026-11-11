@@ -1,0 +1,34 @@
+/**
+ * Correspondance OpenRift `tcgId` → `idProduct` Cardmarket (spec § 5) :
+ * retéléchargée à chaque nouveau Catalogue. Si OpenRift est indisponible, la
+ * dernière correspondance est gardée et un nouvel essai a lieu au prochain appel.
+ */
+import { hasCatalog } from '@/data/catalog';
+import { applyCardmarketLinks } from '@/data/prices';
+import { forgetLastModified, getSourceState } from '@/data/sourceState';
+import { fetchCardmarketLinks } from '@/sources/openrift/links';
+
+import type { SyncDeps } from './catalog';
+import { hasPendingError, recorded } from './schedule';
+
+/** `skipped` : déjà à jour pour ce Catalogue ; `refreshed` : correspondance enregistrée. */
+export type LinksSyncOutcome = 'skipped' | 'refreshed';
+
+export async function syncCardmarketLinks({ db, fetch, now }: SyncDeps): Promise<LinksSyncOutcome> {
+  if (!hasCatalog(db)) return 'skipped';
+  const state = getSourceState(db, 'openrift-links');
+  const catalogAt = getSourceState(db, 'rifthunt-catalog')?.lastSuccessAt;
+  const upToDate =
+    !!state?.lastSuccessAt &&
+    !hasPendingError(state) &&
+    (!catalogAt || Date.parse(state.lastSuccessAt) >= Date.parse(catalogAt));
+  if (upToDate) return 'skipped';
+
+  return recorded(db, 'openrift-links', now(), async () => {
+    applyCardmarketLinks(db, await fetchCardmarketLinks(fetch));
+    // Des Versions viennent peut-être d'être reliées : le prochain
+    // téléchargement des prix Cardmarket sera complet.
+    forgetLastModified(db, 'cardmarket-prices');
+    return 'refreshed' as const;
+  });
+}

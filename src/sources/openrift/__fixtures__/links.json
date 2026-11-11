@@ -1,0 +1,158 @@
+{
+  "links": {
+    "019cfc3b-03d1-7cf2-9cf2-cbca5d1f725d": {
+      "tcgplayer": {
+        "available": true,
+        "productId": 652916,
+        "url": "https://partner.tcgplayer.com/openrift?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F652916"
+      },
+      "cardmarket": {
+        "available": true,
+        "productId": 847289,
+        "url": "https://www.cardmarket.com/en/Riftbound/Products?idProduct=847289&language=1"
+      },
+      "cardtrader": {
+        "available": true,
+        "productId": 345320,
+        "url": "https://www.cardtrader.com/en/cards/345320?share_code=openrift"
+      },
+      "cardnexus": {
+        "available": true,
+        "productId": 151256,
+        "url": "https://af.cardnexus.link/7018965/cn/151256"
+      }
+    },
+    "019cfc3b-03d2-788b-9d81-38443c0ea22e": {
+      "tcgplayer": {
+        "available": true,
+        "productId": 652803,
+        "url": "https://partner.tcgplayer.com/openrift?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F652803"
+      },
+      "cardmarket": {
+        "available": true,
+        "productId": 847147,
+        "url": "https://www.cardmarket.com/en/Riftbound/Products?idProduct=847147&language=1"
+      },
+      "cardtrader": {
+        "available": true,
+        "productId": 345205,
+        "url": "https://www.cardtrader.com/en/cards/345205?share_code=openrift"
+      },
+      "cardnexus": {
+        "available": true,
+        "productId": 151507,
+        "url": "https://af.cardnexus.link/7018965/cn/151507"
+      }
+    },
+    "019cfc3b-03d4-720d-baff-ee07cb49f1cb": {
+      "tcgplayer": {
+        "available": true,
+        "productId": 653053,
+        "url": "https://partner.tcgplayer.com/openrift?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653053"
+      },
+      "cardmarket": {
+        "available": true,
+        "productId": 847455,
+        "url": "https://www.cardmarket.com/en/Riftbound/Products?idProduct=847455&language=1"
+      },
+      "cardtrader": {
+        "available": true,
+        "productId": 345454,
+        "url": "https://www.cardtrader.com/en/cards/345454?share_code=openrift"
+      },
+      "cardnexus": {
+        "available": true,
+        "productId": 151404,
+        "url": "https://af.cardnexus.link/7018965/cn/151404"
+      }
+    },
+    "019cfc3b-03d4-7659-ab51-357ebef57c1a": {
+      "tcgplayer": {
+        "available": true,
+        "productId": 653102,
+        "url": "https://partner.tcgplayer.com/openrift?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F653102"
+      },
+      "cardmarket": {
+        "available": true,
+        "productId": 847508,
+        "url": "https://www.cardmarket.com/en/Riftbound/Products?idProduct=847508&language=1"
+      },
+      "cardtrader": {
+        "available": true,
+        "productId": 345505,
+        "url": "https://www.cardtrader.com/en/cards/345505?share_code=openrift"
+      },
+      "cardnexus": {
+        "available": false,
+        "productId": null,
+        "url": null
+      }
+    },
+    "019d1c05-bf03-747d-be95-60ee1687b24b": {
+      "tcgplayer": {
+        "available": true,
+        "productId": 680247,
+        "url": "https://partner.tcgplayer.com/openrift?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F680247"
+      },
+      "cardmarket": {
+        "available": true,
+        "productId": 874129,
+        "url": "https://www.cardmarket.com/en/Riftbound/Products?idProduct=874129&language=1"
+      },
+      "cardtrader": {
+        "available": true,
+        "productId": 375021,
+        "url": "https://www.cardtrader.com/en/cards/375021?share_code=openrift"
+      },
+      "cardnexus": {
+        "available": false,
+        "productId": null,
+        "url": null
+      }
+    },
+    "019da5ac-fbc9-714d-b6c2-3505305416d9": {
+      "tcgplayer": {
+        "available": true,
+        "productId": 669265,
+        "url": "https://partner.tcgplayer.com/openrift?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F669265"
+      },
+      "cardmarket": {
+        "available": false,
+        "productId": null,
+        "url": null
+      },
+      "cardtrader": {
+        "available": false,
+        "productId": null,
+        "url": null
+      },
+      "cardnexus": {
+        "available": false,
+        "productId": null,
+        "url": null
+      }
+    },
+    "019d1783-788f-7997-b104-1f6a5a69bf26": {
+      "tcgplayer": {
+        "available": false,
+        "productId": null,
+        "url": null
+      },
+      "cardmarket": {
+        "available": true,
+        "productId": 866421,
+        "url": "https://www.cardmarket.com/en/Riftbound/Products?idProduct=866421&language=2"
+      },
+      "cardtrader": {
+        "available": true,
+        "productId": 367440,
+        "url": "https://www.cardtrader.com/en/cards/367440?share_code=openrift"
+      },
+      "cardnexus": {
+        "available": true,
+        "productId": 168487,
+        "url": "https://af.cardnexus.link/7018965/cn/168487"
+      }
+    }
+  }
+}
