@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactElement } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-import type { DisplayCurrency } from '@/domain/price';
+import type { Currency } from '@/domain/price';
 import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
@@ -14,7 +14,7 @@ export type { GridPrinting } from './gridPrinting';
 export type PrintingGridProps = {
   items: GridPrinting[];
   /** Devise des prix de `items`. */
-  displayCurrency: DisplayCurrency;
+  displayCurrency: Currency;
   page: number;
   pageCount: number;
   onPageChange: (page: number) => void;

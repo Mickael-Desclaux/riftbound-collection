@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { AppState } from 'react-native';
 
 import { useDatabase } from '@/data/DatabaseProvider';
@@ -22,10 +22,10 @@ export function StalePricesBanner() {
     ['current_price'],
   );
   // Les prix vieillissent même sans changement en base : on relit l'heure au retour dans l'app.
-  const [, setResumeCount] = useState(0);
+  const [, rerender] = useReducer((n: number) => n + 1, 0);
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') setResumeCount((n) => n + 1);
+      if (state === 'active') rerender();
     });
     return () => subscription.remove();
   }, []);

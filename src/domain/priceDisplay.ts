@@ -1,7 +1,7 @@
 /** Règles d'affichage des prix (spec § 3). */
 import { toIsoDate, type IsoDate, type IsoDateTime } from './dates';
 import { rateOnOrBefore, type ExchangeRate } from './exchangeRates';
-import { FINISHES, type Currency, type DisplayCurrency, type Finish } from './price';
+import { FINISHES, type Currency, type Finish } from './price';
 
 /** Aucun taux n'est daté au-delà : « le dernier taux connu ». */
 const LATEST: IsoDate = '9999-12-31';
@@ -53,7 +53,7 @@ export type FinishPrices = Partial<Record<Finish, { value: number | null; curren
 export function referencePrice(
   finishes: readonly Finish[],
   prices: FinishPrices | undefined,
-  displayCurrency: DisplayCurrency,
+  displayCurrency: Currency,
   rates: readonly ExchangeRate[],
 ): number | null {
   const finish = referenceFinish(finishes);

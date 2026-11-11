@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { DisplayCurrency } from '@/domain/price';
+import type { Currency } from '@/domain/price';
 import { formatPrice } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
@@ -19,7 +19,7 @@ const RETRY_DELAY_MS = 5_000;
 export function PrintingTile({
   printing,
   displayCurrency,
-}: Readonly<{ printing: GridPrinting; displayCurrency: DisplayCurrency }>) {
+}: Readonly<{ printing: GridPrinting; displayCurrency: Currency }>) {
   const uri = gridImageUri(printing);
   const price = formatPrice(printing.price, displayCurrency);
   return (

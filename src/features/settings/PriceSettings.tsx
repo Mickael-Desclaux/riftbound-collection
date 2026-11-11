@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { CURRENCIES, PRICE_SOURCES, type DisplayCurrency, type PriceSource } from '@/domain/price';
+import { CURRENCIES, PRICE_SOURCES, type Currency, type PriceSource } from '@/domain/price';
 import { Chip } from '@/ui/controls';
 import { PRICE_SOURCE_LABELS } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
 type Props = {
-  displayCurrency: DisplayCurrency;
+  displayCurrency: Currency;
   priceSource: PriceSource;
-  onDisplayCurrencyChange: (currency: DisplayCurrency) => void;
+  onDisplayCurrencyChange: (currency: Currency) => void;
   onPriceSourceChange: (source: PriceSource) => void;
 };
 
