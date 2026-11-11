@@ -1,1 +1,5 @@
-export { PrintingDetailScreen as default } from '@/features/printing-detail/PrintingDetailScreen';
+import { PrintingDetailScreen } from '@/features/printing-detail/PrintingDetailScreen';
+
+export default function CatalogPrintingRoute() {
+  return <PrintingDetailScreen tab="catalog" />;
+}

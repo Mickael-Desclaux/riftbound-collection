@@ -33,7 +33,7 @@ import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { useSync } from '@/ui/SyncContext';
 import { colors } from '@/ui/theme';
 
-import { printingHref } from '@/features/printing-detail/printingHref';
+import { printingHref } from '@/ui/printingHref';
 
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';

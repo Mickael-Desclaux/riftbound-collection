@@ -9,7 +9,7 @@ import {
   type Finish,
   type PriceSource,
 } from './price';
-import { currentRate, referenceFinish } from './priceDisplay';
+import { convertCurrentPrice, currentRate, referenceFinish } from './priceDisplay';
 
 /** Un prix du jour, dans la devise d'origine de sa source. */
 export type SourcePrice = { value: number | null; currency: Currency; publishedAt: IsoDateTime };
@@ -45,15 +45,15 @@ export function priceCells(
       const price = prices[source]?.[finish];
       const currency = price?.currency ?? SOURCE_CURRENCY[source];
       const original = price?.value ?? null;
-      const rate = currentRate(currency, displayCurrency, rates);
+      const rate = original === null ? undefined : currentRate(currency, displayCurrency, rates);
       return {
         source,
         finish,
         original,
         currency,
-        converted: original !== null && rate ? original * rate.rate : null,
+        converted: convertCurrentPrice(original, currency, displayCurrency, rates),
         publishedAt: price?.publishedAt ?? null,
-        rateDate: original !== null ? (rate?.date ?? null) : null,
+        rateDate: rate?.date ?? null,
       };
     }),
   );
@@ -71,15 +71,16 @@ export function defaultCell(
   return finish && { source: priceSource, finish };
 }
 
+/** Identifiants de la Version chez chaque Source de prix. */
+type ProductIds = { tcgId: number | null; cardmarketProductId: number | null };
+
+const PRODUCT_URLS: Record<PriceSource, (ids: ProductIds) => string | null> = {
+  tcgplayer: ({ tcgId }) => (tcgId === null ? null : `https://www.tcgplayer.com/product/${tcgId}`),
+  cardmarket: ({ cardmarketProductId: id }) =>
+    id === null ? null : `https://www.cardmarket.com/en/Riftbound/Products?idProduct=${id}`,
+};
+
 /** Page produit de la Version sur une Source de prix ; `null` sans identifiant. */
-export function productUrl(
-  source: PriceSource,
-  ids: { tcgId: number | null; cardmarketProductId: number | null },
-): string | null {
-  if (source === 'tcgplayer') {
-    return ids.tcgId === null ? null : `https://www.tcgplayer.com/product/${ids.tcgId}`;
-  }
-  return ids.cardmarketProductId === null
-    ? null
-    : `https://www.cardmarket.com/en/Riftbound/Products?idProduct=${ids.cardmarketProductId}`;
+export function productUrl(source: PriceSource, ids: ProductIds): string | null {
+  return PRODUCT_URLS[source](ids);
 }

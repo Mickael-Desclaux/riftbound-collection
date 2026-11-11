@@ -1,6 +1,6 @@
 /** Formatage des nombres, des montants et libellés partagés par les écrans. */
 import type { IsoDate, IsoDateTime } from '@/domain/dates';
-import type { Currency, PriceSource } from '@/domain/price';
+import type { Currency } from '@/domain/price';
 
 const formatInteger = new Intl.NumberFormat('fr-FR').format;
 
@@ -41,18 +41,12 @@ export function parseAmount(text: string): number | null {
   return Number(trimmed);
 }
 
-/** Nom affiché de chaque Source de prix. */
-export const PRICE_SOURCE_LABELS: Record<PriceSource, string> = {
-  tcgplayer: 'TCGplayer',
-  cardmarket: 'Cardmarket',
-};
-
-const formatDateParts = new Intl.DateTimeFormat('fr-FR', {
+const formatLocalDate = new Intl.DateTimeFormat('fr-FR', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
 }).format;
-const formatCalendarDay = new Intl.DateTimeFormat('fr-FR', {
+const formatUtcDate = new Intl.DateTimeFormat('fr-FR', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -61,10 +55,10 @@ const formatCalendarDay = new Intl.DateTimeFormat('fr-FR', {
 
 /** « 11 novembre 2026 », à l'heure de l'appareil. */
 export function formatDate(at: IsoDateTime): string {
-  return formatDateParts(new Date(at));
+  return formatLocalDate(new Date(at));
 }
 
 /** Une date du calendrier (`AAAA-MM-JJ`), sans décalage de fuseau : « 10 novembre 2026 ». */
 export function formatIsoDate(date: IsoDate): string {
-  return formatCalendarDay(new Date(`${date}T00:00:00Z`));
+  return formatUtcDate(new Date(`${date}T00:00:00Z`));
 }

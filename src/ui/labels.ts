@@ -3,7 +3,7 @@
  * nouveau type…) s'affiche telle quelle plutôt que de disparaître.
  */
 import type { PrintingVariant } from '@/domain/catalog';
-import type { Finish } from '@/domain/price';
+import type { Finish, PriceSource } from '@/domain/price';
 
 const RARITIES: Record<string, string> = {
   common: 'Commune',
@@ -61,3 +61,9 @@ export const typeLabel = (value: string) => TYPES[value] ?? value;
 export const domainLabel = (value: string) => DOMAINS[value] ?? value;
 
 export const FINISH_LABELS: Record<Finish, string> = { normal: 'Normale', foil: 'Foil' };
+
+/** Nom affiché de chaque Source de prix. */
+export const PRICE_SOURCE_LABELS: Record<PriceSource, string> = {
+  tcgplayer: 'TCGplayer',
+  cardmarket: 'Cardmarket',
+};

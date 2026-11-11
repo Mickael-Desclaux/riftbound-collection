@@ -1,5 +1,5 @@
 import * as Linking from 'expo-linking';
-import { useLocalSearchParams, useRouter, useSegments } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useDatabase } from '@/data/DatabaseProvider';
@@ -21,17 +21,15 @@ import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
 import { PrintingDetailView } from './PrintingDetailView';
-import { printingHref, type PrintingTab } from './printingHref';
+import { printingHref, type PrintingTab } from '@/ui/printingHref';
 
-/** Fiche d'une Version, ouverte dans la pile de l'onglet courant. */
-export function PrintingDetailScreen() {
+/** Fiche d'une Version, ouverte dans la pile de l'onglet `tab`. */
+export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
   const { printingCode } = useLocalSearchParams<{ printingCode: string }>();
   const code = printingCode as PrintingCode;
   const db = useDatabase();
   const now = useClock();
   const router = useRouter();
-  // « (tabs) / catalog / [printingCode] » : l'onglet est le 2ᵉ segment.
-  const tab = useSegments()[1] as PrintingTab;
   const [displayCurrency] = useSetting('displayCurrency');
   const [priceSource] = useSetting('priceSource');
   const detail = useReactiveQuery(
@@ -45,12 +43,14 @@ export function PrintingDetailScreen() {
     PRINTING_STATE_TABLES,
   );
   const rates = useReactiveQuery(() => readExchangeRates(db), [db], ['exchange_rate']);
+  // Ouverte par un lien direct, la fiche n'a pas d'écran précédent : retour à l'onglet.
+  const goBack = () => (router.canGoBack() ? router.back() : router.replace(`/${tab}`));
 
   if (!detail) {
     return (
       <View style={styles.missing}>
         <Text style={styles.missingText}>Cette version n’est pas dans le catalogue.</Text>
-        <Button label="Retour" onPress={() => router.back()} />
+        <Button label="Retour" onPress={goBack} />
       </View>
     );
   }
@@ -63,7 +63,7 @@ export function PrintingDetailScreen() {
       displayCurrency={displayCurrency}
       priceSource={priceSource}
       rates={rates}
-      onBack={() => router.back()}
+      onBack={goBack}
       onOpenPrinting={(other) => router.push(printingHref(tab, other))}
       onOpenUrl={(url) => void Linking.openURL(url)}
       onQuantityChange={(quantity) => setOwnedQuantity(db, code, quantity)}

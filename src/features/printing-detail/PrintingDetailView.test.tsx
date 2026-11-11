@@ -49,7 +49,7 @@ const rates: ExchangeRate[] = [
   },
 ];
 
-async function setup(state: Partial<PrintingState> = {}) {
+async function setup(state: Partial<PrintingState> = {}, shown: PrintingDetail = detail) {
   const handlers = {
     onBack: jest.fn(),
     onOpenPrinting: jest.fn(),
@@ -60,7 +60,7 @@ async function setup(state: Partial<PrintingState> = {}) {
   };
   await render(
     <PrintingDetailView
-      detail={detail}
+      detail={shown}
       state={{ quantity: 0, wishlistedAt: null, inBinderSelection: false, ...state }}
       displayCurrency="EUR"
       priceSource="tcgplayer"
@@ -79,6 +79,15 @@ describe('PrintingDetailView', () => {
     expect(screen.getByText(/OGN-030a · Épique · Alternative/)).toBeTruthy();
     // 2,95 $ US × 0,89174 = 2,63 €
     expect(screen.getByLabelText('Prix affiché')).toHaveTextContent(`2,63${NBSP}€`);
+    expect(screen.getByText('TCGplayer · Foil')).toBeTruthy();
+    expect(screen.getByText(/toutes langues et tous états confondus/)).toBeTruthy();
+  });
+
+  it('explique l’absence de prix d’une Version sans Finition connue', async () => {
+    await setup({}, { ...detail, finishes: [] });
+
+    expect(screen.getByLabelText('Prix affiché')).toHaveTextContent('—');
+    expect(screen.getByText(/Aucun prix connu/)).toBeTruthy();
   });
 
   it('toucher une case change le gros prix de cette fiche', async () => {
@@ -87,7 +96,7 @@ describe('PrintingDetailView', () => {
     await fireEvent.press(screen.getByRole('button', { name: /Cardmarket Foil/ }));
 
     expect(screen.getByLabelText('Prix affiché')).toHaveTextContent(`3,52${NBSP}€`);
-    expect(screen.getByText(/toutes langues et tous états confondus/)).toBeTruthy();
+    expect(screen.getByText('Cardmarket · Foil')).toBeTruthy();
   });
 
   it('ouvre la page produit de la Source affichée', async () => {

@@ -15,8 +15,15 @@ import {
 } from '@/domain/printingDetail';
 import type { PrintingCode } from '@/domain/printingCode';
 import { controlStyles } from '@/ui/controls';
-import { formatDate, formatIsoDate, formatPrice, PRICE_SOURCE_LABELS } from '@/ui/format';
-import { domainLabel, FINISH_LABELS, rarityLabel, typeLabel, VARIANTS } from '@/ui/labels';
+import { formatDate, formatIsoDate, formatPrice } from '@/ui/format';
+import {
+  domainLabel,
+  FINISH_LABELS,
+  PRICE_SOURCE_LABELS,
+  rarityLabel,
+  typeLabel,
+  VARIANTS,
+} from '@/ui/labels';
 import { CARD_ASPECT_RATIO } from '@/ui/printing-grid/PrintingTile';
 import { colors } from '@/ui/theme';
 
@@ -98,6 +105,11 @@ export function PrintingDetailView({
           <Text accessibilityLabel="Prix affiché" style={styles.bigPrice}>
             {formatPrice(shown?.converted ?? null, displayCurrency)}
           </Text>
+          {shown && (
+            <Text style={styles.muted}>
+              {PRICE_SOURCE_LABELS[shown.source]} · {FINISH_LABELS[shown.finish]}
+            </Text>
+          )}
         </View>
 
         <Section title="Prix">
@@ -112,8 +124,13 @@ export function PrintingDetailView({
               />
             ))}
           </View>
+          {cells.length === 0 && (
+            <Text style={styles.note}>
+              Aucun prix connu : les finitions de cette version ne sont pas renseignées.
+            </Text>
+          )}
           {shown && <PriceDates cell={shown} />}
-          {source === 'cardmarket' && (
+          {cells.length > 0 && (
             <Text style={styles.note}>Cardmarket : toutes langues et tous états confondus.</Text>
           )}
         </Section>
@@ -145,17 +162,17 @@ export function PrintingDetailView({
         )}
 
         <Section title="Détails">
-          <Detail label="Extension" value={detail.expansionName} />
-          <Detail label="Numéro" value={detail.collectorNumber} />
-          <Detail label="Rareté" value={rarityLabel(detail.rarity)} />
-          <Detail label="Version" value={VARIANTS[detail.variant]} />
-          <Detail label="Type" value={typeLabel(detail.type)} />
-          <Detail label="Domaines" value={detail.domains.map(domainLabel).join(', ') || '—'} />
-          <Detail
+          <DetailRow label="Extension" value={detail.expansionName} />
+          <DetailRow label="Numéro" value={detail.collectorNumber} />
+          <DetailRow label="Rareté" value={rarityLabel(detail.rarity)} />
+          <DetailRow label="Version" value={VARIANTS[detail.variant]} />
+          <DetailRow label="Type" value={typeLabel(detail.type)} />
+          <DetailRow label="Domaines" value={detail.domains.map(domainLabel).join(', ') || '—'} />
+          <DetailRow
             label="Finitions"
             value={detail.finishes.map((f) => FINISH_LABELS[f]).join(', ') || '—'}
           />
-          <Detail label="Artiste" value={detail.artist ?? '—'} />
+          <DetailRow label="Artiste" value={detail.artist ?? '—'} />
         </Section>
       </ScrollView>
 
@@ -287,7 +304,7 @@ function Section({ title, children }: Readonly<{ title: string; children: React.
   );
 }
 
-function Detail({ label, value }: Readonly<{ label: string; value: string }>) {
+function DetailRow({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <View style={styles.detail}>
       <Text style={styles.muted}>{label}</Text>
