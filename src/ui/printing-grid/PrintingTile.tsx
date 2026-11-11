@@ -6,10 +6,7 @@ import type { Currency } from '@/domain/price';
 import { formatPrice } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
-import { gridImageUri, type GridPrinting } from './gridPrinting';
-
-/** Format des cartes Riftbound (largeur / hauteur). */
-export const CARD_ASPECT_RATIO = 744 / 1039;
+import { CARD_ASPECT_RATIO, gridImageUri, type GridPrinting } from './gridPrinting';
 
 /** Nouvelles tentatives automatiques d'une image indisponible, espacées de 5 s, 10 s, 15 s. */
 const AUTO_RETRIES = 3;

@@ -35,10 +35,7 @@ module.exports = {
       ...shared,
       displayName: 'app',
       preset: 'jest-expo',
-      // Le premier rendu d'un fichier transforme à la volée les modules React
-      // Native qu'il touche : sur la CI, sans cache et avec les suites en
-      // parallèle, il dépasse parfois les 5 s par défaut.
-      testTimeout: 15_000,
+      setupFilesAfterEnv: ['<rootDir>/jest/appSetup.js'],
       testPathIgnorePatterns: [...shared.testPathIgnorePatterns, ...nodeOnly],
     },
   ],
