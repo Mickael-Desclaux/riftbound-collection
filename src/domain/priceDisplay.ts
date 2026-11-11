@@ -1,6 +1,6 @@
 /** Règles d'affichage des prix (spec § 3). */
 import { toIsoDate, type IsoDate, type IsoDateTime } from './dates';
-import { rateOnOrBefore, type ExchangeRate } from './exchangeRates';
+import { rateOnOrBefore, type AppliedRate, type ExchangeRate } from './exchangeRates';
 import { FINISHES, type Currency, type Finish } from './price';
 
 /** Aucun taux n'est daté au-delà : « le dernier taux connu ». */
@@ -16,6 +16,15 @@ function convert(
   if (amount === null) return null;
   const applied = rateOnOrBefore(rates, from, to, date);
   return applied ? amount * applied.rate : null;
+}
+
+/** Le dernier taux connu pour convertir `from` en `to`. */
+export function currentRate(
+  from: Currency,
+  to: Currency,
+  rates: readonly ExchangeRate[],
+): AppliedRate | undefined {
+  return rateOnOrBefore(rates, from, to, LATEST);
 }
 
 /** Prix du jour converti au dernier taux connu ; `null` sans prix ou sans taux. */

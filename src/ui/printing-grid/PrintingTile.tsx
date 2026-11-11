@@ -19,12 +19,14 @@ const RETRY_DELAY_MS = 5_000;
 export function PrintingTile({
   printing,
   displayCurrency,
-}: Readonly<{ printing: GridPrinting; displayCurrency: Currency }>) {
+  onPress,
+}: Readonly<{ printing: GridPrinting; displayCurrency: Currency; onPress: () => void }>) {
   const uri = gridImageUri(printing);
   const price = formatPrice(printing.price, displayCurrency);
   return (
-    <View
-      accessible
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
       accessibilityLabel={`${printing.name}, ${printing.printingCode}, ${
         printing.price === null ? 'prix inconnu' : price
       }`}
@@ -39,7 +41,7 @@ export function PrintingTile({
         <Text style={styles.code}>{printing.printingCode}</Text>
         <Text style={styles.price}>{price}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

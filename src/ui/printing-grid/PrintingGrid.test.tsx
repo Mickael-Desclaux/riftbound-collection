@@ -22,6 +22,7 @@ const ahri: GridPrinting = {
 async function setup(props: Partial<PrintingGridProps> = {}) {
   const onPageChange = jest.fn();
   const onClearFilters = jest.fn();
+  const onOpenPrinting = jest.fn();
   await render(
     <PrintingGrid
       items={[jinx, ahri]}
@@ -30,10 +31,11 @@ async function setup(props: Partial<PrintingGridProps> = {}) {
       onPageChange={onPageChange}
       onClearFilters={onClearFilters}
       displayCurrency="CAD"
+      onOpenPrinting={onOpenPrinting}
       {...props}
     />,
   );
-  return { onPageChange, onClearFilters };
+  return { onPageChange, onClearFilters, onOpenPrinting };
 }
 
 describe('PrintingGrid', () => {
@@ -49,6 +51,14 @@ describe('PrintingGrid', () => {
 
     expect(screen.getByText('12,40\u00a0$\u00a0CA')).toBeTruthy();
     expect(screen.getByText('—')).toBeTruthy();
+  });
+
+  it('ouvre la fiche de la Version touchée', async () => {
+    const { onOpenPrinting } = await setup();
+
+    await fireEvent.press(screen.getByRole('button', { name: /^Jinx, Demolitionist, OGN-030a/ }));
+
+    expect(onOpenPrinting).toHaveBeenCalledWith('OGN-030a');
   });
 
   it('change de page depuis la pagination numérotée', async () => {

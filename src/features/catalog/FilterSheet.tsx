@@ -22,8 +22,6 @@ import {
 import type { Currency } from '@/domain/price';
 import { Button, Chip } from '@/ui/controls';
 import { currencySymbol, formatPrintingCount, parseAmount } from '@/ui/format';
-import { colors } from '@/ui/theme';
-
 import {
   domainLabel,
   orderedDomains,
@@ -32,7 +30,8 @@ import {
   rarityLabel,
   typeLabel,
   VARIANTS,
-} from './filterLabels';
+} from '@/ui/labels';
+import { colors } from '@/ui/theme';
 
 export type FilterOptions = {
   expansions: { code: string; name: string }[];
