@@ -1,5 +1,8 @@
 import type { PrintingCode } from '@/domain/printingCode';
 
+/** Format des cartes Riftbound (largeur / hauteur). */
+export const CARD_ASPECT_RATIO = 744 / 1039;
+
 /** Ce qu'une case de grille affiche. */
 export type GridPrinting = {
   printingCode: PrintingCode;

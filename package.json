@@ -58,10 +58,5 @@
       "better-sqlite3",
       "esbuild"
     ]
-  },
-  "reanimated": {
-    "staticFeatureFlags": {
-      "ENABLE_SHARED_ELEMENT_TRANSITIONS": true
-    }
   }
 }

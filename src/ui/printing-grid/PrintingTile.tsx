@@ -1,16 +1,13 @@
 import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Currency } from '@/domain/price';
 import { formatPrice } from '@/ui/format';
-import { SharedPrintingImage } from '@/ui/SharedPrintingImage';
+import { usePrintingZoom } from '@/ui/zoom/PrintingZoom';
 import { colors } from '@/ui/theme';
 
-import { gridImageUri, type GridPrinting } from './gridPrinting';
-
-/** Format des cartes Riftbound (largeur / hauteur). */
-export const CARD_ASPECT_RATIO = 744 / 1039;
+import { CARD_ASPECT_RATIO, gridImageUri, type GridPrinting } from './gridPrinting';
 
 /** Nouvelles tentatives automatiques d'une image indisponible, espacées de 5 s, 10 s, 15 s. */
 const AUTO_RETRIES = 3;
@@ -24,19 +21,24 @@ export function PrintingTile({
 }: Readonly<{ printing: GridPrinting; displayCurrency: Currency; onPress: () => void }>) {
   const uri = gridImageUri(printing);
   const price = formatPrice(printing.price, displayCurrency);
+  const { zoomFrom } = usePrintingZoom();
+  const imageBox = useRef<ComponentRef<typeof View>>(null);
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={onPress}
+      onPress={() => {
+        zoomFrom(imageBox.current, uri);
+        onPress();
+      }}
       accessibilityLabel={`${printing.name}, ${printing.printingCode}, ${
         printing.price === null ? 'prix inconnu' : price
       }`}
       style={styles.tile}
     >
       {/* `key` : une nouvelle adresse d'image repart d'un état neuf. */}
-      <SharedPrintingImage printingCode={printing.printingCode} style={styles.imageBox}>
+      <View ref={imageBox} collapsable={false} style={styles.imageBox}>
         <PrintingImage key={uri} printing={printing} uri={uri} />
-      </SharedPrintingImage>
+      </View>
       <Text numberOfLines={1} style={styles.name}>
         {printing.name}
       </Text>

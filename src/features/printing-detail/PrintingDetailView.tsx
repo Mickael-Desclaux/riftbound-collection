@@ -24,9 +24,8 @@ import {
   typeLabel,
   VARIANTS,
 } from '@/ui/labels';
-import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
-import { CARD_ASPECT_RATIO } from '@/ui/printing-grid/PrintingTile';
-import { SharedPrintingImage } from '@/ui/SharedPrintingImage';
+import { CARD_ASPECT_RATIO, gridImageUri } from '@/ui/printing-grid/gridPrinting';
+import { DETAIL_IMAGE_LAYOUT } from '@/ui/zoom/PrintingZoom';
 import { colors } from '@/ui/theme';
 
 type Props = {
@@ -84,11 +83,11 @@ export function PrintingDetailView({
         />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <SharedPrintingImage printingCode={detail.printingCode} style={styles.imageBox}>
+        <View style={styles.imageBox}>
           {image ? (
             <Image
               source={{ uri: image }}
-              // L'image de la grille, déjà en cache, s'affiche pendant le zoom et le chargement.
+              // L'image de la grille, déjà en cache, s'affiche pendant le chargement.
               placeholder={gridUri ? { uri: gridUri } : undefined}
               placeholderContentFit="contain"
               accessibilityLabel={`Image de ${detail.name}`}
@@ -101,7 +100,7 @@ export function PrintingDetailView({
               <Text style={styles.frameText}>{detail.name}</Text>
             </View>
           )}
-        </SharedPrintingImage>
+        </View>
 
         <View style={styles.heading}>
           <Text accessibilityRole="header" style={styles.name}>
@@ -323,15 +322,17 @@ function DetailRow({ label, value }: Readonly<{ label: string; value: string }>)
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
+  // Hauteur et marges reprises par le zoom de la grille (DETAIL_IMAGE_LAYOUT).
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    height: DETAIL_IMAGE_LAYOUT.topBarHeight,
+    alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 6,
   },
-  content: { padding: 16, gap: 20, paddingBottom: 32 },
+  content: { padding: DETAIL_IMAGE_LAYOUT.padding, gap: 20, paddingBottom: 32 },
   imageBox: {
-    width: '80%',
+    width: `${DETAIL_IMAGE_LAYOUT.widthRatio * 100}%`,
     alignSelf: 'center',
     aspectRatio: CARD_ASPECT_RATIO,
     borderRadius: 14,
