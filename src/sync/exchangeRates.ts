@@ -90,9 +90,10 @@ async function fetchWithFallback(
   const errors: unknown[] = [];
   for (const { id, fetchRates } of RATE_SOURCES) {
     try {
-      const rates: ExchangeRate[] = [];
-      for (const { start, end } of ranges) rates.push(...(await fetchRates(fetch, start, end)));
-      return { source: id, rates };
+      const rates = await Promise.all(
+        ranges.map(({ start, end }) => fetchRates(fetch, start, end)),
+      );
+      return { source: id, rates: rates.flat() };
     } catch (error) {
       errors.push(error);
     }

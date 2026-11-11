@@ -44,8 +44,12 @@ export async function fetchBankOfCanadaRates(
   const url = bankOfCanadaUrl(addDays(start, -LOOKBACK_DAYS), end);
   const { observations } = await fetchJson(fetch, url, observationsSchema);
   // Avant la plage, on ne garde que le dernier taux qui la précède.
-  const before = observations.filter((o) => o.d <= start).map((o) => o.d);
-  const from = before.length > 0 ? before.reduce((a, b) => (a > b ? a : b)) : start;
+  const from =
+    observations
+      .map((o) => o.d)
+      .filter((d) => d <= start)
+      .sort()
+      .at(-1) ?? start;
   return observations
     .filter((o) => o.d >= from)
     .flatMap(({ d, FXUSDCAD, FXEURCAD }) =>
