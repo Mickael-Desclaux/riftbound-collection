@@ -117,10 +117,10 @@ export function latestPublishedAt(db: AppDatabase, source: PriceSource): IsoDate
 }
 
 /** Une Version du Catalogue, avec les Finitions dans lesquelles elle existe. */
-export type PricedPrinting = { printingCode: PrintingCode; finishes: Finish[] };
+export type PrintingFinishes = { printingCode: PrintingCode; finishes: Finish[] };
 
 /** Les Versions de chaque produit Cardmarket du Catalogue. */
-export function printingsByCardmarketId(db: AppDatabase): Map<number, PricedPrinting[]> {
+export function printingsByCardmarketId(db: AppDatabase): Map<number, PrintingFinishes[]> {
   const rows = db
     .select({
       id: printing.cardmarketProductId,
@@ -130,35 +130,9 @@ export function printingsByCardmarketId(db: AppDatabase): Map<number, PricedPrin
     .from(printing)
     .where(isNotNull(printing.cardmarketProductId))
     .all();
-  const byId = new Map<number, PricedPrinting[]>();
+  const byId = new Map<number, PrintingFinishes[]>();
   for (const { id, ...priced } of rows) {
     byId.set(id as number, [...(byId.get(id as number) ?? []), priced]);
   }
   return byId;
-}
-
-/**
- * Remplace la correspondance `tcgId` → `idProduct` Cardmarket de toutes les
- * Versions : une Version sans correspondance n'a plus de produit Cardmarket.
- * Seules les Versions qui changent sont réécrites.
- */
-export function applyCardmarketLinks(db: AppDatabase, links: Map<number, number>): void {
-  db.transaction((tx) => {
-    const rows = tx
-      .select({
-        printingCode: printing.printingCode,
-        tcgId: printing.tcgId,
-        current: printing.cardmarketProductId,
-      })
-      .from(printing)
-      .all();
-    for (const { printingCode, tcgId, current } of rows) {
-      const next = tcgId === null ? null : (links.get(tcgId) ?? null);
-      if (next === current) continue;
-      tx.update(printing)
-        .set({ cardmarketProductId: next })
-        .where(eq(printing.printingCode, printingCode))
-        .run();
-    }
-  });
 }

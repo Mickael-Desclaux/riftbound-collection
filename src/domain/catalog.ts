@@ -67,3 +67,6 @@ export type Catalog = {
   cards: Card[];
   printings: Printing[];
 };
+
+/** `tcgId` → `idProduct` Cardmarket, pour chaque produit TCGplayer qu'OpenRift sait relier. */
+export type CardmarketLinks = ReadonlyMap<number, number>;

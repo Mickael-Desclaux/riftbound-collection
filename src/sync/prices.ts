@@ -14,9 +14,11 @@ import {
   savePrices,
 } from '@/data/prices';
 import type { SourceId } from '@/data/schema';
-import { getSourceState, recordSourceSuccess } from '@/data/sourceState';
-import { REFERENCE_METRIC, type PriceSource } from '@/domain/price';
+import { getSourceState, recordSourceSuccess, type SourceState } from '@/data/sourceState';
+import type { IsoDateTime } from '@/domain/dates';
+import { REFERENCE_METRIC, SOURCE_CURRENCY, type Finish, type PriceSource } from '@/domain/price';
 import { newPriceRecords, type CurrentPrice } from '@/domain/priceRecords';
+import type { PrintingCode } from '@/domain/printingCode';
 import {
   fetchCardmarketPriceGuide,
   type CardmarketPriceGuide,
@@ -49,6 +51,17 @@ type PriceFeed<T> = {
   toCurrentPrices: (db: AppDatabase, data: T) => CurrentPrice[];
 };
 
+/**
+ * Un téléchargement est dû après 6 h, après un échec, ou quand `Last-Modified`
+ * a été oublié (nouveau Catalogue, nouvelle correspondance) : des Versions
+ * attendent peut-être leur prix. Nos deux sources envoient toujours `Last-Modified`.
+ */
+function isDue(state: SourceState | undefined, at: Date): boolean {
+  if (!state) return true;
+  const forgotten = state.lastSuccessAt !== null && state.lastModified === null;
+  return forgotten || hasPendingError(state) || isOlderThan(state, PRICES_MAX_AGE, at);
+}
+
 async function syncPriceFeed<T>(
   { db, fetch, now }: SyncDeps,
   { refresh = false }: PriceOptions,
@@ -58,9 +71,7 @@ async function syncPriceFeed<T>(
   if (!hasCatalog(db)) return 'skipped';
   const at = now();
   const state = getSourceState(db, feed.stateId);
-  if (!refresh && !hasPendingError(state) && !isOlderThan(state, PRICES_MAX_AGE, at)) {
-    return 'skipped';
-  }
+  if (!refresh && !isDue(state, at)) return 'skipped';
 
   return failuresRecorded(db, feed.stateId, at, async () => {
     // Sans prix enregistrés, on retélécharge tout, même si le fichier n'a pas changé.
@@ -80,6 +91,25 @@ async function syncPriceFeed<T>(
   });
 }
 
+/** Le prix du jour d'une Version × Finition, avec son Indicateur de référence et sa devise. */
+function currentPriceOf(
+  printingCode: PrintingCode,
+  source: PriceSource,
+  finish: Finish,
+  metrics: Record<string, number | null>,
+  publishedAt: IsoDateTime,
+): CurrentPrice {
+  return {
+    printingCode,
+    source,
+    finish,
+    referenceMetricValue: metrics[REFERENCE_METRIC[source]] ?? null,
+    metrics,
+    currency: SOURCE_CURRENCY[source],
+    publishedAt,
+  };
+}
+
 const tcgplayer: PriceFeed<TcgplayerPrice[]> = {
   source: 'tcgplayer',
   stateId: 'rifthunt-prices',
@@ -89,15 +119,9 @@ const tcgplayer: PriceFeed<TcgplayerPrice[]> = {
     return products.flatMap((product) => {
       const printingCode = codes.get(product.tcgId);
       if (printingCode === undefined) return [];
-      return product.finishes.map(({ finish, metrics }) => ({
-        printingCode,
-        source: 'tcgplayer' as const,
-        finish,
-        referenceMetricValue: metrics[REFERENCE_METRIC.tcgplayer] ?? null,
-        metrics,
-        currency: 'USD' as const,
-        publishedAt: product.publishedAt,
-      }));
+      return product.finishes.map(({ finish, metrics }) =>
+        currentPriceOf(printingCode, 'tcgplayer', finish, metrics, product.publishedAt),
+      );
     });
   },
 };
@@ -115,17 +139,7 @@ const cardmarket: PriceFeed<CardmarketPriceGuide> = {
         finishes.flatMap((finish) => {
           const metrics = product.finishes[finish];
           if (!metrics || Object.values(metrics).every((value) => value === null)) return [];
-          return [
-            {
-              printingCode,
-              source: 'cardmarket' as const,
-              finish,
-              referenceMetricValue: metrics[REFERENCE_METRIC.cardmarket] ?? null,
-              metrics,
-              currency: 'EUR' as const,
-              publishedAt,
-            },
-          ];
+          return [currentPriceOf(printingCode, 'cardmarket', finish, metrics, publishedAt)];
         }),
       ),
     );

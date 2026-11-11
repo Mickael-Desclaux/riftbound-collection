@@ -50,12 +50,16 @@ export type CardmarketPriceGuide = {
   products: CardmarketPrice[];
 };
 
-/** Cardmarket écrit 0 quand il n'a pas de prix (`avg` et `avg30` sont alors vides). */
-const priceOrNull = (value: number | null | undefined) => (value ? value : null);
-
+/**
+ * Cardmarket écrit un `trend` à 0 quand il n'a pas de prix (`avg` et `avg30`
+ * sont alors vides) : on le lit comme absent.
+ */
 function metricsOf(row: Record<string, unknown>, suffix: '' | '-foil'): Metrics {
   return Object.fromEntries(
-    METRICS.map((m) => [m, priceOrNull(row[`${m}${suffix}`] as number | null | undefined)]),
+    METRICS.map((m) => {
+      const value = (row[`${m}${suffix}`] as number | null | undefined) ?? null;
+      return [m, m === 'trend' && value === 0 ? null : value];
+    }),
   );
 }
 

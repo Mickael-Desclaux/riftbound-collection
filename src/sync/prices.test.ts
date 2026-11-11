@@ -172,8 +172,10 @@ describe('syncTcgplayerPrices', () => {
     );
     const { fetch, requests } = fakeFetch(pricesResponse());
 
-    await syncTcgplayerPrices({ db, fetch, now: at('2026-11-08T12:00:00Z') }, { refresh: true });
+    // Sans attendre les 6 h.
+    const outcome = await syncTcgplayerPrices({ db, fetch, now: at('2026-11-08T12:00:00Z') });
 
+    expect(outcome).toBe('refreshed');
     expect(requests[0]?.headers['if-modified-since']).toBeUndefined();
   });
 

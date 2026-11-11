@@ -194,16 +194,19 @@ describe('syncCardmarketPrices', () => {
 
   it('retélécharge tout après une nouvelle correspondance, pour donner un prix aux Versions reliées', async () => {
     const db = await pricedDatabase();
-    recordSourceSuccess(db, 'rifthunt-catalog', '2026-11-18T10:00:00.000Z');
+    // Nouveau Catalogue à 11 h 20, donc nouvelle correspondance à 11 h 30.
+    recordSourceSuccess(db, 'rifthunt-catalog', '2026-11-11T11:20:00.000Z');
     await syncCardmarketLinks({
       db,
       fetch: fakeFetch({ [OPENRIFT_LINKS_URL]: { body: links } }).fetch,
-      now: at('2026-11-18T10:01:00Z'),
+      now: at('2026-11-11T11:30:00Z'),
     });
     const { fetch, requests } = fakeFetch(guideResponse());
 
-    await syncCardmarketPrices({ db, fetch, now: at('2026-11-18T10:02:00Z') }, { refresh: true });
+    // Sans attendre les 6 h.
+    const outcome = await syncCardmarketPrices({ db, fetch, now: at('2026-11-11T12:00:00Z') });
 
+    expect(outcome).toBe('refreshed');
     expect(requests[0]?.headers['if-modified-since']).toBeUndefined();
   });
 

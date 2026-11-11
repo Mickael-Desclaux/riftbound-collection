@@ -5,6 +5,7 @@
  */
 import { z } from 'zod';
 
+import type { CardmarketLinks } from '@/domain/catalog';
 import { fetchJson, SourceError, type Fetch } from '@/sources/http';
 
 export const OPENRIFT_LINKS_URL = 'https://openrift.app/api/v1/prices/links';
@@ -22,7 +23,7 @@ const linksSchema = z.object({
 });
 
 /** `idProduct` Cardmarket de chaque produit TCGplayer, quand OpenRift en connaît un. */
-export async function fetchCardmarketLinks(fetch: Fetch): Promise<Map<number, number>> {
+export async function fetchCardmarketLinks(fetch: Fetch): Promise<CardmarketLinks> {
   const { links } = await fetchJson(fetch, OPENRIFT_LINKS_URL, linksSchema);
   const byTcgId = new Map<number, number>();
   for (const { tcgplayer, cardmarket } of Object.values(links)) {
