@@ -23,7 +23,7 @@ describe('syncAll', () => {
     const { fetch } = fakeFetch({
       [SETS_URL]: { status: 503 },
       [RIFTHUNT_PRICES_URL]: { body: prices },
-      [frankfurterRangeUrl('2026-11-07', '2026-11-09')]: { body: range },
+      [frankfurterRangeUrl('2026-11-06', '2026-11-09')]: { body: range },
     });
 
     const report = await syncAll({ db, fetch, now: at('2026-11-09T10:00:00Z') });

@@ -41,6 +41,14 @@ describe('fetchFrankfurterRates', () => {
     });
   });
 
+  it('échoue clairement sans aucun taux', async () => {
+    const { fetch } = fakeFetch({ [URL_RANGE]: { body: { ...range, rates: {} } } });
+
+    await expect(fetchFrankfurterRates(fetch, '2026-10-31', '2026-11-11')).rejects.toMatchObject({
+      kind: 'format',
+    });
+  });
+
   it('échoue clairement s’il manque une devise un jour', async () => {
     const changed = { ...range, rates: { ...range.rates, '2026-11-10': { CAD: 1.4136 } } };
     const { fetch } = fakeFetch({ [URL_RANGE]: { body: changed } });

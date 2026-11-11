@@ -36,6 +36,16 @@ describe('fetchBankOfCanadaRates', () => {
     const rates = await fetchBankOfCanadaRates(fetch, '2026-11-01', '2026-11-11');
 
     expect(rates.map((r) => r.date)).toContain('2026-10-30');
+    // Avant la plage, seul le dernier taux qui la précède est gardé.
+    expect(rates.map((r) => r.date)).not.toContain('2026-10-29');
+  });
+
+  it('échoue clairement sans aucune observation', async () => {
+    const { fetch } = fakeFetch({ [URL_RANGE]: { body: { ...observations, observations: [] } } });
+
+    await expect(fetchBankOfCanadaRates(fetch, '2026-11-03', '2026-11-11')).rejects.toMatchObject({
+      kind: 'format',
+    });
   });
 
   it('échoue clairement si le format change', async () => {

@@ -1,7 +1,8 @@
 /**
- * Met à jour toutes les sources, dans l'ordre (les prix se rattachent au
- * Catalogue, les taux couvrent l'historique de prix). Chaque source est indépendante (spec § 5) : une panne est notée
- * dans `source_state` et n'empêche pas les suivantes.
+ * Met à jour toutes les sources, dans l'ordre : les prix se rattachent au
+ * Catalogue, les taux couvrent l'historique de prix. Chaque source est
+ * indépendante (spec § 5) : une panne est notée dans `source_state` et
+ * n'empêche pas les suivantes.
  */
 import { syncCatalog, type SyncDeps } from './catalog';
 import { syncExchangeRates } from './exchangeRates';

@@ -1,47 +1,73 @@
 /** Taux de change (Données de référence). */
-import { max, min, sql } from 'drizzle-orm';
+import { and, between, max, min, ne, or, sql } from 'drizzle-orm';
 
-import type { IsoDate } from '@/domain/dates';
-import type { ExchangeRate } from '@/domain/exchangeRates';
+import type { DateRange, IsoDate } from '@/domain/dates';
+import {
+  PRIMARY_RATE_SOURCE,
+  type ExchangeRate,
+  type ExchangeRateSource,
+} from '@/domain/exchangeRates';
 
 import { chunks } from './chunks';
 import type { AppDatabase } from './database';
-import { exchangeRate, priceRecord } from './schema';
+import { exchangeRate } from './schema';
 
 /** Les dates du premier et du dernier taux enregistrés. */
-export function storedRateSpan(db: AppDatabase): { first: IsoDate; last: IsoDate } | undefined {
+export function storedRateRange(db: AppDatabase): DateRange | undefined {
   const row = db
-    .select({ first: min(exchangeRate.date), last: max(exchangeRate.date) })
+    .select({ start: min(exchangeRate.date), end: max(exchangeRate.date) })
     .from(exchangeRate)
     .get();
-  return row?.first && row.last ? { first: row.first, last: row.last } : undefined;
+  return row?.start && row.end ? { start: row.start, end: row.end } : undefined;
 }
 
-/** La date (UTC) du plus ancien Relevé de prix : l'historique à convertir commence là. */
-export function earliestPriceRecordDate(db: AppDatabase): IsoDate | undefined {
-  const row = db
-    .select({ first: min(priceRecord.recordedAt) })
-    .from(priceRecord)
-    .get();
-  return row?.first?.slice(0, 10);
+/** La date du premier taux qui ne vient pas de la source principale. */
+export function firstFallbackRateDate(db: AppDatabase): IsoDate | undefined {
+  return (
+    db
+      .select({ date: min(exchangeRate.date) })
+      .from(exchangeRate)
+      .where(ne(exchangeRate.source, PRIMARY_RATE_SOURCE))
+      .get()?.date ?? undefined
+  );
 }
 
 /**
- * Enregistre des taux, un seul par jour et par paire. Frankfurter, la source
- * principale, remplace un taux de secours ; un taux de secours ne remplace
- * jamais un taux déjà connu.
+ * Enregistre les taux d'une source pour les plages demandées, un seul par jour
+ * et par paire. La source principale remplace tous les taux de secours de ces
+ * plages, pour ne pas mélanger deux sources dans une même série ; un taux de
+ * secours ne remplace jamais un taux déjà connu.
  */
-export function saveExchangeRates(db: AppDatabase, rates: ExchangeRate[]): void {
+export function saveExchangeRates(
+  db: AppDatabase,
+  source: ExchangeRateSource,
+  ranges: DateRange[],
+  rates: ExchangeRate[],
+): void {
+  const isPrimary = source === PRIMARY_RATE_SOURCE;
   db.transaction((tx) => {
-    for (const rows of chunks(rates)) {
-      tx.insert(exchangeRate)
-        .values(rows)
-        .onConflictDoUpdate({
-          target: [exchangeRate.baseCurrency, exchangeRate.quoteCurrency, exchangeRate.date],
-          set: { rate: sql`excluded.rate`, source: sql`excluded.source` },
-          setWhere: sql`excluded.source = 'frankfurter'`,
-        })
+    if (isPrimary && ranges.length > 0) {
+      tx.delete(exchangeRate)
+        .where(
+          and(
+            ne(exchangeRate.source, PRIMARY_RATE_SOURCE),
+            or(...ranges.map(({ start, end }) => between(exchangeRate.date, start, end))),
+          ),
+        )
         .run();
+    }
+    for (const rows of chunks(rates)) {
+      const insert = tx.insert(exchangeRate).values(rows);
+      if (isPrimary) {
+        insert
+          .onConflictDoUpdate({
+            target: [exchangeRate.baseCurrency, exchangeRate.quoteCurrency, exchangeRate.date],
+            set: { rate: sql`excluded.rate`, source: sql`excluded.source` },
+          })
+          .run();
+      } else {
+        insert.onConflictDoNothing().run();
+      }
     }
   });
 }

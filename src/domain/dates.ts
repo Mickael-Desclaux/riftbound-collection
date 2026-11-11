@@ -1,6 +1,9 @@
 /** Date du calendrier au format ISO `AAAA-MM-JJ`. */
 export type IsoDate = string;
 
+/** Plage de dates, bornes comprises. */
+export type DateRange = { start: IsoDate; end: IsoDate };
+
 /** Instant au format ISO 8601 complet, en UTC. */
 export type IsoDateTime = string;
 

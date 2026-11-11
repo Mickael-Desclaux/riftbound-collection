@@ -7,6 +7,9 @@ import { CURRENCIES, type Currency } from './price';
 
 export type ExchangeRateSource = 'frankfurter' | 'bank-of-canada';
 
+/** La source principale ; l'autre ne sert que si elle échoue. */
+export const PRIMARY_RATE_SOURCE: ExchangeRateSource = 'frankfurter';
+
 /** 1 `baseCurrency` vaut `rate` `quoteCurrency`, à la date `date`. */
 export type ExchangeRate = {
   date: IsoDate;
@@ -15,6 +18,18 @@ export type ExchangeRate = {
   rate: number;
   source: ExchangeRateSource;
 };
+
+/** Les taux USD → CAD et USD → EUR d'un jour, tels que les sources les publient. */
+export function usdRates(
+  date: IsoDate,
+  { CAD, EUR }: { CAD: number; EUR: number },
+  source: ExchangeRateSource,
+): ExchangeRate[] {
+  return [
+    { date, baseCurrency: 'USD', quoteCurrency: 'CAD', rate: CAD, source },
+    { date, baseCurrency: 'USD', quoteCurrency: 'EUR', rate: EUR, source },
+  ];
+}
 
 /**
  * Le taux retenu pour une conversion, et la date de cotation qu'il porte
@@ -39,6 +54,7 @@ export function rateOnOrBefore(
   const inverse = latestQuote(rates, to, from, date);
   if (inverse) return { rate: 1 / inverse.rate, date: inverse.date };
   for (const base of CURRENCIES) {
+    if (base === from || base === to) continue;
     const toFrom = latestQuote(rates, base, from, date);
     const toTo = latestQuote(rates, base, to, date);
     if (!toFrom || !toTo) continue;

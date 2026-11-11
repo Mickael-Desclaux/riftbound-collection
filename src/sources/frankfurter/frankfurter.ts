@@ -6,7 +6,7 @@
 import { z } from 'zod';
 
 import type { IsoDate } from '@/domain/dates';
-import type { ExchangeRate } from '@/domain/exchangeRates';
+import { usdRates, type ExchangeRate } from '@/domain/exchangeRates';
 import { fetchJson, type Fetch } from '@/sources/http';
 
 const FRANKFURTER_URL = 'https://api.frankfurter.dev/v1';
@@ -21,7 +21,10 @@ const rangeSchema = z.object({
   base: z.literal('USD'),
   start_date: z.iso.date(),
   end_date: z.iso.date(),
-  rates: z.record(z.iso.date(), z.object({ CAD: rate, EUR: rate })),
+  // Toujours au moins le dernier jour ouvré qui précède la plage.
+  rates: z
+    .record(z.iso.date(), z.object({ CAD: rate, EUR: rate }))
+    .refine((rates) => Object.keys(rates).length > 0, 'aucun taux'),
 });
 
 /** Les taux de chaque jour ouvré entre `start` et `end`, plus le dernier qui précède `start`. */
@@ -31,8 +34,7 @@ export async function fetchFrankfurterRates(
   end: IsoDate,
 ): Promise<ExchangeRate[]> {
   const response = await fetchJson(fetch, frankfurterRangeUrl(start, end), rangeSchema);
-  return Object.entries(response.rates).flatMap(([date, { CAD, EUR }]) => [
-    { date, baseCurrency: 'USD', quoteCurrency: 'CAD', rate: CAD, source: 'frankfurter' },
-    { date, baseCurrency: 'USD', quoteCurrency: 'EUR', rate: EUR, source: 'frankfurter' },
-  ]);
+  return Object.entries(response.rates).flatMap(([date, quotes]) =>
+    usdRates(date, quotes, 'frankfurter'),
+  );
 }

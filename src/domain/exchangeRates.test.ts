@@ -33,6 +33,15 @@ describe('rateOnOrBefore', () => {
     });
   });
 
+  it('passe les jours fériés de la BCE (Noël et lendemain de Noël)', () => {
+    // Taux BCE réels : aucune cotation du 25 au 28 décembre 2025.
+    const christmas = [usd('2025-12-24', 'CAD', 1.3683), usd('2025-12-29', 'CAD', 1.3689)];
+    expect(rateOnOrBefore(christmas, 'USD', 'CAD', '2025-12-26')).toEqual({
+      rate: 1.3683,
+      date: '2025-12-24',
+    });
+  });
+
   it('ne donne rien avant le premier taux connu', () => {
     expect(rateOnOrBefore(rates, 'USD', 'CAD', '2026-11-05')).toBeUndefined();
   });

@@ -7,7 +7,7 @@
 import { z } from 'zod';
 
 import { addDays, type IsoDate } from '@/domain/dates';
-import type { ExchangeRate } from '@/domain/exchangeRates';
+import { usdRates, type ExchangeRate } from '@/domain/exchangeRates';
 import { fetchJson, type Fetch } from '@/sources/http';
 
 /**
@@ -30,25 +30,25 @@ const value = z.object({
     .pipe(z.number().positive()),
 });
 const observationsSchema = z.object({
-  observations: z.array(z.object({ d: z.iso.date(), FXUSDCAD: value, FXEURCAD: value })),
+  observations: z
+    .array(z.object({ d: z.iso.date(), FXUSDCAD: value, FXEURCAD: value }))
+    .min(1, 'aucune observation'),
 });
 
-/** Les taux de chaque jour ouvré entre `start` et `end`, plus ceux qui précèdent `start`. */
+/** Les taux de chaque jour ouvré entre `start` et `end`, plus le dernier qui précède `start`. */
 export async function fetchBankOfCanadaRates(
   fetch: Fetch,
   start: IsoDate,
   end: IsoDate,
 ): Promise<ExchangeRate[]> {
   const url = bankOfCanadaUrl(addDays(start, -LOOKBACK_DAYS), end);
-  const response = await fetchJson(fetch, url, observationsSchema);
-  return response.observations.flatMap(({ d: date, FXUSDCAD, FXEURCAD }) => [
-    { date, baseCurrency: 'USD', quoteCurrency: 'CAD', rate: FXUSDCAD.v, source: 'bank-of-canada' },
-    {
-      date,
-      baseCurrency: 'USD',
-      quoteCurrency: 'EUR',
-      rate: FXUSDCAD.v / FXEURCAD.v,
-      source: 'bank-of-canada',
-    },
-  ]);
+  const { observations } = await fetchJson(fetch, url, observationsSchema);
+  // Avant la plage, on ne garde que le dernier taux qui la précède.
+  const before = observations.filter((o) => o.d <= start).map((o) => o.d);
+  const from = before.length > 0 ? before.reduce((a, b) => (a > b ? a : b)) : start;
+  return observations
+    .filter((o) => o.d >= from)
+    .flatMap(({ d, FXUSDCAD, FXEURCAD }) =>
+      usdRates(d, { CAD: FXUSDCAD.v, EUR: FXUSDCAD.v / FXEURCAD.v }, 'bank-of-canada'),
+    );
 }
