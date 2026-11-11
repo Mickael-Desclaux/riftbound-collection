@@ -6,13 +6,23 @@
  * Au toucher d'une case, une copie de son image part de la case et grandit
  * jusqu'à la place de l'image de la fiche, pendant que la fiche apparaît en
  * fondu dessous ; la copie s'efface ensuite et laisse voir la vraie image.
- * Au retour, la fiche s'efface en fondu sur la grille, restée à sa place.
+ * Au retour, la fiche s'efface en fondu sur la grille, restée à sa place
+ * (`PrintingDetailFade`).
  *
  * Toute l'animation tient dans ce module ; elle n'utilise que les API stables
  * de Reanimated.
  */
 import { Image } from 'expo-image';
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { usePreventRemove } from 'expo-router';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
   interpolate,
@@ -40,8 +50,45 @@ export const DETAIL_IMAGE_LAYOUT = {
   widthRatio: 0.8,
 } as const;
 
-/** La fiche apparaît en fondu sous l'image qui grandit, et s'efface de même au retour. */
-export const printingDetailScreenOptions = { animation: 'fade' } as const;
+/**
+ * La fiche se pose sur la grille, qui reste visible dessous, sans animation de
+ * la pile : `PrintingDetailFade` la fait apparaître et s'effacer en fondu. Le
+ * fondu de la pile native n'est pas réglable sur Android, et trop bref : le
+ * fond sombre de la fiche recouvrait la grille d'un coup.
+ */
+export const printingDetailScreenOptions = {
+  presentation: 'transparentModal',
+  animation: 'none',
+} as const;
+
+const DETAIL_FADE_IN_MS = 300;
+const DETAIL_FADE_OUT_MS = 200;
+
+/**
+ * Enveloppe la fiche : elle apparaît en fondu, fond compris, pendant que
+ * l'image grandit ; à sa fermeture (←, retour Android), elle s'efface en fondu
+ * avant de quitter la pile.
+ */
+export function PrintingDetailFade({ children }: Readonly<{ children: ReactNode }>) {
+  const opacity = useSharedValue(0);
+  const [faded, setFaded] = useState(false);
+
+  useEffect(() => {
+    opacity.set(withTiming(1, { duration: DETAIL_FADE_IN_MS }));
+  }, [opacity]);
+
+  // La fermeture est retenue le temps du fondu, puis relancée telle quelle.
+  usePreventRemove(!faded, ({ repeat }) => {
+    opacity.set(withTiming(0, { duration: DETAIL_FADE_OUT_MS }));
+    setTimeout(() => {
+      setFaded(true);
+      repeat();
+    }, DETAIL_FADE_OUT_MS);
+  });
+
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  return <Animated.View style={[styles.container, style]}>{children}</Animated.View>;
+}
 
 /** Un rectangle dans la fenêtre, comme le donne `measureInWindow`. */
 export type WindowRect = { x: number; y: number; width: number; height: number };
@@ -99,12 +146,14 @@ export function PrintingZoomProvider({ children }: Readonly<{ children: ReactNod
       }
       from.measureInWindow((x, y, width, height) => {
         setUri(nextUri);
-        start.value = { x, y, width, height };
-        progress.value = 0;
-        progress.value = withTiming(1, { duration: GROW_MS });
-        opacity.value = withSequence(
-          withTiming(1, { duration: 0 }),
-          withDelay(GROW_MS + FADE_DELAY_MS, withTiming(0, { duration: FADE_MS })),
+        start.set({ x, y, width, height });
+        progress.set(0);
+        progress.set(withTiming(1, { duration: GROW_MS }));
+        opacity.set(
+          withSequence(
+            withTiming(1, { duration: 0 }),
+            withDelay(GROW_MS + FADE_DELAY_MS, withTiming(0, { duration: FADE_MS })),
+          ),
         );
         // La fiche, plus lourde à construire, attend que l'image ait commencé à voler.
         requestAnimationFrame(open);

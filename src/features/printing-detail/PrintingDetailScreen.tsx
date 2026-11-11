@@ -19,6 +19,7 @@ import type { PrintingCode } from '@/domain/printingCode';
 import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
+import { PrintingDetailFade } from '@/ui/zoom/PrintingZoom';
 
 import { PrintingDetailView } from './PrintingDetailView';
 import { printingHref, type PrintingTab } from '@/ui/printingHref';
@@ -48,28 +49,32 @@ export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
 
   if (!detail) {
     return (
-      <View style={styles.missing}>
-        <Text style={styles.missingText}>Cette version n’est pas dans le catalogue.</Text>
-        <Button label="Retour" onPress={goBack} />
-      </View>
+      <PrintingDetailFade>
+        <View style={styles.missing}>
+          <Text style={styles.missingText}>Cette version n’est pas dans le catalogue.</Text>
+          <Button label="Retour" onPress={goBack} />
+        </View>
+      </PrintingDetailFade>
     );
   }
   return (
-    <PrintingDetailView
-      // Une autre Version repart de sa propre case de prix.
-      key={code}
-      detail={detail}
-      state={state}
-      displayCurrency={displayCurrency}
-      priceSource={priceSource}
-      rates={rates}
-      onBack={goBack}
-      onOpenPrinting={(other) => router.push(printingHref(tab, other))}
-      onOpenUrl={(url) => void Linking.openURL(url)}
-      onQuantityChange={(quantity) => setOwnedQuantity(db, code, quantity)}
-      onWishlistChange={(wished) => setWishlisted(db, code, wished ? now().toISOString() : null)}
-      onBinderSelectionChange={(selected) => setInBinderSelection(db, code, selected)}
-    />
+    <PrintingDetailFade>
+      <PrintingDetailView
+        // Une autre Version repart de sa propre case de prix.
+        key={code}
+        detail={detail}
+        state={state}
+        displayCurrency={displayCurrency}
+        priceSource={priceSource}
+        rates={rates}
+        onBack={goBack}
+        onOpenPrinting={(other) => router.push(printingHref(tab, other))}
+        onOpenUrl={(url) => void Linking.openURL(url)}
+        onQuantityChange={(quantity) => setOwnedQuantity(db, code, quantity)}
+        onWishlistChange={(wished) => setWishlisted(db, code, wished ? now().toISOString() : null)}
+        onBinderSelectionChange={(selected) => setInBinderSelection(db, code, selected)}
+      />
+    </PrintingDetailFade>
   );
 }
 
