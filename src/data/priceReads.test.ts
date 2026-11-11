@@ -2,7 +2,13 @@ import type { CurrentPrice } from '@/domain/priceRecords';
 import type { PrintingCode } from '@/domain/printingCode';
 
 import { readExchangeRates, saveExchangeRates } from './exchangeRates';
-import { latestPublishedAt, readCurrentPrices, savePrices } from './prices';
+import {
+  latestPublishedAt,
+  readCurrentPrices,
+  readPrintingHistory,
+  referenceValuesOn,
+  savePrices,
+} from './prices';
 import { createTestDatabase } from './testing/createTestDatabase';
 
 const price = (code: string, overrides: Partial<CurrentPrice> = {}): CurrentPrice => ({
@@ -78,5 +84,76 @@ describe('readExchangeRates', () => {
     saveExchangeRates(db, 'frankfurter', [], [rate]);
 
     expect(readExchangeRates(db)).toEqual([rate]);
+  });
+});
+
+const record = (code: string, finish: 'normal' | 'foil', recordedAt: string, value: number) => ({
+  printingCode: code as PrintingCode,
+  source: 'tcgplayer' as const,
+  finish,
+  recordedAt,
+  value,
+});
+
+/** Base avec trois relevés de Jinx (OGN-030a foil), un d'Ahri, et un relevé Cardmarket. */
+async function historyDatabase() {
+  const { db } = await createTestDatabase();
+  savePrices(
+    db,
+    'tcgplayer',
+    [],
+    [
+      record('OGN-030a', 'foil', '2026-11-03T17:00:00.000Z', 2.8),
+      record('OGN-030a', 'foil', '2026-11-05T17:00:00.000Z', 3.1),
+      record('OGN-030a', 'foil', '2026-11-08T17:00:00.000Z', 2.9),
+      record('OGN-255', 'normal', '2026-11-04T17:00:00.000Z', 0.7),
+    ],
+  );
+  savePrices(
+    db,
+    'cardmarket',
+    [],
+    [{ ...record('OGN-030a', 'foil', '2026-11-04T01:45:56.000Z', 3.5), source: 'cardmarket' }],
+  );
+  return db;
+}
+
+describe('readPrintingHistory', () => {
+  it('donne les relevés d’une Version par Source et Finition, du plus ancien au plus récent', async () => {
+    const db = await historyDatabase();
+
+    expect(readPrintingHistory(db, 'OGN-030a' as PrintingCode)).toEqual({
+      tcgplayer: {
+        foil: [
+          { recordedAt: '2026-11-03T17:00:00.000Z', value: 2.8 },
+          { recordedAt: '2026-11-05T17:00:00.000Z', value: 3.1 },
+          { recordedAt: '2026-11-08T17:00:00.000Z', value: 2.9 },
+        ],
+      },
+      cardmarket: { foil: [{ recordedAt: '2026-11-04T01:45:56.000Z', value: 3.5 }] },
+    });
+  });
+});
+
+describe('referenceValuesOn', () => {
+  it('donne la valeur de chaque Version × Finition à la fin d’un jour (UTC)', async () => {
+    const db = await historyDatabase();
+
+    const values = referenceValuesOn(db, 'tcgplayer', '2026-11-05');
+
+    expect(values).toEqual(
+      new Map([
+        ['OGN-030a|foil', 3.1],
+        ['OGN-255|normal', 0.7],
+      ]),
+    );
+  });
+
+  it('ignore les Versions dont l’historique commence plus tard', async () => {
+    const db = await historyDatabase();
+
+    expect(referenceValuesOn(db, 'tcgplayer', '2026-11-03')).toEqual(
+      new Map([['OGN-030a|foil', 2.8]]),
+    );
   });
 });

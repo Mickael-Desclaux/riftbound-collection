@@ -1,7 +1,8 @@
 import type { PrintingVariant } from './catalog';
 import { latestRatePerPair, type ExchangeRate } from './exchangeRates';
 import type { Currency, Finish } from './price';
-import { referencePrice, type FinishPrices } from './priceDisplay';
+import { referenceFinish, referencePrice, type FinishPrices } from './priceDisplay';
+import { percentChange } from './priceHistory';
 import type { PrintingCode } from './printingCode';
 
 /** Une Version telle que les grilles la filtrent, la trient et l'affichent. */
@@ -24,6 +25,9 @@ export type CatalogEntry = {
   finishes: Finish[];
   /** Prix de la Finition de référence dans la Devise d'affichage (`null` : « — »). */
   price: number | null;
+  /** Variation de prix sur 7 / 30 jours, en % (`null` : pas assez d'historique). */
+  priceChange7d: number | null;
+  priceChange30d: number | null;
   imageSmall: string | null;
   imageNormal: string | null;
 };
@@ -52,4 +56,26 @@ export function withPrices(
     ...entry,
     price: referencePrice(entry.finishes, prices.get(entry.printingCode), displayCurrency, latest),
   }));
+}
+
+/**
+ * Valeur de l'Indicateur de référence de chaque Version × Finition
+ * (`printingCode|finish`) aujourd'hui, il y a 7 jours et il y a 30 jours, pour
+ * la Source de prix choisie et en devise d'origine.
+ */
+export type ValuesByDay = Record<'today' | 'daysAgo7' | 'daysAgo30', Map<string, number>>;
+
+/** Les Versions, avec la Variation de prix 7 j / 30 j de leur Finition de référence (spec § 3). */
+export function withPriceChanges(entries: CatalogEntry[], values: ValuesByDay): CatalogEntry[] {
+  return entries.map((entry) => {
+    const finish = referenceFinish(entry.finishes);
+    const valueOf = (map: Map<string, number>) =>
+      finish ? (map.get(`${entry.printingCode}|${finish}`) ?? null) : null;
+    const today = valueOf(values.today);
+    return {
+      ...entry,
+      priceChange7d: percentChange(valueOf(values.daysAgo7), today),
+      priceChange30d: percentChange(valueOf(values.daysAgo30), today),
+    };
+  });
 }

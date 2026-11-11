@@ -63,6 +63,39 @@ describe('sortCatalog', () => {
     });
   });
 
+  describe('par Variation de prix', () => {
+    const changing = [
+      entry('OGN-001', { priceChange7d: 12, priceChange30d: -5 }),
+      entry('OGN-002', { priceChange7d: null, priceChange30d: 40 }),
+      entry('OGN-003', { priceChange7d: -8, priceChange30d: null }),
+      entry('OGN-004', { priceChange7d: 3, priceChange30d: 2 }),
+    ];
+
+    it('sur 7 jours, croissant puis décroissant, sans historique en dernier', () => {
+      expect(codes(sortCatalog(changing, 'change7dAsc'))).toEqual([
+        'OGN-003',
+        'OGN-004',
+        'OGN-001',
+        'OGN-002',
+      ]);
+      expect(codes(sortCatalog(changing, 'change7dDesc'))).toEqual([
+        'OGN-001',
+        'OGN-004',
+        'OGN-003',
+        'OGN-002',
+      ]);
+    });
+
+    it('sur 30 jours', () => {
+      expect(codes(sortCatalog(changing, 'change30dDesc'))).toEqual([
+        'OGN-002',
+        'OGN-004',
+        'OGN-001',
+        'OGN-003',
+      ]);
+    });
+  });
+
   it('ne modifie pas la liste reçue', () => {
     const before = codes(entries);
 

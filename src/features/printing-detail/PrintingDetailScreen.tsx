@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useDatabase } from '@/data/DatabaseProvider';
 import { readExchangeRates } from '@/data/exchangeRates';
+import { readPrintingHistory } from '@/data/prices';
 import {
   PRINTING_DETAIL_TABLES,
   PRINTING_STATE_TABLES,
@@ -15,11 +16,13 @@ import {
 } from '@/data/printingDetail';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
 import { useSetting } from '@/data/useSetting';
+import { toIsoDate } from '@/domain/dates';
 import type { PrintingCode } from '@/domain/printingCode';
 import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
+import { pickDateRange } from './pickDateRange';
 import { PrintingDetailView } from './PrintingDetailView';
 import { printingHref, type PrintingTab } from '@/ui/printingHref';
 
@@ -43,6 +46,12 @@ export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
     PRINTING_STATE_TABLES,
   );
   const rates = useReactiveQuery(() => readExchangeRates(db), [db], ['exchange_rate']);
+  const history = useReactiveQuery(
+    () => readPrintingHistory(db, code),
+    [db, code],
+    ['price_record'],
+  );
+  const [chartPeriod, setChartPeriod] = useSetting('chartPeriod');
   // Ouverte par un lien direct, la fiche n'a pas d'écran précédent : retour à l'onglet.
   const goBack = () => (router.canGoBack() ? router.back() : router.replace(`/${tab}`));
 
@@ -63,6 +72,11 @@ export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
       displayCurrency={displayCurrency}
       priceSource={priceSource}
       rates={rates}
+      history={history}
+      today={toIsoDate(now())}
+      chartPeriod={chartPeriod}
+      onChartPeriodChange={setChartPeriod}
+      pickDates={() => pickDateRange(now())}
       onBack={goBack}
       onOpenPrinting={(other) => router.push(printingHref(tab, other))}
       onOpenUrl={(url) => void Linking.openURL(url)}

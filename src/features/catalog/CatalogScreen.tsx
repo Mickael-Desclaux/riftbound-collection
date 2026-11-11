@@ -14,9 +14,15 @@ import {
 import { useDatabase } from '@/data/DatabaseProvider';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
 import { readExchangeRates } from '@/data/exchangeRates';
-import { readCurrentPrices } from '@/data/prices';
+import { readCurrentPrices, referenceValuesOn } from '@/data/prices';
 import { useSetting } from '@/data/useSetting';
-import { withOwnedQuantities, withPrices } from '@/domain/catalogEntry';
+import {
+  withOwnedQuantities,
+  withPriceChanges,
+  withPrices,
+  type ValuesByDay,
+} from '@/domain/catalogEntry';
+import { addDays, toIsoDate } from '@/domain/dates';
 import {
   activeFilters,
   DEFAULT_CATALOG_FILTERS,
@@ -30,6 +36,7 @@ import { Chip, controlStyles } from '@/ui/controls';
 import { formatPrintingCount } from '@/ui/format';
 import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
+import { useClock } from '@/ui/ClockContext';
 import { useSync } from '@/ui/SyncContext';
 import { colors } from '@/ui/theme';
 
@@ -43,6 +50,10 @@ const SORT_LABELS: Record<CatalogSort, string> = {
   name: 'Nom',
   priceAsc: 'Prix ↑',
   priceDesc: 'Prix ↓',
+  change7dAsc: 'Variation 7 j ↑',
+  change7dDesc: 'Variation 7 j ↓',
+  change30dAsc: 'Variation 30 j ↑',
+  change30dDesc: 'Variation 30 j ↓',
 };
 
 /**
@@ -81,9 +92,26 @@ export function CatalogScreen() {
     ['current_price'],
   );
   const rates = useReactiveQuery(() => readExchangeRates(db), [db], ['exchange_rate']);
+  const now = useClock();
+  const values = useReactiveQuery(
+    (): ValuesByDay => {
+      const today = toIsoDate(now());
+      return {
+        today: referenceValuesOn(db, priceSource, today),
+        daysAgo7: referenceValuesOn(db, priceSource, addDays(today, -7)),
+        daysAgo30: referenceValuesOn(db, priceSource, addDays(today, -30)),
+      };
+    },
+    [db, priceSource, now],
+    ['price_record'],
+  );
   const entries = useMemo(
-    () => withPrices(withOwnedQuantities(catalog, owned), prices, displayCurrency, rates),
-    [catalog, owned, prices, displayCurrency, rates],
+    () =>
+      withPriceChanges(
+        withPrices(withOwnedQuantities(catalog, owned), prices, displayCurrency, rates),
+        values,
+      ),
+    [catalog, owned, prices, displayCurrency, rates, values],
   );
   const options = useReactiveQuery(
     (): FilterOptions => {

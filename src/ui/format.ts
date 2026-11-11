@@ -62,3 +62,25 @@ export function formatDate(at: IsoDateTime): string {
 export function formatIsoDate(date: IsoDate): string {
   return formatUtcDate(new Date(`${date}T00:00:00Z`));
 }
+
+const formatOneDecimal = new Intl.NumberFormat('fr-FR', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+}).format;
+
+/** « +10,0 % », « −3,5 % » : une variation, toujours signée. */
+export function formatPercentChange(change: number): string {
+  const sign = change > 0 ? '+' : change < 0 ? '−' : '';
+  return `${sign}${formatOneDecimal(Math.abs(change))} %`;
+}
+
+const formatDayMonth = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+}).format;
+
+/** Une date du calendrier en abrégé : « 1 oct. ». */
+export function formatShortIsoDate(date: IsoDate): string {
+  return formatDayMonth(new Date(`${date}T00:00:00Z`));
+}

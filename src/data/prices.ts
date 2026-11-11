@@ -1,10 +1,11 @@
 /** Prix du jour (Données de référence) et historique des Relevés de prix (Données précieuses). */
-import { count, eq, isNotNull, max, min, sql } from 'drizzle-orm';
+import { and, asc, count, eq, isNotNull, lt, max, min, sql } from 'drizzle-orm';
 
-import { toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dates';
+import { addDays, toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dates';
 
 import type { Finish, PriceSource } from '@/domain/price';
 import type { FinishPrices } from '@/domain/priceDisplay';
+import type { HistoryRecord } from '@/domain/priceHistory';
 import {
   priceKey,
   type CurrentPrice,
@@ -135,4 +136,59 @@ export function printingsByCardmarketId(db: AppDatabase): Map<number, PrintingFi
     byId.set(id as number, [...(byId.get(id as number) ?? []), priced]);
   }
   return byId;
+}
+
+/** Les Relevés de prix d'une Version, par Source de prix et Finition. */
+export type PrintingHistory = Partial<
+  Record<PriceSource, Partial<Record<Finish, HistoryRecord[]>>>
+>;
+
+/** Tout l'historique d'une Version, chaque série du plus ancien au plus récent relevé. */
+export function readPrintingHistory(db: AppDatabase, printingCode: PrintingCode): PrintingHistory {
+  const rows = db
+    .select({
+      source: priceRecord.source,
+      finish: priceRecord.finish,
+      recordedAt: priceRecord.recordedAt,
+      value: priceRecord.value,
+    })
+    .from(priceRecord)
+    .where(eq(priceRecord.printingCode, printingCode))
+    .orderBy(asc(priceRecord.recordedAt))
+    .all();
+  const history: PrintingHistory = {};
+  for (const { source, finish, recordedAt, value } of rows) {
+    const bySource = (history[source] ??= {});
+    (bySource[finish] ??= []).push({ recordedAt, value });
+  }
+  return history;
+}
+
+/**
+ * La valeur de chaque Version × Finition (`printingCode|finish`) à la fin du
+ * jour `day` (UTC) : celle de son dernier relevé avant le jour suivant.
+ */
+export function referenceValuesOn(
+  db: AppDatabase,
+  source: PriceSource,
+  day: IsoDate,
+): Map<string, number> {
+  // Avec max(), SQLite donne les autres colonnes de la ligne qui porte ce maximum.
+  const rows = db
+    .select({
+      printingCode: priceRecord.printingCode,
+      finish: priceRecord.finish,
+      value: priceRecord.value,
+      recordedAt: sql<string>`max(${priceRecord.recordedAt})`,
+    })
+    .from(priceRecord)
+    .where(
+      and(
+        eq(priceRecord.source, source),
+        lt(priceRecord.recordedAt, `${addDays(day, 1)}T00:00:00.000Z`),
+      ),
+    )
+    .groupBy(priceRecord.printingCode, priceRecord.finish)
+    .all();
+  return new Map(rows.map((row) => [`${row.printingCode}|${row.finish}`, row.value]));
 }

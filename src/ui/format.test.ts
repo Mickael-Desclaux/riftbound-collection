@@ -1,4 +1,4 @@
-import { formatIsoDate, formatPrice, parseAmount } from './format';
+import { formatIsoDate, formatPercentChange, formatPrice, parseAmount } from './format';
 
 /** Espace insécable, et espace fine insécable (séparateur de milliers en français). */
 const NBSP = '\u00a0';
@@ -41,5 +41,13 @@ describe('parseAmount', () => {
 describe('formatIsoDate', () => {
   it('écrit une date du calendrier en toutes lettres, sans décalage de fuseau', () => {
     expect(formatIsoDate('2026-11-10')).toBe('10 novembre 2026');
+  });
+});
+
+describe('formatPercentChange', () => {
+  it('signe toujours la variation, à une décimale', () => {
+    expect(formatPercentChange(10)).toBe(`+10,0${NBSP}%`);
+    expect(formatPercentChange(-3.46)).toBe(`−3,5${NBSP}%`);
+    expect(formatPercentChange(0)).toBe(`0,0${NBSP}%`);
   });
 });
