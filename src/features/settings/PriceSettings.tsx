@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { CURRENCIES, PRICE_SOURCES, type Currency, type PriceSource } from '@/domain/price';
 import { Chip } from '@/ui/controls';
-import { PRICE_SOURCE_LABELS } from '@/ui/format';
+import { PRICE_SOURCE_LABELS } from '@/ui/labels';
 import { colors } from '@/ui/theme';
 
 type Props = {

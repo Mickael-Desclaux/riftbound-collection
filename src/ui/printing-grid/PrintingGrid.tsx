@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactElement } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import type { Currency } from '@/domain/price';
+import type { PrintingCode } from '@/domain/printingCode';
 import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
@@ -19,6 +20,8 @@ export type PrintingGridProps = {
   pageCount: number;
   onPageChange: (page: number) => void;
   onClearFilters: () => void;
+  /** Toucher une case ouvre la fiche de sa Version. */
+  onOpenPrinting: (printingCode: PrintingCode) => void;
   /** Affiché au-dessus de la grille (recherche, puces, compteur…). */
   header?: ReactElement;
   /** Tirer-pour-rafraîchir : force la mise à jour des données (spec § 5). */
@@ -37,6 +40,7 @@ export function PrintingGrid({
   pageCount,
   onPageChange,
   onClearFilters,
+  onOpenPrinting,
   header,
   onRefresh,
   refreshing = false,
@@ -69,7 +73,11 @@ export function PrintingGrid({
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.content}
         renderItem={({ item }) => (
-          <PrintingTile printing={item} displayCurrency={displayCurrency} />
+          <PrintingTile
+            printing={item}
+            displayCurrency={displayCurrency}
+            onPress={() => onOpenPrinting(item.printingCode)}
+          />
         )}
         ListEmptyComponent={<EmptyResult onClearFilters={onClearFilters} />}
         ListFooterComponent={

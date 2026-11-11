@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,6 +33,8 @@ import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { useSync } from '@/ui/SyncContext';
 import { colors } from '@/ui/theme';
 
+import { printingHref } from '@/ui/printingHref';
+
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';
 
@@ -54,6 +57,7 @@ export function CatalogScreen() {
   const [page, setPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
   const { refresh } = useSync();
+  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = () => {
     setRefreshing(true);
@@ -137,6 +141,7 @@ export function CatalogScreen() {
         pageCount={pages}
         onPageChange={setPage}
         onClearFilters={() => changeFilters(DEFAULT_CATALOG_FILTERS)}
+        onOpenPrinting={(code) => router.push(printingHref('catalog', code))}
         onRefresh={onRefresh}
         refreshing={refreshing}
         header={

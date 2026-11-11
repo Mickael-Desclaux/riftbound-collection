@@ -1,4 +1,4 @@
-import { formatPrice, parseAmount } from './format';
+import { formatIsoDate, formatPrice, parseAmount } from './format';
 
 /** Espace insécable, et espace fine insécable (séparateur de milliers en français). */
 const NBSP = '\u00a0';
@@ -35,5 +35,11 @@ describe('parseAmount', () => {
     expect(parseAmount('12,5,3')).toBeNull();
     expect(parseAmount('-2')).toBeNull();
     expect(parseAmount('abc')).toBeNull();
+  });
+});
+
+describe('formatIsoDate', () => {
+  it('écrit une date du calendrier en toutes lettres, sans décalage de fuseau', () => {
+    expect(formatIsoDate('2026-11-10')).toBe('10 novembre 2026');
   });
 });
