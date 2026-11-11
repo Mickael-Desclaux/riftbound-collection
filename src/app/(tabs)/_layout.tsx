@@ -4,7 +4,6 @@ import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 
 import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
-import { PrintingZoomProvider } from '@/ui/zoom/PrintingZoom';
 import { colors } from '@/ui/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -22,34 +21,32 @@ function tabIcon(name: IconName) {
 
 export default function TabsLayout() {
   return (
-    <PrintingZoomProvider>
-      <StalePricesFrame>
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: colors.accent,
-            tabBarInactiveTintColor: colors.muted,
-            tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
-          }}
-        >
-          <Tabs.Screen
-            name="catalog"
-            options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
-          />
-          <Tabs.Screen
-            name="collection"
-            options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
-          />
-          <Tabs.Screen
-            name="wishlist"
-            options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
-          />
-          <Tabs.Screen
-            name="settings"
-            options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
-          />
-        </Tabs>
-      </StalePricesFrame>
-    </PrintingZoomProvider>
+    <StalePricesFrame>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.muted,
+          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
+        }}
+      >
+        <Tabs.Screen
+          name="catalog"
+          options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
+        />
+        <Tabs.Screen
+          name="collection"
+          options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
+        />
+        <Tabs.Screen
+          name="wishlist"
+          options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
+        />
+      </Tabs>
+    </StalePricesFrame>
   );
 }

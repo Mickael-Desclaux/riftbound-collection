@@ -42,9 +42,7 @@ Source : [Prototype de la grille Catalogue](https://github.com/Mickael-Desclaux/
 
 Source : [Prototype de la fiche carte](https://github.com/Mickael-Desclaux/riftbound-collection/issues/11) (mise en page A).
 
-- **Transition** :
-  - **zoom partagé** : l'image vole de la grille jusqu'à la fiche, et le retour fait le trajet inverse à la même position de défilement ;
-  - repli **« agrandissement puis fondu »** si les shared element transitions de Reanimated sont instables sur Android. Ce choix se fait une fois pour toutes à l'implémentation.
+- **Transition** : celle de la pile, par défaut. Au retour, la grille est à la même position de défilement. Pas de zoom ni de fondu particulier (§ 9, point 5).
 - **Contenu, de haut en bas** :
   1. Barre : ← retour ; ↗ ouvre la page produit sur la Source de prix affichée (TCGplayer via `tcgId`, Cardmarket via `idProduct`).
   2. Grande image.
@@ -247,7 +245,6 @@ src/
 - **Dépendances injectées** : `fetch`, la base (expo-sqlite dans l'app, better-sqlite3 dans les tests, mêmes migrations) et l'horloge.
 - **Briques** :
   - expo-router, expo-sqlite + drizzle-orm 0.45, react-native-gifted-charts, expo-image ;
-  - Reanimated 4.7 (flag `ENABLE_SHARED_ELEMENT_TRANSITIONS`) ;
   - expo-print, expo-file-system, expo-sharing, expo-document-picker ;
   - expo-background-task, expo-notifications, Zod.
 - **Tests** :
@@ -273,13 +270,15 @@ Source : [Distribution de l'APK et mises à jour](https://github.com/Mickael-Des
 
 ## 9. Points tranchés à l'assemblage
 
-Trois trous entre décisions sont apparus à l'assemblage, et un quatrième à l'implémentation. L'utilisateur les a tranchés (2026-11-07 et 2026-11-08), et les sections concernées ont été mises à jour :
+Trois trous entre décisions sont apparus à l'assemblage, et deux autres à l'implémentation. L'utilisateur les a tranchés (du 2026-11-07 au 2026-11-11), et les sections concernées ont été mises à jour :
 
 1. **✓ sur une Version possédée en plusieurs exemplaires** : la quantité revient à 0, avec un toast « Annuler » (§ 2.1).
 2. **Retrait automatique des souhaits** : il s'applique à tout passage de 0 à au moins 1 exemplaire, quel que soit l'écran (§ 2.4).
 3. **Thème** : Système (par défaut) / Clair / Sombre (§ 2.6).
 
 4. **Code de version** (2026-11-08, ticket #22) : sur le catalogue réel, la règle initiale (Extension + numéro, suffixe d'édition seulement en cas de collision) laissait 28 codes OPP en double, et une nouvelle promo aurait pu changer un code existant. L'utilisateur a choisi d'ajouter **toujours** la vague aux Versions OPP, PR et JDG, et **toujours** le suffixe d'édition quand le nom le porte (§ 4.1).
+
+5. **Transition grille → fiche** (2026-11-11, ticket #31) : essayés sur un vrai Android, le zoom partagé de Reanimated (expérimental) ne fonctionnait pas de façon fiable, et le repli « agrandissement puis fondu » ne plaisait pas : saccades, puis passage de fond trop brutal, la durée du fondu de la pile n'étant pas réglable sur Android. L'utilisateur a choisi de **ne pas animer** ce passage : la fiche s'ouvre avec la transition par défaut de la pile (§ 2.2). Reanimated n'est plus une dépendance. Un thème sombre de navigation évite le flash blanc pendant les transitions.
 
 ## 10. Écarts de nommage par rapport aux tickets
 

@@ -39,8 +39,6 @@ module.exports = {
       // Native qu'il touche : sur la CI, sans cache et avec les suites en
       // parallèle, il dépasse parfois les 5 s par défaut.
       testTimeout: 15_000,
-      resolver: '<rootDir>/jest/appResolver.js',
-      setupFilesAfterEnv: ['<rootDir>/jest/reanimatedSetup.js'],
       testPathIgnorePatterns: [...shared.testPathIgnorePatterns, ...nodeOnly],
     },
   ],

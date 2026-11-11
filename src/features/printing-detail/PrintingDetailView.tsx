@@ -25,7 +25,6 @@ import {
   VARIANTS,
 } from '@/ui/labels';
 import { CARD_ASPECT_RATIO, gridImageUri } from '@/ui/printing-grid/gridPrinting';
-import { DETAIL_IMAGE_LAYOUT } from '@/ui/zoom/PrintingZoom';
 import { colors } from '@/ui/theme';
 
 type Props = {
@@ -322,17 +321,15 @@ function DetailRow({ label, value }: Readonly<{ label: string; value: string }>)
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  // Hauteur et marges reprises par le zoom de la grille (DETAIL_IMAGE_LAYOUT).
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    height: DETAIL_IMAGE_LAYOUT.topBarHeight,
-    alignItems: 'center',
     paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  content: { padding: DETAIL_IMAGE_LAYOUT.padding, gap: 20, paddingBottom: 32 },
+  content: { padding: 16, gap: 20, paddingBottom: 32 },
   imageBox: {
-    width: `${DETAIL_IMAGE_LAYOUT.widthRatio * 100}%`,
+    width: '80%',
     alignSelf: 'center',
     aspectRatio: CARD_ASPECT_RATIO,
     borderRadius: 14,

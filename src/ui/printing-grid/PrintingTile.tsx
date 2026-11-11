@@ -1,10 +1,9 @@
 import { Image } from 'expo-image';
-import { useEffect, useRef, useState, type ComponentRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Currency } from '@/domain/price';
 import { formatPrice } from '@/ui/format';
-import { usePrintingZoom } from '@/ui/zoom/PrintingZoom';
 import { colors } from '@/ui/theme';
 
 import { CARD_ASPECT_RATIO, gridImageUri, type GridPrinting } from './gridPrinting';
@@ -21,21 +20,17 @@ export function PrintingTile({
 }: Readonly<{ printing: GridPrinting; displayCurrency: Currency; onPress: () => void }>) {
   const uri = gridImageUri(printing);
   const price = formatPrice(printing.price, displayCurrency);
-  const { zoomFrom } = usePrintingZoom();
-  const imageBox = useRef<ComponentRef<typeof View>>(null);
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={() => zoomFrom(imageBox.current, uri, onPress)}
+      onPress={onPress}
       accessibilityLabel={`${printing.name}, ${printing.printingCode}, ${
         printing.price === null ? 'prix inconnu' : price
       }`}
       style={styles.tile}
     >
       {/* `key` : une nouvelle adresse d'image repart d'un état neuf. */}
-      <View ref={imageBox} collapsable={false} style={styles.imageBox}>
-        <PrintingImage key={uri} printing={printing} uri={uri} />
-      </View>
+      <PrintingImage key={uri} printing={printing} uri={uri} />
       <Text numberOfLines={1} style={styles.name}>
         {printing.name}
       </Text>
@@ -99,13 +94,12 @@ function PrintingImage({ printing, uri }: { printing: GridPrinting; uri: string 
 
 const styles = StyleSheet.create({
   tile: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 6 },
-  imageBox: {
+  image: {
     width: '100%',
     aspectRatio: CARD_ASPECT_RATIO,
     borderRadius: 8,
-    overflow: 'hidden',
+    backgroundColor: colors.line,
   },
-  image: { width: '100%', height: '100%', backgroundColor: colors.line },
   frame: {
     alignItems: 'center',
     justifyContent: 'center',
