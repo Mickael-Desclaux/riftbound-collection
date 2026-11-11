@@ -156,7 +156,7 @@ export function PrintingDetailView({
                     style={styles.other}
                   >
                     <Image
-                      source={{ uri: other.imageNormal ?? other.imageSmall ?? undefined }}
+                      source={{ uri: gridImageUri(other) ?? undefined }}
                       cachePolicy="disk"
                       contentFit="cover"
                       style={styles.otherImage}
