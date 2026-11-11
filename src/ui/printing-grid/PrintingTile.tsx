@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Currency } from '@/domain/price';
 import { formatPrice } from '@/ui/format';
+import { SharedPrintingImage } from '@/ui/SharedPrintingImage';
 import { colors } from '@/ui/theme';
 
 import { gridImageUri, type GridPrinting } from './gridPrinting';
@@ -33,7 +34,9 @@ export function PrintingTile({
       style={styles.tile}
     >
       {/* `key` : une nouvelle adresse d'image repart d'un état neuf. */}
-      <PrintingImage key={uri} printing={printing} uri={uri} />
+      <SharedPrintingImage printingCode={printing.printingCode} style={styles.imageBox}>
+        <PrintingImage key={uri} printing={printing} uri={uri} />
+      </SharedPrintingImage>
       <Text numberOfLines={1} style={styles.name}>
         {printing.name}
       </Text>
@@ -97,12 +100,13 @@ function PrintingImage({ printing, uri }: { printing: GridPrinting; uri: string 
 
 const styles = StyleSheet.create({
   tile: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 6 },
-  image: {
+  imageBox: {
     width: '100%',
     aspectRatio: CARD_ASPECT_RATIO,
     borderRadius: 8,
-    backgroundColor: colors.line,
+    overflow: 'hidden',
   },
+  image: { width: '100%', height: '100%', backgroundColor: colors.line },
   frame: {
     alignItems: 'center',
     justifyContent: 'center',

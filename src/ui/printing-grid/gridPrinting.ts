@@ -14,6 +14,8 @@ export type GridPrinting = {
  * L'image affichée dans la grille : la taille « normal » (480 px), nette sur
  * deux colonnes, ou à défaut la petite. Sert aussi au préchargement.
  */
-export function gridImageUri(printing: GridPrinting): string | null {
+export function gridImageUri(
+  printing: Pick<GridPrinting, 'imageNormal' | 'imageSmall'>,
+): string | null {
   return printing.imageNormal ?? printing.imageSmall;
 }

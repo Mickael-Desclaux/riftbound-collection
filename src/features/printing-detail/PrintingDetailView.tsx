@@ -24,7 +24,9 @@ import {
   typeLabel,
   VARIANTS,
 } from '@/ui/labels';
+import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { CARD_ASPECT_RATIO } from '@/ui/printing-grid/PrintingTile';
+import { SharedPrintingImage } from '@/ui/SharedPrintingImage';
 import { colors } from '@/ui/theme';
 
 type Props = {
@@ -68,6 +70,7 @@ export function PrintingDetailView({
   const source = shown?.source ?? priceSource;
   const url = productUrl(source, detail);
   const image = detail.imageLarge ?? detail.imageNormal ?? detail.imageSmall;
+  const gridUri = gridImageUri(detail);
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
@@ -81,19 +84,24 @@ export function PrintingDetailView({
         />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        {image ? (
-          <Image
-            source={{ uri: image }}
-            accessibilityLabel={`Image de ${detail.name}`}
-            cachePolicy="disk"
-            contentFit="contain"
-            style={styles.image}
-          />
-        ) : (
-          <View style={[styles.image, styles.frame]}>
-            <Text style={styles.frameText}>{detail.name}</Text>
-          </View>
-        )}
+        <SharedPrintingImage printingCode={detail.printingCode} style={styles.imageBox}>
+          {image ? (
+            <Image
+              source={{ uri: image }}
+              // L'image de la grille, déjà en cache, s'affiche pendant le zoom et le chargement.
+              placeholder={gridUri ? { uri: gridUri } : undefined}
+              placeholderContentFit="contain"
+              accessibilityLabel={`Image de ${detail.name}`}
+              cachePolicy="disk"
+              contentFit="contain"
+              style={styles.image}
+            />
+          ) : (
+            <View style={[styles.image, styles.frame]}>
+              <Text style={styles.frameText}>{detail.name}</Text>
+            </View>
+          )}
+        </SharedPrintingImage>
 
         <View style={styles.heading}>
           <Text accessibilityRole="header" style={styles.name}>
@@ -322,13 +330,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   content: { padding: 16, gap: 20, paddingBottom: 32 },
-  image: {
+  imageBox: {
     width: '80%',
     alignSelf: 'center',
     aspectRatio: CARD_ASPECT_RATIO,
     borderRadius: 14,
-    backgroundColor: colors.line,
+    overflow: 'hidden',
   },
+  image: { width: '100%', height: '100%', backgroundColor: colors.line },
   frame: { alignItems: 'center', justifyContent: 'center', padding: 16 },
   frameText: { color: colors.text, fontSize: 16, textAlign: 'center' },
   heading: { gap: 4 },
