@@ -3,7 +3,9 @@
  * nouveau type…) s'affiche telle quelle plutôt que de disparaître.
  */
 import type { PrintingVariant } from '@/domain/catalog';
-import type { ActiveFilter } from '@/domain/catalogFilters';
+import type { ActiveFilter, PriceRange } from '@/domain/catalogFilters';
+import type { Currency } from '@/domain/price';
+import { formatPrice } from '@/ui/format';
 
 const RARITIES: Record<string, string> = {
   common: 'Commune',
@@ -60,10 +62,19 @@ export const rarityLabel = (value: string) => RARITIES[value] ?? value;
 export const typeLabel = (value: string) => TYPES[value] ?? value;
 export const domainLabel = (value: string) => DOMAINS[value] ?? value;
 
+/** « 5,00 $ CA – 20,00 $ CA », « ≥ 5,00 $ CA », « ≤ 20,00 $ CA ». */
+export function priceRangeLabel({ min, max }: PriceRange, currency: Currency): string {
+  if (min !== null && max !== null) {
+    return `${formatPrice(min, currency)} – ${formatPrice(max, currency)}`;
+  }
+  return min === null ? `≤ ${formatPrice(max, currency)}` : `≥ ${formatPrice(min, currency)}`;
+}
+
 /** Le texte d'une puce de filtre actif. */
 export function activeFilterLabel(
   active: ActiveFilter,
   expansionName: (code: string) => string,
+  displayCurrency: Currency,
 ): string {
   switch (active.criterion) {
     case 'expansion':
@@ -80,5 +91,7 @@ export function activeFilterLabel(
       return domainLabel(active.value);
     case 'ownership':
       return active.value === 'owned' ? 'Possédées' : 'Manquantes';
+    case 'price':
+      return priceRangeLabel(active.value, displayCurrency);
   }
 }

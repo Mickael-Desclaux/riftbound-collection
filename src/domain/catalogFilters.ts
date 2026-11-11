@@ -17,7 +17,24 @@ export type CatalogFilters = {
   types: string[];
   domains: string[];
   ownership: Ownership;
+  /** Dans la Devise d'affichage. Une borne posée écarte les Versions sans prix. */
+  priceRange: PriceRange;
 };
+
+/** Fourchette de prix, bornes comprises ; `null` : pas de borne. */
+export type PriceRange = { min: number | null; max: number | null };
+
+const NO_PRICE_RANGE: PriceRange = { min: null, max: null };
+
+function hasPriceRange({ min, max }: PriceRange): boolean {
+  return min !== null || max !== null;
+}
+
+function matchesPriceRange(price: number | null, range: PriceRange): boolean {
+  if (!hasPriceRange(range)) return true;
+  if (price === null) return false;
+  return (range.min === null || price >= range.min) && (range.max === null || price <= range.max);
+}
 
 /** Possédées / manquantes : selon la quantité dans la Collection. */
 export type Ownership = 'all' | 'owned' | 'missing';
@@ -31,6 +48,7 @@ export const DEFAULT_CATALOG_FILTERS: CatalogFilters = {
   types: [],
   domains: [],
   ownership: 'all',
+  priceRange: NO_PRICE_RANGE,
 };
 
 /** Vrai si aucune valeur n'est choisie, ou si `value` en fait partie. */
@@ -64,6 +82,7 @@ function matches(entry: CatalogEntry, filters: CatalogFilters, search: string): 
       normalized(entry.name).includes(search) ||
       entry.printingCode.toLowerCase().includes(search)) &&
     matchesOwnership(entry, filters.ownership) &&
+    matchesPriceRange(entry.price, filters.priceRange) &&
     (filters.showPromo || !entry.isPromo) &&
     allows(filters.expansionCodes, entry.expansionCode) &&
     allows(filters.rarities, entry.rarity) &&
@@ -84,7 +103,8 @@ export type ActiveFilter =
   | { criterion: 'expansion' | 'rarity' | 'type' | 'domain'; value: string }
   | { criterion: 'variant'; value: PrintingVariant }
   | { criterion: 'promo'; value: 'shown' }
-  | { criterion: 'ownership'; value: Exclude<Ownership, 'all'> };
+  | { criterion: 'ownership'; value: Exclude<Ownership, 'all'> }
+  | { criterion: 'price'; value: PriceRange };
 
 /** Les filtres actifs, critère par critère (la recherche a son propre champ). */
 export function activeFilters(filters: CatalogFilters): ActiveFilter[] {
@@ -98,6 +118,9 @@ export function activeFilters(filters: CatalogFilters): ActiveFilter[] {
     ...(filters.ownership === 'all'
       ? []
       : [{ criterion: 'ownership' as const, value: filters.ownership }]),
+    ...(hasPriceRange(filters.priceRange)
+      ? [{ criterion: 'price' as const, value: filters.priceRange }]
+      : []),
   ];
 }
 
@@ -139,5 +162,7 @@ export function removeActiveFilter(filters: CatalogFilters, active: ActiveFilter
       return { ...filters, domains: without(filters.domains, active.value) };
     case 'ownership':
       return { ...filters, ownership: 'all' };
+    case 'price':
+      return { ...filters, priceRange: NO_PRICE_RANGE };
   }
 }

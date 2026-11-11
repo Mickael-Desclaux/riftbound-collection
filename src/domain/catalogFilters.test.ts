@@ -89,6 +89,38 @@ describe('filterCatalog', () => {
   });
 });
 
+describe('filterCatalog : fourchette de prix', () => {
+  const entries = [
+    entry('OGN-001', { price: 0.5 }),
+    entry('OGN-002', { price: 5 }),
+    entry('OGN-003', { price: 20 }),
+    entry('OGN-004', { price: null }),
+  ];
+
+  it('garde les Versions dont le prix est dans la fourchette, bornes comprises', () => {
+    const result = filterCatalog(entries, filters({ priceRange: { min: 5, max: 20 } }));
+    expect(codes(result)).toEqual(['OGN-002', 'OGN-003']);
+  });
+
+  it('accepte une seule borne', () => {
+    expect(codes(filterCatalog(entries, filters({ priceRange: { min: 5, max: null } })))).toEqual([
+      'OGN-002',
+      'OGN-003',
+    ]);
+    expect(codes(filterCatalog(entries, filters({ priceRange: { min: null, max: 5 } })))).toEqual([
+      'OGN-001',
+      'OGN-002',
+    ]);
+  });
+
+  it('écarte les Versions sans prix dès qu’une borne est posée, et les garde sinon', () => {
+    expect(
+      codes(filterCatalog(entries, filters({ priceRange: { min: 0, max: null } }))),
+    ).not.toContain('OGN-004');
+    expect(codes(filterCatalog(entries, filters()))).toContain('OGN-004');
+  });
+});
+
 describe('activeFilters', () => {
   const chosen = filters({
     search: 'jinx',
@@ -107,6 +139,14 @@ describe('activeFilters', () => {
       { criterion: 'ownership', value: 'missing' },
     ]);
     expect(activeFilters(filters())).toEqual([]);
+  });
+
+  it('donne une puce pour la fourchette de prix, qui se retire d’un toucher', () => {
+    const priced = filters({ priceRange: { min: 5, max: null } });
+
+    expect(activeFilters(priced)).toEqual([{ criterion: 'price', value: { min: 5, max: null } }]);
+    const removed = removeActiveFilter(priced, activeFilters(priced)[0]!);
+    expect(removed.priceRange).toEqual({ min: null, max: null });
   });
 
   it('retire une seule valeur, et garde le reste', () => {

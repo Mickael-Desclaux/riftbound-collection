@@ -6,6 +6,8 @@ export type GridPrinting = {
   name: string;
   imageSmall: string | null;
   imageNormal: string | null;
+  /** Prix dans la Devise d'affichage ; `null` s'affiche « — ». */
+  price: number | null;
 };
 
 /**

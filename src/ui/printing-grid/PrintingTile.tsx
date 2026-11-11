@@ -2,6 +2,8 @@ import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { Currency } from '@/domain/price';
+import { formatPrice } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
 import { gridImageUri, type GridPrinting } from './gridPrinting';
@@ -13,13 +15,19 @@ export const CARD_ASPECT_RATIO = 744 / 1039;
 const AUTO_RETRIES = 3;
 const RETRY_DELAY_MS = 5_000;
 
-/** Une case de grille : image, nom et Code de version. */
-export function PrintingTile({ printing }: { printing: GridPrinting }) {
+/** Une case de grille : image, nom, Code de version et prix. */
+export function PrintingTile({
+  printing,
+  displayCurrency,
+}: Readonly<{ printing: GridPrinting; displayCurrency: Currency }>) {
   const uri = gridImageUri(printing);
+  const price = formatPrice(printing.price, displayCurrency);
   return (
     <View
       accessible
-      accessibilityLabel={`${printing.name}, ${printing.printingCode}`}
+      accessibilityLabel={`${printing.name}, ${printing.printingCode}, ${
+        printing.price === null ? 'prix inconnu' : price
+      }`}
       style={styles.tile}
     >
       {/* `key` : une nouvelle adresse d'image repart d'un état neuf. */}
@@ -27,7 +35,10 @@ export function PrintingTile({ printing }: { printing: GridPrinting }) {
       <Text numberOfLines={1} style={styles.name}>
         {printing.name}
       </Text>
-      <Text style={styles.code}>{printing.printingCode}</Text>
+      <View style={styles.footer}>
+        <Text style={styles.code}>{printing.printingCode}</Text>
+        <Text style={styles.price}>{price}</Text>
+      </View>
     </View>
   );
 }
@@ -103,4 +114,6 @@ const styles = StyleSheet.create({
   frameHint: { color: colors.muted, fontSize: 11, textAlign: 'center' },
   name: { color: colors.text, fontSize: 13, fontWeight: '600', marginTop: 6 },
   code: { color: colors.muted, fontSize: 12 },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
+  price: { color: colors.accent, fontSize: 12, fontWeight: '600' },
 });

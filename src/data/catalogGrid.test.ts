@@ -53,7 +53,11 @@ describe('readCatalogEntries', () => {
       type: 'Unit',
       domains: [],
       ownedQuantity: 0,
+      price: null,
     });
+    expect(entries.find((e) => e.printingCode === 'OGN-030a')?.finishes).toEqual(
+      printingOf('OGN', '030a', 'Jinx').finishes,
+    );
   });
 
   it('donne la quantité possédée d’après la Collection', async () => {

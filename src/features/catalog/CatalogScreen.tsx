@@ -12,7 +12,10 @@ import {
 } from '@/data/catalogGrid';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
-import { withOwnedQuantities } from '@/domain/catalogEntry';
+import { readExchangeRates } from '@/data/exchangeRates';
+import { readCurrentPrices } from '@/data/prices';
+import { useSetting } from '@/data/useSetting';
+import { withOwnedQuantities, withPrices } from '@/domain/catalogEntry';
 import {
   activeFilters,
   DEFAULT_CATALOG_FILTERS,
@@ -32,7 +35,12 @@ import { colors } from '@/ui/theme';
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';
 
-const SORT_LABELS: Record<CatalogSort, string> = { number: 'Numéro', name: 'Nom' };
+const SORT_LABELS: Record<CatalogSort, string> = {
+  number: 'Numéro',
+  name: 'Nom',
+  priceAsc: 'Prix ↑',
+  priceDesc: 'Prix ↓',
+};
 
 /**
  * Onglet Catalogue : toutes les Versions, avec recherche, puces d'Extension,
@@ -54,7 +62,25 @@ export function CatalogScreen() {
 
   const catalog = useReactiveQuery(() => readCatalogEntries(db), [db], CATALOG_ENTRY_TABLES);
   const owned = useReactiveQuery(() => readOwnedQuantities(db), [db], ['collection_entry']);
-  const entries = useMemo(() => withOwnedQuantities(catalog, owned), [catalog, owned]);
+  const [displayCurrency] = useSetting('displayCurrency');
+  // Une fourchette de prix est exprimée dans la Devise d'affichage : elle n'a
+  // plus de sens dans une autre devise, on la retire.
+  const [rangeCurrency, setRangeCurrency] = useState(displayCurrency);
+  if (rangeCurrency !== displayCurrency) {
+    setRangeCurrency(displayCurrency);
+    setFilters((current) => ({ ...current, priceRange: DEFAULT_CATALOG_FILTERS.priceRange }));
+  }
+  const [priceSource] = useSetting('priceSource');
+  const prices = useReactiveQuery(
+    () => readCurrentPrices(db, priceSource),
+    [db, priceSource],
+    ['current_price'],
+  );
+  const rates = useReactiveQuery(() => readExchangeRates(db), [db], ['exchange_rate']);
+  const entries = useMemo(
+    () => withPrices(withOwnedQuantities(catalog, owned), prices, displayCurrency, rates),
+    [catalog, owned, prices, displayCurrency, rates],
+  );
   const options = useReactiveQuery(
     (): FilterOptions => {
       const all = selectExpansionChips(db, true).all();
@@ -106,6 +132,7 @@ export function CatalogScreen() {
     <SafeAreaView edges={['top']} style={styles.screen}>
       <PrintingGrid
         items={items}
+        displayCurrency={displayCurrency}
         page={currentPage}
         pageCount={pages}
         onPageChange={setPage}
@@ -154,7 +181,12 @@ export function CatalogScreen() {
               <SortMenu sort={sort} onChange={changeSort} />
               <Text style={styles.count}>{formatPrintingCount(results.length)}</Text>
             </View>
-            <ActiveFilterChips filters={filters} options={options} onChange={changeFilters} />
+            <ActiveFilterChips
+              filters={filters}
+              options={options}
+              displayCurrency={displayCurrency}
+              onChange={changeFilters}
+            />
           </View>
         }
       />
@@ -163,6 +195,7 @@ export function CatalogScreen() {
         filters={filters}
         options={options}
         resultCount={results.length}
+        displayCurrency={displayCurrency}
         onChange={changeFilters}
         onClose={() => setSheetOpen(false)}
       />

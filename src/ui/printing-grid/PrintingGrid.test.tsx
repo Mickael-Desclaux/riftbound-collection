@@ -9,12 +9,14 @@ const jinx: GridPrinting = {
   name: 'Jinx, Demolitionist',
   imageSmall: 'https://images.rifthunt.com/cards/small/ogn-030a.webp',
   imageNormal: null,
+  price: 12.4,
 };
 const ahri: GridPrinting = {
   printingCode: 'OGN-303s' as PrintingCode,
   name: 'Ahri, Nine-Tailed Fox',
   imageSmall: 'https://images.rifthunt.com/cards/small/ogn-303s.webp',
   imageNormal: null,
+  price: null,
 };
 
 async function setup(props: Partial<PrintingGridProps> = {}) {
@@ -27,6 +29,7 @@ async function setup(props: Partial<PrintingGridProps> = {}) {
       pageCount={3}
       onPageChange={onPageChange}
       onClearFilters={onClearFilters}
+      displayCurrency="CAD"
       {...props}
     />,
   );
@@ -39,6 +42,13 @@ describe('PrintingGrid', () => {
 
     expect(screen.getByText('Jinx, Demolitionist')).toBeTruthy();
     expect(screen.getByText('OGN-303s')).toBeTruthy();
+  });
+
+  it('affiche le prix de chaque Version dans la Devise d’affichage, « — » sans prix', async () => {
+    await setup();
+
+    expect(screen.getByText('12,40\u00a0$\u00a0CA')).toBeTruthy();
+    expect(screen.getByText('—')).toBeTruthy();
   });
 
   it('change de page depuis la pagination numérotée', async () => {

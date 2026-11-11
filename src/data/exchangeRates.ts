@@ -71,3 +71,7 @@ export function saveExchangeRates(
     }
   });
 }
+
+export function readExchangeRates(db: AppDatabase): ExchangeRate[] {
+  return db.select().from(exchangeRate).all();
+}

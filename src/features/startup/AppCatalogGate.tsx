@@ -6,6 +6,7 @@ import { hasCatalog } from '@/data/catalog';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
 import { syncAll } from '@/sync/syncAll';
+import { ClockContext } from '@/ui/ClockContext';
 import { SyncContext } from '@/ui/SyncContext';
 
 import { CatalogGate } from './CatalogGate';
@@ -90,14 +91,16 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
   );
 
   return (
-    <SyncContext.Provider value={sync}>
-      <CatalogGate
-        hasCatalog={hadCatalogAtStart}
-        runFirstSync={runFirstSync}
-        subscribeToOnline={subscribeToOnline}
-      >
-        {children}
-      </CatalogGate>
-    </SyncContext.Provider>
+    <ClockContext.Provider value={deps.now}>
+      <SyncContext.Provider value={sync}>
+        <CatalogGate
+          hasCatalog={hadCatalogAtStart}
+          runFirstSync={runFirstSync}
+          subscribeToOnline={subscribeToOnline}
+        >
+          {children}
+        </CatalogGate>
+      </SyncContext.Provider>
+    </ClockContext.Provider>
   );
 }
