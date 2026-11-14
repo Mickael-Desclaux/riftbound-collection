@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { SourceError, type OnProgress } from '@/sync/catalog';
 import { Button } from '@/ui/controls';
+import { Details } from '@/ui/Details';
 import { colors } from '@/ui/theme';
 
 export type CatalogGateProps = {
@@ -113,23 +114,6 @@ function Screen({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Details({ text }: { text: string | undefined }) {
-  const [open, setOpen] = useState(false);
-  if (!text) return null;
-  return (
-    <View style={styles.details}>
-      <Pressable accessibilityRole="button" onPress={() => setOpen(!open)}>
-        <Text style={styles.link}>Détails</Text>
-      </Pressable>
-      {open && (
-        <Text selectable style={styles.detailsText}>
-          {text}
-        </Text>
-      )}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -141,7 +125,4 @@ const styles = StyleSheet.create({
   },
   title: { color: colors.text, fontSize: 22, fontWeight: '700', textAlign: 'center' },
   text: { color: colors.muted, fontSize: 15, textAlign: 'center' },
-  details: { alignItems: 'center', gap: 8, alignSelf: 'stretch' },
-  link: { color: colors.muted, fontSize: 14, textDecorationLine: 'underline' },
-  detailsText: { color: colors.muted, fontSize: 12, fontFamily: 'monospace' },
 });

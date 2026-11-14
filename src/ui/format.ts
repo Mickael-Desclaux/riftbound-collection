@@ -21,6 +21,11 @@ export function formatCollectionCounts({
   return `${formatPrintingCount(printingCount)} · ${formatCardCount(cardCount)} · ${formatInteger(unpricedCount)} sans prix`;
 }
 
+/** « 1 souhait », « 3 souhaits ». */
+export function formatWishCount(count: number): string {
+  return `${formatInteger(count)} ${count > 1 ? 'souhaits' : 'souhait'}`;
+}
+
 /** « 1 carte », « 30 cartes ». */
 function formatCardCount(count: number): string {
   return `${formatInteger(count)} ${count > 1 ? 'cartes' : 'carte'}`;
