@@ -113,3 +113,47 @@ async function request<T>(
     lastModified: response.headers.get('Last-Modified'),
   };
 }
+
+/** Une image téléchargée : ses octets et son type (`image/webp`…). */
+export type DownloadedImage = { bytes: Uint8Array; contentType: string };
+
+/**
+ * Télécharge une image ; sinon lève une `SourceError`. Une réponse qui ne se
+ * dit pas image (une page d'erreur HTML, par exemple) est refusée.
+ */
+export async function fetchImage(
+  fetch: Fetch,
+  url: string,
+  { timeoutMs = TIMEOUT_MS }: RequestOptions = {},
+): Promise<DownloadedImage> {
+  const host = new URL(url).host;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: { 'User-Agent': USER_AGENT, Accept: 'image/*' },
+        signal: controller.signal,
+      });
+    } catch (error) {
+      throw new SourceError('network', `Impossible de joindre ${host}.`, String(error));
+    }
+    if (!response.ok) throw new SourceError('http', `${host} a répondu ${response.status}.`, url);
+    const contentType = response.headers.get('Content-Type')?.split(';')[0]?.trim() ?? '';
+    if (!contentType.startsWith('image/')) {
+      throw new SourceError(
+        'format',
+        `${host} n'a pas renvoyé une image.`,
+        `${url}\n${contentType}`,
+      );
+    }
+    try {
+      return { bytes: new Uint8Array(await response.arrayBuffer()), contentType };
+    } catch (error) {
+      throw new SourceError('network', `Image interrompue depuis ${host}.`, String(error));
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+}

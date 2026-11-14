@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { addToBinderSelection, removeFromBinderSelection } from '@/data/binder';
 import { CATALOG_ENTRY_TABLES, readFilterOptions, selectExpansionChips } from '@/data/catalogGrid';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
@@ -20,11 +21,12 @@ import {
 import { sortCatalog, type CatalogSort } from '@/domain/catalogSort';
 import { pageCount, pageOf } from '@/domain/pagination';
 import { Chip, controlStyles } from '@/ui/controls';
-import { formatPrintingCount } from '@/ui/format';
+import { formatBinderAdded, formatPrintingCount } from '@/ui/format';
 import { gridImageUri, type GridPrinting } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { printingHref, type PrintingTab } from '@/ui/printingHref';
 import { useSync } from '@/ui/SyncContext';
+import { useToast } from '@/ui/Toast';
 import { colors } from '@/ui/theme';
 
 import { ActiveFilterChips } from './ActiveFilterChips';
@@ -170,6 +172,20 @@ export function PrintingBrowser({
     setPage(1);
   };
   const activeCount = activeFilters(filters, lockedCriteria).length;
+  const showToast = useToast();
+  const addResultsToBinder = () => {
+    const added = addToBinderSelection(
+      db,
+      results.map((entry) => entry.printingCode),
+    );
+    setSheetOpen(false);
+    showToast({
+      message:
+        added.length === 0 ? 'Déjà toutes dans le classeur' : formatBinderAdded(added.length),
+      actionLabel: added.length === 0 ? 'OK' : 'Annuler',
+      onAction: () => removeFromBinderSelection(db, added),
+    });
+  };
 
   if (entries.length === 0 && emptyState) {
     return (
@@ -257,6 +273,7 @@ export function PrintingBrowser({
         lockedCriteria={lockedCriteria}
         onChange={changeFilters}
         onClose={() => setSheetOpen(false)}
+        onAddToBinder={addResultsToBinder}
       />
     </SafeAreaView>
   );

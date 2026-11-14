@@ -4,6 +4,8 @@ import { AppState } from 'react-native';
 
 import { hasCatalog } from '@/data/catalog';
 import { useDatabase } from '@/data/DatabaseProvider';
+import { fileSystemImageStore } from '@/features/binder/binderFiles';
+import { downloadBinderImages } from '@/sync/binderImages';
 import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
 import { syncAll } from '@/sync/syncAll';
 import { ClockContext } from '@/ui/ClockContext';
@@ -31,7 +33,8 @@ function subscribeToOnline(listener: () => void): () => void {
 
 /**
  * Branche `CatalogGate` sur l'app. C'est ici, à la racine, que `fetch` et
- * l'horloge sont créés puis injectés dans `sync/`.
+ * l'horloge sont créés puis injectés dans `sync/` (synchronisation, images du
+ * classeur).
  *
  * - Catalogue absent : premier téléchargement, piloté par `CatalogGate`.
  * - Catalogue présent : toutes les sources (`syncAll`) sont vérifiées à
@@ -78,7 +81,17 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
     return () => subscription.remove();
   }, [synchronize]);
 
-  const sync = useMemo(() => ({ refresh: () => synchronize(true) }), [synchronize]);
+  const sync = useMemo(
+    () => ({
+      refresh: () => synchronize(true),
+      downloadBinderImages: (
+        urls: readonly string[],
+        onProgress: (done: number, total: number) => void,
+      ) =>
+        downloadBinderImages({ fetch: deps.fetch, store: fileSystemImageStore }, urls, onProgress),
+    }),
+    [synchronize, deps],
+  );
 
   const runFirstSync = useCallback(
     async (onProgress: OnProgress) => {

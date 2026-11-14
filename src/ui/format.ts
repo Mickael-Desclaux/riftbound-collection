@@ -31,6 +31,16 @@ function formatCardCount(count: number): string {
   return `${formatInteger(count)} ${count > 1 ? 'cartes' : 'carte'}`;
 }
 
+/** « 1 carte · 1 page A4 », « 12 cartes · 2 pages A4 » : le résumé du classeur. */
+export function formatBinderSummary(cardCount: number, pageCount: number): string {
+  return `${formatCardCount(cardCount)} · ${formatInteger(pageCount)} ${pageCount > 1 ? 'pages' : 'page'} A4`;
+}
+
+/** « 1 carte ajoutée au classeur », « 12 cartes ajoutées au classeur ». */
+export function formatBinderAdded(count: number): string {
+  return `${formatCardCount(count)} ${count > 1 ? 'ajoutées' : 'ajoutée'} au classeur`;
+}
+
 /** Espace insécable : le montant et sa devise ne se séparent jamais. */
 const NBSP = '\u00a0';
 

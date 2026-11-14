@@ -55,6 +55,8 @@ type Props = {
   lockedCriteria: readonly LockedCriterion[];
   onChange: (filters: CatalogFilters) => void;
   onClose: () => void;
+  /** « Ajouter les N résultats au classeur ». */
+  onAddToBinder: () => void;
 };
 
 const OWNERSHIP: { value: Ownership; label: string }[] = [
@@ -65,7 +67,8 @@ const OWNERSHIP: { value: Ownership; label: string }[] = [
 
 /**
  * Feuille de filtres (spec § 2.1), qui monte du bas. Les choix s'appliquent
- * tout de suite ; « Voir N versions » referme la feuille.
+ * tout de suite ; « Voir N versions » referme la feuille, et « Ajouter les N
+ * résultats au classeur » les met dans la Sélection du classeur.
  */
 export function FilterSheet({
   visible,
@@ -77,6 +80,7 @@ export function FilterSheet({
   lockedCriteria,
   onChange,
   onClose,
+  onAddToBinder,
 }: Readonly<Props>) {
   const update = (change: Partial<CatalogFilters>) => onChange({ ...filters, ...change });
 
@@ -191,20 +195,31 @@ export function FilterSheet({
             </View>
           </View>
         </ScrollView>
-        <View style={styles.actions}>
-          <Button
-            label="Réinitialiser"
-            onPress={() => onChange({ ...defaultFilters, search: filters.search })}
-          />
-          <Button
-            label={`Voir ${formatPrintingCount(resultCount)}`}
-            onPress={onClose}
-            variant="primary"
-          />
+        <View style={styles.footer}>
+          <View style={styles.actions}>
+            <Button
+              label="Réinitialiser"
+              onPress={() => onChange({ ...defaultFilters, search: filters.search })}
+            />
+            <Button
+              label={`Voir ${formatPrintingCount(resultCount)}`}
+              onPress={onClose}
+              variant="primary"
+            />
+          </View>
+          {resultCount > 0 && (
+            <Button label={addToBinderLabel(resultCount)} onPress={onAddToBinder} />
+          )}
         </View>
       </SafeAreaView>
     </Modal>
   );
+}
+
+/** « Ajouter le résultat au classeur », « Ajouter les 12 résultats au classeur ». */
+function addToBinderLabel(count: number): string {
+  if (count === 1) return 'Ajouter le résultat au classeur';
+  return `Ajouter les ${new Intl.NumberFormat('fr-FR').format(count)} résultats au classeur`;
 }
 
 const amountText = (value: number | null) =>
@@ -290,11 +305,6 @@ const styles = StyleSheet.create({
   },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   switchLabel: { color: colors.text, fontSize: 15 },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderTopWidth: 1,
-    borderColor: colors.line,
-  },
+  footer: { gap: 10, padding: 16, borderTopWidth: 1, borderColor: colors.line },
+  actions: { flexDirection: 'row', justifyContent: 'space-between' },
 });
