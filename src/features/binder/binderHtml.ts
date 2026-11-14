@@ -20,7 +20,7 @@ export type BinderHtmlOptions = {
   displayCurrency: Currency;
   /** Date des prix du jour (`null` : aucun prix). */
   priceDate: IsoDateTime | null;
-  /** Grande image de chaque Version, en `data:` ; absente : un cadre la remplace. */
+  /** Image imprimée de chaque Version (la grande, sinon la normale), en `data:` ; absente : un cadre. */
   images: ReadonlyMap<PrintingCode, string>;
 };
 
@@ -81,7 +81,7 @@ function pageHtml(page: BinderPage, options: BinderHtmlOptions): string {
       ? `<div class="foot">Prix du ${escapeHtml(formatDate(options.priceDate))}</div>`
       : '';
   const cards = page.printings.map((printing) => cardHtml(printing, options)).join('');
-  return `<section class="sheet"><div class="head"><div class="title">${title}</div><div class="meta">page ${page.number}/${page.count}</div></div><div class="grid">${cards}</div>${foot}</section>`;
+  return `<section class="sheet"><div class="head"><div class="title">${title}</div><div class="meta">page ${page.number}/${page.pageCount}</div></div><div class="grid">${cards}</div>${foot}</section>`;
 }
 
 /** Le document complet : une `section` par page A4. */

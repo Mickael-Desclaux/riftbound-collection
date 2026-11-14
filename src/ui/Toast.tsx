@@ -10,9 +10,9 @@ import { colors } from './theme';
 
 export type ToastMessage = {
   message: string;
-  /** Libellé de l'action, ex. « Annuler ». */
-  actionLabel: string;
-  onAction: () => void;
+  /** Libellé de l'action, ex. « Annuler » ; sans action, le toast ne fait qu'informer. */
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
 /** Durée d'affichage d'un toast. */
@@ -57,16 +57,18 @@ export function ToastProvider({
             style={[styles.toast, { bottom: insets.bottom + bottomOffset + 12 }]}
           >
             <Text style={styles.message}>{toast.message}</Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => {
-                setToast(null);
-                toast.onAction();
-              }}
-              hitSlop={8}
-            >
-              <Text style={styles.action}>{toast.actionLabel}</Text>
-            </Pressable>
+            {toast.actionLabel && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setToast(null);
+                  toast.onAction?.();
+                }}
+                hitSlop={8}
+              >
+                <Text style={styles.action}>{toast.actionLabel}</Text>
+              </Pressable>
+            )}
           </View>
         )}
       </View>

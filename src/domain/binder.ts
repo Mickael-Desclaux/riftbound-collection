@@ -13,7 +13,7 @@ export type BinderPage = {
   /** Rang de la page dans son Extension, à partir de 1. */
   number: number;
   /** Nombre de pages de l'Extension. */
-  count: number;
+  pageCount: number;
   printings: CatalogEntry[];
 };
 
@@ -31,11 +31,11 @@ export function binderPages(printings: CatalogEntry[]): BinderPage[] {
     byExpansion.set(printing.expansionCode, group);
   }
   return [...byExpansion].flatMap(([expansionCode, group]) => {
-    const count = Math.ceil(group.length / BINDER_PAGE_SIZE);
-    return Array.from({ length: count }, (_, i) => ({
+    const pageCount = Math.ceil(group.length / BINDER_PAGE_SIZE);
+    return Array.from({ length: pageCount }, (_, i) => ({
       expansionCode,
       number: i + 1,
-      count,
+      pageCount,
       printings: group.slice(i * BINDER_PAGE_SIZE, (i + 1) * BINDER_PAGE_SIZE),
     }));
   });

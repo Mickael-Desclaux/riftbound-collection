@@ -36,6 +36,12 @@ export function formatBinderSummary(cardCount: number, pageCount: number): strin
   return `${formatCardCount(cardCount)} · ${formatInteger(pageCount)} ${pageCount > 1 ? 'pages' : 'page'} A4`;
 }
 
+/** « Ajouter le résultat au classeur », « Ajouter les 12 résultats au classeur ». */
+export function formatAddResultsToBinder(count: number): string {
+  if (count === 1) return 'Ajouter le résultat au classeur';
+  return `Ajouter les ${formatInteger(count)} résultats au classeur`;
+}
+
 /** « 1 carte ajoutée au classeur », « 12 cartes ajoutées au classeur ». */
 export function formatBinderAdded(count: number): string {
   return `${formatCardCount(count)} ${count > 1 ? 'ajoutées' : 'ajoutée'} au classeur`;

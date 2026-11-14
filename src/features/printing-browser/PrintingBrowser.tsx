@@ -179,10 +179,13 @@ export function PrintingBrowser({
       results.map((entry) => entry.printingCode),
     );
     setSheetOpen(false);
+    if (added.length === 0) {
+      showToast({ message: 'Déjà toutes dans le classeur' });
+      return;
+    }
     showToast({
-      message:
-        added.length === 0 ? 'Déjà toutes dans le classeur' : formatBinderAdded(added.length),
-      actionLabel: added.length === 0 ? 'OK' : 'Annuler',
+      message: formatBinderAdded(added.length),
+      actionLabel: 'Annuler',
       onAction: () => removeFromBinderSelection(db, added),
     });
   };

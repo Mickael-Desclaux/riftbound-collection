@@ -35,6 +35,9 @@ const COLLECTION_FILTERS: CatalogFilters = { ...DEFAULT_CATALOG_FILTERS, showPro
 export function CollectionScreen() {
   const openCatalog = useOpenCatalog();
   const router = useRouter();
+  const binderButton = (
+    <Button label="Classeur" onPress={() => router.push('/collection/binder')} />
+  );
   const { entries, owned, wishlist } = usePrintingEntries();
   const collection = useMemo(
     () => collectionEntries(entries, owned, wishlist),
@@ -74,9 +77,7 @@ export function CollectionScreen() {
       onToggleWishlisted={toggleWishlisted}
       banner={
         <View style={styles.banner}>
-          <View style={styles.binderRow}>
-            <Button label="Classeur" onPress={() => router.push('/collection/binder')} />
-          </View>
+          <View style={styles.binderRow}>{binderButton}</View>
           <CollectionHeader
             owned={collection}
             catalog={entries}
@@ -101,7 +102,7 @@ export function CollectionScreen() {
           <Text style={styles.title}>Ta collection est vide.</Text>
           <Text style={styles.hint}>Marque tes cartes avec ✓ dans le Catalogue.</Text>
           <Button label="Parcourir le Catalogue" variant="primary" onPress={() => openCatalog()} />
-          <Button label="Classeur" onPress={() => router.push('/collection/binder')} />
+          {binderButton}
         </View>
       }
     />

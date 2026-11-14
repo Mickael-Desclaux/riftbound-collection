@@ -6,7 +6,7 @@ import type { BinderPage } from '@/domain/binder';
 import type { CatalogEntry } from '@/domain/catalogEntry';
 import { Button, controlStyles } from '@/ui/controls';
 import { formatBinderSummary } from '@/ui/format';
-import { CARD_ASPECT_RATIO } from '@/ui/printing-grid/gridPrinting';
+import { CARD_ASPECT_RATIO, gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { colors } from '@/ui/theme';
 
 /** Les options d'export, cochées par défaut (spec § 2.5). */
@@ -96,7 +96,7 @@ export function BinderView({
           <View style={styles.page}>
             <Text style={styles.pageTitle}>
               {expansionNames.get(page.expansionCode) ?? page.expansionCode} · page {page.number}/
-              {page.count}
+              {page.pageCount}
             </Text>
             <View style={styles.cards}>
               {page.printings.map((printing, index) => (
@@ -107,9 +107,9 @@ export function BinderView({
                   onPress={() => onRemove(printing)}
                   style={[styles.card, index % 3 !== 2 && styles.cardSpacing]}
                 >
-                  {(printing.imageSmall ?? printing.imageNormal) ? (
+                  {gridImageUri(printing) ? (
                     <Image
-                      source={{ uri: printing.imageSmall ?? printing.imageNormal ?? undefined }}
+                      source={{ uri: gridImageUri(printing) ?? undefined }}
                       cachePolicy="disk"
                       contentFit="contain"
                       style={styles.image}

@@ -10,7 +10,7 @@ describe('binderPages', () => {
     const pages = binderPages(codes(10));
 
     expect(pages.map((page) => page.printings.length)).toEqual([9, 1]);
-    expect(pages.map((page) => [page.number, page.count])).toEqual([
+    expect(pages.map((page) => [page.number, page.pageCount])).toEqual([
       [1, 2],
       [2, 2],
     ]);
@@ -23,7 +23,7 @@ describe('binderPages', () => {
     ]);
 
     expect(
-      pages.map((page) => [page.expansionCode, page.number, page.count, page.printings.length]),
+      pages.map((page) => [page.expansionCode, page.number, page.pageCount, page.printings.length]),
     ).toEqual([
       ['OGN', 1, 1, 2],
       ['SFD', 1, 2, 9],

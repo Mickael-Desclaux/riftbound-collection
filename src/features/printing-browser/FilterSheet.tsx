@@ -21,7 +21,12 @@ import {
 } from '@/domain/catalogFilters';
 import type { Currency } from '@/domain/price';
 import { Button, Chip } from '@/ui/controls';
-import { currencySymbol, formatPrintingCount, parseAmount } from '@/ui/format';
+import {
+  currencySymbol,
+  formatAddResultsToBinder,
+  formatPrintingCount,
+  parseAmount,
+} from '@/ui/format';
 import {
   domainLabel,
   orderedDomains,
@@ -208,18 +213,12 @@ export function FilterSheet({
             />
           </View>
           {resultCount > 0 && (
-            <Button label={addToBinderLabel(resultCount)} onPress={onAddToBinder} />
+            <Button label={formatAddResultsToBinder(resultCount)} onPress={onAddToBinder} />
           )}
         </View>
       </SafeAreaView>
     </Modal>
   );
-}
-
-/** « Ajouter le résultat au classeur », « Ajouter les 12 résultats au classeur ». */
-function addToBinderLabel(count: number): string {
-  if (count === 1) return 'Ajouter le résultat au classeur';
-  return `Ajouter les ${new Intl.NumberFormat('fr-FR').format(count)} résultats au classeur`;
 }
 
 const amountText = (value: number | null) =>
