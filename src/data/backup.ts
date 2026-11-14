@@ -3,6 +3,9 @@
  * remplacement atomique pour la restauration, précédé d'une Sauvegarde de
  * sécurité qui permet « Annuler la dernière restauration ».
  */
+import { getTableColumns, sql } from 'drizzle-orm';
+import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
+
 import {
   createBackup,
   fromPriceSeries,
@@ -43,37 +46,56 @@ export type SafetyBackupStore = {
   remove(kind: SafetyBackupKind): Promise<void>;
 };
 
-/** Toutes les Données précieuses, telles qu'elles iront dans une Sauvegarde. */
+/**
+ * Toutes les Données précieuses, telles qu'elles iront dans une Sauvegarde.
+ *
+ * Elles sont lues colonne par colonne d'après ce que contient la base, pas
+ * d'après le schéma du code : juste avant une migration, une table précieuse
+ * n'a pas encore les colonnes que la migration va lui ajouter (elles sont
+ * alors lues `null`).
+ */
 export function readPreciousData(db: AppDatabase): PreciousData {
   return {
     settings: readSettings(db),
-    collection: db
-      .select({ printingCode: collectionEntry.printingCode, quantity: collectionEntry.quantity })
-      .from(collectionEntry)
-      .orderBy(collectionEntry.printingCode)
-      .all(),
-    wishlist: db.select().from(wishlistEntry).orderBy(wishlistEntry.printingCode).all(),
-    binderSelection: db
-      .select()
-      .from(binderSelection)
-      .orderBy(binderSelection.printingCode)
-      .all()
-      .map((row) => row.printingCode),
+    collection: readRows(db, collectionEntry, [collectionEntry.printingCode]).map(
+      ({ printingCode, quantity }) => ({ printingCode, quantity }),
+    ),
+    wishlist: readRows(db, wishlistEntry, [wishlistEntry.printingCode]),
+    binderSelection: readRows(db, binderSelection, [binderSelection.printingCode]).map(
+      (row) => row.printingCode,
+    ),
     priceHistory: toPriceSeries(
-      db
-        .select()
-        .from(priceRecord)
-        .orderBy(priceRecord.printingCode, priceRecord.source, priceRecord.finish)
-        .all(),
+      readRows(db, priceRecord, [priceRecord.printingCode, priceRecord.source, priceRecord.finish]),
     ),
   };
+}
+
+/** Les lignes d'une table, avec les seules colonnes présentes dans la base (les autres à `null`). */
+function readRows<T extends SQLiteTable>(
+  db: AppDatabase,
+  table: T,
+  orderBy: SQLiteColumn[],
+): T['$inferSelect'][] {
+  const columns = Object.entries(getTableColumns(table));
+  const rows = db.all<Record<string, unknown>>(
+    sql`SELECT * FROM ${table} ORDER BY ${sql.join(orderBy, sql`, `)}`,
+  );
+  return rows.map(
+    (row) =>
+      Object.fromEntries(
+        columns.map(([key, column]) => [
+          key,
+          column.name in row ? column.mapFromDriverValue(row[column.name]) : null,
+        ]),
+      ) as T['$inferSelect'],
+  );
 }
 
 /** Les réglages enregistrés ; un réglage illisible est laissé de côté, comme à la lecture. */
 function readSettings(db: AppDatabase): SettingValues {
   const known = new Set<string>(SETTING_KEYS);
   const values: Record<string, unknown> = {};
-  for (const { key, value } of db.select().from(setting).all()) {
+  for (const { key, value } of readRows(db, setting, [setting.key])) {
     if (!known.has(key)) continue;
     try {
       const parsed: unknown = JSON.parse(value);

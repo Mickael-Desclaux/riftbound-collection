@@ -20,11 +20,14 @@ export type SyncStep =
  * - `refresh` : tirer-pour-rafraîchir, toutes les sources sans attendre ;
  * - `resync` : « Tout resynchroniser », tout est retéléchargé, même un fichier inchangé ;
  * - `rebuild` : « Reconstruire le catalogue », comme `resync`, et le Catalogue
- *   de l'appareil est d'abord effacé (prix du jour et correspondance compris).
+ *   de l'appareil est remplacé d'un bloc par celui qui vient d'être téléchargé.
  */
 export type SyncMode = 'auto' | 'refresh' | 'resync' | 'rebuild';
 
-export type SyncReport = { failures: { source: SyncStep; error: unknown }[] };
+/** Les synchronisations lancées depuis les Réglages. */
+export type ResyncMode = Extract<SyncMode, 'resync' | 'rebuild'>;
+
+export type SyncReport = { failures: { step: SyncStep; error: unknown }[] };
 
 export async function syncAll(
   deps: SyncDeps,
@@ -33,17 +36,17 @@ export async function syncAll(
   const refresh = mode !== 'auto';
   const full = mode === 'resync' || mode === 'rebuild';
   if (full) forgetAllLastModified(deps.db);
-  const steps: { source: SyncStep; run: () => Promise<unknown> }[] = [
+  const steps: { step: SyncStep; run: () => Promise<unknown> }[] = [
     {
-      source: 'catalog',
+      step: 'catalog',
       run: () => syncCatalog(deps, { refresh, redownload: full, rebuild: mode === 'rebuild' }),
     },
     // Après le Catalogue : la correspondance relie ses Versions à Cardmarket.
-    { source: 'cardmarketLinks', run: () => syncCardmarketLinks(deps) },
-    { source: 'tcgplayerPrices', run: () => syncTcgplayerPrices(deps, { refresh }) },
-    { source: 'cardmarketPrices', run: () => syncCardmarketPrices(deps, { refresh }) },
+    { step: 'cardmarketLinks', run: () => syncCardmarketLinks(deps) },
+    { step: 'tcgplayerPrices', run: () => syncTcgplayerPrices(deps, { refresh }) },
+    { step: 'cardmarketPrices', run: () => syncCardmarketPrices(deps, { refresh }) },
     // Après les prix : l'historique à couvrir part du plus ancien Relevé de prix.
-    { source: 'exchangeRates', run: () => syncExchangeRates(deps, { refresh: full }) },
+    { step: 'exchangeRates', run: () => syncExchangeRates(deps, { refresh: full }) },
   ];
   const failures: SyncReport['failures'] = [];
   // L'une après l'autre, volontairement : chaque étape s'appuie sur la précédente.
@@ -51,7 +54,7 @@ export async function syncAll(
     try {
       await step.run();
     } catch (error) {
-      failures.push({ source: step.source, error });
+      failures.push({ step: step.step, error });
     }
   }
   return { failures };

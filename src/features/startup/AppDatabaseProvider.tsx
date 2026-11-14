@@ -32,15 +32,15 @@ export function AppDatabaseProvider({ children }: { children: ReactNode }) {
       .then(() => {
         if (current) setState({ step: 'ready' });
       })
-      .catch(async (error: unknown) => {
-        const hasSafetyBackup = await fileSystemSafetyBackups.has('migration').catch(() => false);
+      .catch((error: unknown) => {
         if (!current) return;
         const failure = error instanceof MigrationError ? error : undefined;
         setState({
           step: 'failed',
           failedStep: failure?.step ?? 'migration',
           details: String(failure?.cause ?? error),
-          hasSafetyBackup,
+          // Seulement celle de cette tentative : une plus ancienne ne protège pas les données actuelles.
+          hasSafetyBackup: failure?.safetyBackupWritten ?? false,
         });
       });
     return () => {

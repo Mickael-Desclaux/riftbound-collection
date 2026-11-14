@@ -45,6 +45,7 @@ describe('MigrationFailedScreen', () => {
     );
 
     expect(screen.queryByText('Exporter la sauvegarde de sécurité')).toBeNull();
+    expect(screen.getByText(/Vérifie qu’il reste de la place/)).toBeTruthy();
     await fireEvent.press(screen.getByText('Réessayer'));
     expect(retry).toHaveBeenCalled();
   });

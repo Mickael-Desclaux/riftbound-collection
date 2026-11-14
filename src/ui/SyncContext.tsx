@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import type { SyncReport } from '@/sync/syncAll';
+import type { ResyncMode, SyncReport } from '@/sync/syncAll';
 
 type SyncControls = {
   /** Tirer-pour-rafraîchir : met à jour toutes les sources sans attendre. */
@@ -9,7 +9,7 @@ type SyncControls = {
    * « Tout resynchroniser » (`resync`) ou « Reconstruire le catalogue »
    * (`rebuild`) : rend les étapes qui ont échoué.
    */
-  resynchronize: (mode: 'resync' | 'rebuild') => Promise<SyncReport>;
+  resynchronize: (mode: ResyncMode) => Promise<SyncReport>;
   /**
    * Télécharge les grandes images du classeur absentes du téléphone, en
    * annonçant la progression ; rend les adresses des images indisponibles.

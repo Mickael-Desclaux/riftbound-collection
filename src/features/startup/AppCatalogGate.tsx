@@ -7,7 +7,7 @@ import { useDatabase } from '@/data/DatabaseProvider';
 import { fileSystemImageStore } from '@/features/binder/binderFiles';
 import { downloadBinderImages } from '@/sync/binderImages';
 import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
-import { syncAll, type SyncMode, type SyncReport } from '@/sync/syncAll';
+import { syncAll, type ResyncMode, type SyncMode, type SyncReport } from '@/sync/syncAll';
 import { ClockContext } from '@/ui/ClockContext';
 import { SyncContext } from '@/ui/SyncContext';
 
@@ -82,7 +82,7 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
   const sync = useMemo(
     () => ({
       refresh: () => synchronize('refresh').then(() => undefined),
-      resynchronize: (mode: 'resync' | 'rebuild') => synchronize(mode),
+      resynchronize: (mode: ResyncMode) => synchronize(mode),
       downloadBinderImages: (
         urls: readonly string[],
         onProgress: (done: number, total: number) => void,

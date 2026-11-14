@@ -25,9 +25,10 @@ import {
 } from '@/sources/cardmarket/priceGuide';
 import type { ConditionalResult } from '@/sources/http';
 import { fetchTcgplayerPrices, type TcgplayerPrice } from '@/sources/rifthunt/prices';
+import { hasPendingError } from '@/domain/sourceStatus';
 
 import type { SyncDeps } from './catalog';
-import { failuresRecorded, hasPendingError, HOUR, isOlderThan } from './schedule';
+import { failuresRecorded, HOUR, isOlderThan } from './schedule';
 
 const PRICES_MAX_AGE = 6 * HOUR;
 

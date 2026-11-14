@@ -14,19 +14,21 @@ import { colors } from '@/ui/theme';
 export type MigrationFailedScreenProps = {
   step: MigrationStep;
   details: string;
-  /** Une Sauvegarde de sécurité de migration est-elle là ? */
+  /** Une Sauvegarde de sécurité a-t-elle été écrite juste avant cet échec ? */
   hasSafetyBackup: boolean;
   /** Ouvre la fenêtre de partage avec la Sauvegarde de sécurité. */
   exportSafetyBackup: () => Promise<void>;
   retry: () => void;
 };
 
-const MESSAGES: Record<MigrationStep, string> = {
-  'safety-backup':
-    'La sauvegarde de sécurité n’a pas pu être créée, la mise à jour n’a donc pas été faite. Tes données n’ont pas été modifiées. Libère de la place sur le téléphone, puis réessaie.',
-  migration:
-    'Tes données n’ont pas été modifiées. Exporte la sauvegarde de sécurité pour la garder à l’abri, puis réessaie ou installe une nouvelle version de l’app.',
-};
+function messageOf(step: MigrationStep, hasSafetyBackup: boolean): string {
+  if (step === 'safety-backup') {
+    return 'La sauvegarde de sécurité n’a pas pu être créée, la mise à jour n’a donc pas été faite. Tes données n’ont pas été modifiées. Vérifie qu’il reste de la place sur le téléphone, puis réessaie.';
+  }
+  return hasSafetyBackup
+    ? 'Tes données n’ont pas été modifiées. Exporte la sauvegarde de sécurité pour la garder à l’abri, puis réessaie ou installe une nouvelle version de l’app.'
+    : 'Tes données n’ont pas été modifiées. Réessaie, ou installe une nouvelle version de l’app.';
+}
 
 export function MigrationFailedScreen({
   step,
@@ -42,7 +44,7 @@ export function MigrationFailedScreen({
   };
   return (
     <MessageScreen title="La base de données n’a pas pu être mise à jour">
-      <MessageText>{MESSAGES[step]}</MessageText>
+      <MessageText>{messageOf(step, hasSafetyBackup)}</MessageText>
       {hasSafetyBackup && (
         <Button
           label="Exporter la sauvegarde de sécurité"

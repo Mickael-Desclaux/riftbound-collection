@@ -12,9 +12,10 @@ import type { ExchangeRate, ExchangeRateSource } from '@/domain/exchangeRates';
 import { fetchBankOfCanadaRates } from '@/sources/bank-of-canada/bankOfCanada';
 import { fetchFrankfurterRates } from '@/sources/frankfurter/frankfurter';
 import { SourceError, type Fetch } from '@/sources/http';
+import { hasPendingError } from '@/domain/sourceStatus';
 
 import type { SyncDeps } from './catalog';
-import { hasPendingError, recorded } from './schedule';
+import { recorded } from './schedule';
 
 /** `skipped` : déjà fait aujourd'hui ; `refreshed` : taux enregistrés. */
 export type ExchangeRateSyncOutcome = 'skipped' | 'refreshed';

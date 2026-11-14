@@ -4,8 +4,6 @@ import type { SourceId } from '@/data/schema';
 import { recordSourceFailure, recordSourceSuccess, type SourceState } from '@/data/sourceState';
 import { SourceError } from '@/sources/http';
 
-export { hasPendingError } from '@/domain/sourceStatus';
-
 export const HOUR = 60 * 60 * 1000;
 
 /** Vrai aussi si la dernière réussite est datée dans le futur (horloge qui a reculé). */
@@ -26,8 +24,7 @@ export async function failuresRecorded<T>(
     return await step();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    const details = error instanceof SourceError ? error.details : undefined;
-    recordSourceFailure(db, source, at.toISOString(), message, details);
+    recordSourceFailure(db, source, at.toISOString(), message, diagnosticOf(error));
     throw error;
   }
 }
@@ -42,4 +39,10 @@ export async function recorded<T>(
   const result = await failuresRecorded(db, source, at, step);
   recordSourceSuccess(db, source, at.toISOString());
   return result;
+}
+
+/** Le diagnostic du repli « Détails » ; une erreur inattendue n'a que sa pile. */
+function diagnosticOf(error: unknown): string | undefined {
+  if (error instanceof SourceError) return error.details;
+  return error instanceof Error ? error.stack : undefined;
 }

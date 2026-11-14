@@ -6,9 +6,10 @@
 import { applyCardmarketLinks, hasCatalog } from '@/data/catalog';
 import { forgetLastModified, getSourceState, type SourceState } from '@/data/sourceState';
 import { fetchCardmarketLinks } from '@/sources/openrift/links';
+import { hasPendingError } from '@/domain/sourceStatus';
 
 import type { SyncDeps } from './catalog';
-import { hasPendingError, recorded } from './schedule';
+import { recorded } from './schedule';
 
 /** `skipped` : déjà à jour pour ce Catalogue ; `refreshed` : correspondance enregistrée. */
 export type LinksSyncOutcome = 'skipped' | 'refreshed';

@@ -11,8 +11,9 @@ import { forgetLastModified, getSourceState } from '@/data/sourceState';
 import type { Expansion } from '@/domain/catalog';
 import { SourceError, type Fetch } from '@/sources/http';
 import { fetchCatalog, fetchExpansions, type OnProgress } from '@/sources/rifthunt/rifthunt';
+import { hasPendingError } from '@/domain/sourceStatus';
 
-import { hasPendingError, HOUR, isOlderThan, recorded } from './schedule';
+import { HOUR, isOlderThan, recorded } from './schedule';
 
 export { SourceError } from '@/sources/http';
 export type { OnProgress } from '@/sources/rifthunt/rifthunt';
@@ -36,7 +37,7 @@ export async function syncCatalog(
     redownload?: boolean;
     /**
      * « Reconstruire le catalogue » : retélécharge tout le Catalogue et
-     * remplace celui de l'appareil, prix du jour compris (`replaceCatalog`).
+     * remplace celui de l'appareil d'un bloc (`replaceCatalog`).
      */
     rebuild?: boolean;
     /** L'utilisateur demande une mise à jour (tirer-pour-rafraîchir) : `/sets` est vérifié tout de suite. */
@@ -84,7 +85,6 @@ export async function syncCatalog(
     // De nouvelles Versions attendent peut-être leur prix : le prochain
     // téléchargement des prix sera complet, même si leur fichier n'a pas changé.
     forgetLastModified(db, 'rifthunt-prices');
-    if (options.rebuild) forgetLastModified(db, 'cardmarket-prices');
   });
   return 'refreshed';
 }

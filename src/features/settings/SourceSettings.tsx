@@ -9,15 +9,13 @@ import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import type { SourceId } from '@/data/schema';
 import type { SourceState } from '@/data/sourceState';
 import { sourceHealth, type SourceHealth } from '@/domain/sourceStatus';
-import type { SyncReport } from '@/sync/syncAll';
+import type { ResyncMode, SyncReport } from '@/sync/syncAll';
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
 import { formatDateTime } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
 import { SOURCE_LABELS, SYNC_STEP_LABELS } from './sourceLabels';
-
-export type ResyncMode = 'resync' | 'rebuild';
 
 type Props = {
   /** L'état des sources déjà contactées (`source_state`). */
@@ -58,7 +56,7 @@ export function SourceSettings({ states, resynchronize }: Readonly<Props>) {
   const rebuild = () =>
     Alert.alert(
       'Reconstruire le catalogue ?',
-      'Le catalogue et les prix du jour seront effacés puis retéléchargés (environ 6 Mo). Ta Collection, tes souhaits, ton classeur, tes réglages et l’historique des prix ne changent pas.',
+      'Le catalogue sera effacé puis retéléchargé (environ 6 Mo), ainsi que les prix. Ta Collection, tes souhaits, ton classeur, tes réglages et l’historique des prix ne changent pas.',
       [
         { text: 'Retour', style: 'cancel' },
         { text: 'Reconstruire', style: 'destructive', onPress: () => void run('rebuild') },
@@ -74,6 +72,12 @@ export function SourceSettings({ states, resynchronize }: Readonly<Props>) {
       {status && <StatusMessage status={status} />}
 
       <Text style={styles.title}>État des sources</Text>
+      {states.some((state) => sourceHealth(state) === 'failing') && (
+        <Text style={styles.muted}>
+          Une source en échec est réessayée à chaque retour dans l’app ; « Tout resynchroniser » la
+          relance tout de suite.
+        </Text>
+      )}
       {(Object.keys(SOURCE_LABELS) as SourceId[]).map((source) => (
         <SourceRow key={source} source={source} state={byId.get(source)} />
       ))}
@@ -100,12 +104,12 @@ function StatusMessage({ status }: { status: Status }) {
 
 function reportStatus({ failures }: SyncReport): Status {
   if (failures.length === 0) return { tone: 'success', message: 'Tout est à jour.' };
-  const names = failures.map((f) => SYNC_STEP_LABELS[f.source]).join(', ');
+  const names = failures.map((f) => SYNC_STEP_LABELS[f.step]).join(', ');
   return {
     tone: 'error',
     message: `Pas de mise à jour pour ${names} : le dernier état connu est gardé. Réessaie plus tard ; l’état de chaque source est ci-dessous.`,
     details: failures
-      .map((f) => `${f.source} : ${f.error instanceof Error ? f.error.message : String(f.error)}`)
+      .map((f) => `${f.step} : ${f.error instanceof Error ? f.error.message : String(f.error)}`)
       .join('\n'),
   };
 }

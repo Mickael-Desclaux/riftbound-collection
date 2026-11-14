@@ -4,7 +4,7 @@ import { ActivityIndicator } from 'react-native';
 import { SourceError, type OnProgress } from '@/sync/catalog';
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
-import { MessageScreen as Screen, MessageText } from '@/ui/MessageScreen';
+import { MessageScreen, MessageText } from '@/ui/MessageScreen';
 import { colors } from '@/ui/theme';
 
 export type CatalogGateProps = {
@@ -68,32 +68,32 @@ export function CatalogGate({
       return children;
     case 'downloading':
       return (
-        <Screen title="Téléchargement du catalogue">
+        <MessageScreen title="Téléchargement du catalogue">
           <ActivityIndicator color={colors.accent} />
           <MessageText>
             {state.total === null
               ? 'Connexion à RiftHunt…'
               : `${formatCount(state.received)} / ${formatCount(state.total)} versions`}
           </MessageText>
-        </Screen>
+        </MessageScreen>
       );
     case 'offline':
       return (
-        <Screen title="Connexion nécessaire">
+        <MessageScreen title="Connexion nécessaire">
           <MessageText>
             Le catalogue doit être téléchargé une première fois (environ 6 Mo). Le téléchargement
             reprendra tout seul dès que le réseau sera revenu.
           </MessageText>
           <Button label="Réessayer" onPress={start} variant="primary" />
-        </Screen>
+        </MessageScreen>
       );
     case 'failed':
       return (
-        <Screen title="Le catalogue n’a pas pu être téléchargé">
+        <MessageScreen title="Le catalogue n’a pas pu être téléchargé">
           <MessageText>{state.message}</MessageText>
           <Button label="Réessayer" onPress={start} variant="primary" />
           <Details text={state.details} />
-        </Screen>
+        </MessageScreen>
       );
   }
 }

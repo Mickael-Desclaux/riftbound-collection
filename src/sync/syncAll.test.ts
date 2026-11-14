@@ -55,7 +55,7 @@ describe('syncAll', () => {
 
     const report = await syncAll({ db, fetch, now: at('2026-11-09T10:00:00Z') });
 
-    expect(report.failures.map((f) => f.source)).toEqual(['catalog']);
+    expect(report.failures.map((f) => f.step)).toEqual(['catalog']);
     expect(db.select().from(currentPrice).all().length).toBeGreaterThan(0);
     expect(db.select().from(exchangeRate).all().length).toBeGreaterThan(0);
   });
@@ -66,7 +66,7 @@ describe('syncAll', () => {
 
     const report = await syncAll({ db, fetch, now: at('2026-11-09T10:00:00Z') });
 
-    expect(report.failures.map((f) => f.source)).toEqual(['cardmarketPrices']);
+    expect(report.failures.map((f) => f.step)).toEqual(['cardmarketPrices']);
     const pricesOf = (source: 'tcgplayer' | 'cardmarket') =>
       db.select().from(currentPrice).where(eq(currentPrice.source, source)).all();
     expect(pricesOf('tcgplayer').length).toBeGreaterThan(0);
@@ -115,7 +115,7 @@ describe('syncAll', () => {
   });
 
   describe('Reconstruire le catalogue', () => {
-    it('remplace tout le Catalogue et les prix du jour, sans toucher aux Données précieuses', async () => {
+    it('remplace tout le Catalogue, sans toucher aux Données précieuses', async () => {
       const db = await catalogDatabase();
       await syncAll({ db, fetch: fakeFetch(responses()).fetch, now: at('2026-11-09T10:00:00Z') });
       const linked = db.select().from(printing).where(eq(printing.printingCode, JINX)).get();
@@ -156,6 +156,28 @@ describe('syncAll', () => {
       ]);
     });
 
+    it('garde la dernière correspondance OpenRift si OpenRift est indisponible', async () => {
+      const db = await catalogDatabase();
+      await syncAll({ db, fetch: fakeFetch(responses()).fetch, now: at('2026-11-09T10:00:00Z') });
+      const linkOf = () =>
+        db.select().from(printing).where(eq(printing.printingCode, JINX)).get()
+          ?.cardmarketProductId;
+      const before = linkOf();
+
+      const report = await syncAll(
+        {
+          db,
+          fetch: fakeFetch(responses([OPENRIFT_LINKS_URL])).fetch,
+          now: at('2026-11-10T11:00:00Z'),
+        },
+        { mode: 'rebuild' },
+      );
+
+      expect(report.failures.map((f) => f.step)).toEqual(['cardmarketLinks']);
+      expect(before).not.toBeNull();
+      expect(linkOf()).toBe(before);
+    });
+
     it('garde le Catalogue de l’appareil si le téléchargement échoue', async () => {
       const db = await catalogDatabase();
       const before = db.select().from(printing).all().length;
@@ -165,7 +187,7 @@ describe('syncAll', () => {
         { mode: 'rebuild' },
       );
 
-      expect(report.failures.map((f) => f.source)).toContain('catalog');
+      expect(report.failures.map((f) => f.step)).toContain('catalog');
       expect(db.select().from(printing).all()).toHaveLength(before);
     });
   });

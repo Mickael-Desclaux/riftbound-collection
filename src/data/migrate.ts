@@ -26,6 +26,8 @@ export class MigrationError extends Error {
   constructor(
     readonly step: MigrationStep,
     readonly cause: unknown,
+    /** Une Sauvegarde de sécurité a été écrite juste avant cet échec : on peut l'exporter. */
+    readonly safetyBackupWritten = false,
   ) {
     super(cause instanceof Error ? cause.message : String(cause));
     this.name = 'MigrationError';
@@ -37,16 +39,18 @@ type Dependencies = { safetyBackups: SafetyBackupStore; now: () => Date };
 /**
  * Applique les migrations en attente.
  *
- * La Sauvegarde de sécurité est lue avec le schéma actuel du code
- * (`readPreciousData`) : une migration qui renomme ou retire une colonne
- * précieuse doit donc garder cette lecture possible sur l'ancien schéma.
+ * La Sauvegarde de sécurité est lue d'après les colonnes présentes dans la base
+ * (`readPreciousData`) : une colonne précieuse ajoutée par la migration est
+ * lue `null`. Une migration qui renomme ou retire une colonne précieuse doit
+ * garder cette lecture possible sur l'ancien schéma.
  */
 export async function migrateSafely(
   db: AppDatabase,
   migrations: Migrations,
   { safetyBackups, now }: Dependencies,
 ): Promise<void> {
-  if (pendingMigrations(db, migrations).some(touchesPreciousData)) {
+  const needsSafetyBackup = pendingMigrations(db, migrations).some(touchesPreciousData);
+  if (needsSafetyBackup) {
     try {
       const backup = createBackup(readPreciousData(db), now().toISOString());
       await safetyBackups.write('migration', serializeBackup(backup));
@@ -59,7 +63,7 @@ export async function migrateSafely(
     // type du résultat d'écriture, que le migrateur n'utilise pas.
     await migrate(db as unknown as Parameters<typeof migrate>[0], migrations);
   } catch (error) {
-    throw new MigrationError('migration', error);
+    throw new MigrationError('migration', error, needsSafetyBackup);
   }
 }
 

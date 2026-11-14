@@ -46,7 +46,7 @@ describe('SourceSettings', () => {
 
   it('« Tout resynchroniser » dit ce qui n’a pas pu être mis à jour', async () => {
     const resynchronize = jest.fn().mockResolvedValue({
-      failures: [{ source: 'exchangeRates', error: new SourceError('network', 'Hors ligne.') }],
+      failures: [{ step: 'exchangeRates', error: new SourceError('network', 'Hors ligne.') }],
     });
     await render(<SourceSettings states={[]} resynchronize={resynchronize} />);
 

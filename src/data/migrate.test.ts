@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 
 import { readBackup } from '@/domain/backup';
@@ -11,6 +12,7 @@ import migrations from './migrations/migrations';
 import * as schema from './schema';
 import { collectionEntry } from './schema';
 import { memorySafetyBackups } from './testing/memorySafetyBackups';
+import { setWishlisted } from './wishlist';
 
 const JINX = 'OGN-030a' as PrintingCode;
 const now = () => new Date('2026-11-14T10:00:00.000Z');
@@ -77,6 +79,26 @@ describe('migrateSafely', () => {
     expect(result.ok && result.backup.collection).toEqual([{ printingCode: JINX, quantity: 3 }]);
   });
 
+  it('lit la Sauvegarde de sécurité sur l’ancien schéma, sans les colonnes que la migration ajoute', async () => {
+    const db = await installedDatabase();
+    setWishlisted(db, JINX, '2026-11-02T09:00:00.000Z');
+    // La base d'avant la migration : `last_alert_at` n'existe pas encore, alors
+    // que le schéma du code la connaît déjà.
+    db.run(sql.raw('ALTER TABLE `wishlist_entry` DROP COLUMN `last_alert_at`;'));
+    const { store, files } = memorySafetyBackups();
+
+    await migrateSafely(
+      db,
+      withNewMigration('ALTER TABLE `wishlist_entry` ADD `last_alert_at` text;'),
+      { safetyBackups: store, now },
+    );
+
+    const result = readBackup(files.get('migration') ?? '');
+    expect(result.ok && result.backup.wishlist).toEqual([
+      expect.objectContaining({ printingCode: JINX, lastAlertAt: null }),
+    ]);
+  });
+
   it('ne modifie rien si la migration échoue', async () => {
     const db = await installedDatabase();
     const { store, files } = memorySafetyBackups();
@@ -90,6 +112,7 @@ describe('migrateSafely', () => {
 
     expect(error).toBeInstanceOf(MigrationError);
     expect((error as MigrationError).step).toBe('migration');
+    expect((error as MigrationError).safetyBackupWritten).toBe(true);
     expect(db.select().from(collectionEntry).all()).toEqual([
       expect.objectContaining({ printingCode: JINX, quantity: 3 }),
     ]);
@@ -107,5 +130,16 @@ describe('migrateSafely', () => {
 
     expect((error as MigrationError).step).toBe('safety-backup');
     expect(db.select().from(collectionEntry).all()).toHaveLength(1);
+  });
+
+  it('ne propose pas de Sauvegarde de sécurité quand la migration en échec ne touche qu’aux Données de référence', async () => {
+    const db = await installedDatabase();
+
+    const error = await migrateSafely(db, withNewMigration('ALTER TABLE `missing` ADD `x` text;'), {
+      safetyBackups: memorySafetyBackups().store,
+      now,
+    }).catch((e: unknown) => e);
+
+    expect((error as MigrationError).safetyBackupWritten).toBe(false);
   });
 });
