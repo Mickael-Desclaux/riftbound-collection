@@ -174,11 +174,11 @@ export async function restoreBackup(
  */
 export async function undoLastRestore(
   db: AppDatabase,
-  safetyBackups: SafetyBackupStore,
+  { safetyBackups, now }: RestoreDependencies,
 ): Promise<void> {
   const text = await safetyBackups.read('restore');
   if (text === null) throw new Error('Aucune restauration à annuler.');
-  const result = readBackup(text);
+  const result = readBackup(text, now().toISOString());
   if (!result.ok) {
     throw new Error(`Sauvegarde de sécurité illisible (${result.error.details}).`);
   }

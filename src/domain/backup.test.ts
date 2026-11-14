@@ -15,6 +15,7 @@ import type { PrintingCode } from './printingCode';
 const code = (value: string) => value as PrintingCode;
 
 const EXPORTED_AT = '2026-11-14T10:00:00.000Z';
+const READ_AT = '2026-12-01T09:00:00.000Z';
 
 /** Une ligne de la Collection telle que l'écrit le format 2. */
 function owned(printingCode: string, quantity: number, overrides: Record<string, unknown> = {}) {
@@ -132,7 +133,7 @@ describe('readBackup', () => {
   it('relit une Sauvegarde exportée telle quelle', () => {
     const backup = createBackup(preciousData(), EXPORTED_AT);
 
-    expect(readBackup(serializeBackup(backup))).toEqual({ ok: true, backup });
+    expect(readBackup(serializeBackup(backup), READ_AT)).toEqual({ ok: true, backup });
   });
 
   it('porte le format, la version et la date d’export', () => {
@@ -154,7 +155,7 @@ describe('readBackup', () => {
       priceHistory: [],
     };
 
-    expect(readBackup(serializeBackup(createBackup(empty, EXPORTED_AT)))).toMatchObject({
+    expect(readBackup(serializeBackup(createBackup(empty, EXPORTED_AT)), READ_AT)).toMatchObject({
       ok: true,
     });
   });
@@ -166,7 +167,7 @@ describe('readBackup', () => {
     ['un autre format', JSON.stringify({ format: 'autre-app', version: 1 })],
     ['une version illisible', JSON.stringify({ format: BACKUP_FORMAT, version: 'un' })],
   ])('reconnaît %s comme n’étant pas une Sauvegarde', (_, text) => {
-    expect(readBackup(text)).toMatchObject({ ok: false, error: { kind: 'not-a-backup' } });
+    expect(readBackup(text, READ_AT)).toMatchObject({ ok: false, error: { kind: 'not-a-backup' } });
   });
 
   it('refuse une Sauvegarde d’une version plus récente de l’app', () => {
@@ -174,7 +175,7 @@ describe('readBackup', () => {
       document.version = BACKUP_VERSION + 1;
     });
 
-    expect(readBackup(text)).toMatchObject({ ok: false, error: { kind: 'too-recent' } });
+    expect(readBackup(text, READ_AT)).toMatchObject({ ok: false, error: { kind: 'too-recent' } });
   });
 
   it.each<[string, (document: Record<string, unknown>) => void]>([
@@ -233,7 +234,7 @@ describe('readBackup', () => {
         ]),
     ],
   ])('signale une Sauvegarde abîmée : %s', (_, change) => {
-    const result = readBackup(tamperedText(change));
+    const result = readBackup(tamperedText(change), READ_AT);
 
     expect(result).toMatchObject({ ok: false, error: { kind: 'damaged' } });
     if (!result.ok) expect(result.error.details).not.toBe('');
@@ -250,19 +251,19 @@ describe('readBackup', () => {
 });
 
 describe('readBackup, format 1', () => {
-  it('convertit une Sauvegarde du format 1 : les Versions possédées entrent dans la Collection à la date d’export', () => {
+  it('convertit une Sauvegarde du format 1 : les Versions possédées entrent dans la Collection le jour de la lecture, pas à l’export', () => {
     const document = JSON.parse(serializeBackup(createBackup(preciousData(), EXPORTED_AT)));
     document.version = 1;
     document.collection = [{ printingCode: 'OGN-030a', quantity: 2 }];
 
-    const result = readBackup(JSON.stringify(document));
+    const result = readBackup(JSON.stringify(document), READ_AT);
 
     expect(result).toMatchObject({ ok: true, backup: { version: BACKUP_VERSION } });
     expect(result.ok && result.backup.collection).toEqual([
       {
         printingCode: 'OGN-030a',
         quantity: 2,
-        addedAt: EXPORTED_AT,
+        addedAt: READ_AT,
         lastAlertPrice: null,
         lastAlertSource: null,
         lastAlertAt: null,
@@ -275,7 +276,7 @@ describe('readBackup, format 1', () => {
     document.version = 1;
     document.collection = 'rien';
 
-    expect(readBackup(JSON.stringify(document))).toMatchObject({
+    expect(readBackup(JSON.stringify(document), READ_AT)).toMatchObject({
       ok: false,
       error: { kind: 'damaged' },
     });
@@ -293,11 +294,11 @@ describe('upgradeBackupDocument', () => {
       }),
     ];
 
-    expect(upgradeBackupDocument({ version: 1 }, 3, upgrades)).toEqual({
+    expect(upgradeBackupDocument({ version: 1 }, 3, upgrades, READ_AT)).toEqual({
       version: 3,
       steps: ['1→2', '2→3'],
     });
-    expect(upgradeBackupDocument({ version: 2 }, 3, upgrades)).toEqual({
+    expect(upgradeBackupDocument({ version: 2 }, 3, upgrades, READ_AT)).toEqual({
       version: 3,
       steps: ['2→3'],
     });
@@ -306,10 +307,10 @@ describe('upgradeBackupDocument', () => {
   it('ne touche pas un document déjà à la version visée', () => {
     const document = { version: 3, data: 'x' };
 
-    expect(upgradeBackupDocument(document, 3, [])).toBe(document);
+    expect(upgradeBackupDocument(document, 3, [], READ_AT)).toBe(document);
   });
 
   it('échoue clairement s’il manque une conversion', () => {
-    expect(() => upgradeBackupDocument({ version: 1 }, 2, [])).toThrow(/version 1/);
+    expect(() => upgradeBackupDocument({ version: 1 }, 2, [], READ_AT)).toThrow(/version 1/);
   });
 });

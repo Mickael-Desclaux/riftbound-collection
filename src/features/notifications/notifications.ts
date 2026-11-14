@@ -88,8 +88,8 @@ export async function notifyNewExpansions(expansions: readonly NewExpansion[]): 
 /** Signale les baisses des souhaits par une seule notification, qui ouvre l'onglet Souhaits. */
 export async function notifyPriceAlerts(alerts: readonly PriceAlert[]): Promise<boolean> {
   return notify(PRICE_ALERTS_CHANNEL, {
-    title: priceAlertsTitle(alerts),
-    body: priceAlertsText(alerts),
+    title: priceAlertsTitle('drop', alerts),
+    body: priceAlertsText('drop', alerts),
     data: { kind: 'priceAlerts' },
   });
 }
@@ -97,8 +97,8 @@ export async function notifyPriceAlerts(alerts: readonly PriceAlert[]): Promise<
 /** Signale les hausses de la Collection par une seule notification, qui ouvre l'onglet Collection. */
 export async function notifyPriceRiseAlerts(alerts: readonly PriceAlert[]): Promise<boolean> {
   return notify(PRICE_RISE_ALERTS_CHANNEL, {
-    title: priceAlertsTitle(alerts),
-    body: priceAlertsText(alerts),
+    title: priceAlertsTitle('rise', alerts),
+    body: priceAlertsText('rise', alerts),
     data: { kind: 'priceRiseAlerts' },
   });
 }

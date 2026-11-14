@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import type { PriceAlert } from '@/domain/priceAlert';
 import type { PrintingCode } from '@/domain/printingCode';
 
-import type { priceAlertAnnouncer } from './announcer';
-
-type PriceAlertAnnouncer = Pick<typeof priceAlertAnnouncer, 'subscribe'>;
+import type { Announcer } from './announcer';
 
 /**
  * La pastille d'un onglet (spec § 3 point 10) : le nombre de Versions qui ont
@@ -12,7 +11,7 @@ type PriceAlertAnnouncer = Pick<typeof priceAlertAnnouncer, 'subscribe'>;
  * jusqu'à ce qu'on ouvre l'onglet (`clear`). Souhaits pour les baisses,
  * Collection pour les hausses.
  */
-export function usePriceAlertBadge(announcer: PriceAlertAnnouncer): {
+export function usePriceAlertBadge(announcer: Pick<Announcer<PriceAlert>, 'subscribe'>): {
   count: number;
   clear: () => void;
 } {

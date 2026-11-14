@@ -25,11 +25,11 @@ export function useBackupActions(): BackupActions {
       },
       pickBackup: async () => {
         const text = await pickBackupFile();
-        return text === null ? null : readBackup(text);
+        return text === null ? null : readBackup(text, now().toISOString());
       },
       restore: (backup) =>
         restoreBackup(db, backup, { safetyBackups: fileSystemSafetyBackups, now }),
-      undoLastRestore: () => undoLastRestore(db, fileSystemSafetyBackups),
+      undoLastRestore: () => undoLastRestore(db, { safetyBackups: fileSystemSafetyBackups, now }),
       canUndoLastRestore: () => fileSystemSafetyBackups.has('restore'),
     }),
     [db, now],

@@ -80,7 +80,7 @@ describe('Sauvegarde', () => {
     const text = serializeBackup(exportBackup(source, NOW));
 
     const { db: target } = await createTestDatabase();
-    const result = readBackup(text);
+    const result = readBackup(text, NOW_ISO);
     if (!result.ok) throw new Error(result.error.details);
     replacePreciousData(target, result.backup);
 
@@ -130,12 +130,12 @@ describe('Sauvegarde', () => {
     });
 
     expect(readPreciousData(db, NOW_ISO)).toEqual(OTHER_DATA);
-    expect(readBackup(files.get('restore') ?? '')).toMatchObject({
+    expect(readBackup(files.get('restore') ?? '', NOW_ISO)).toMatchObject({
       ok: true,
       backup: { exportedAt: NOW.toISOString(), ...before },
     });
 
-    await undoLastRestore(db, store);
+    await undoLastRestore(db, { safetyBackups: store, now: () => NOW });
 
     expect(readPreciousData(db, NOW_ISO)).toEqual(before);
     expect(files.has('restore')).toBe(false);
@@ -177,9 +177,9 @@ describe('Sauvegarde', () => {
     const db = await filledDatabase();
     const before = readPreciousData(db, NOW_ISO);
 
-    await expect(undoLastRestore(db, memorySafetyBackups().store)).rejects.toThrow(
-      'Aucune restauration à annuler.',
-    );
+    await expect(
+      undoLastRestore(db, { safetyBackups: memorySafetyBackups().store, now: () => NOW }),
+    ).rejects.toThrow('Aucune restauration à annuler.');
     expect(readPreciousData(db, NOW_ISO)).toEqual(before);
   });
 });

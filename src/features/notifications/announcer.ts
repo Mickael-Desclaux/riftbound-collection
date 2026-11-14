@@ -10,6 +10,14 @@ import { notifyNewExpansions, notifyPriceAlerts, notifyPriceRiseAlerts } from '.
 
 type Listener<T> = (items: T[]) => void;
 
+/** Annonce des nouveautés, dans l'app ou par une notification. */
+export type Announcer<T> = {
+  /** Annonce `items` ; dit si l'annonce a été affichée ou envoyée. */
+  announce(items: T[], context: AnnounceContext): Promise<boolean>;
+  /** Pour l'annonce dans l'app ; renvoie de quoi se désabonner. */
+  subscribe(listener: Listener<T>): () => void;
+};
+
 export type AnnounceContext = {
   /** Le réglage qui active cette annonce. */
   enabled: boolean;
@@ -21,7 +29,7 @@ export type AnnounceContext = {
  * `notify` envoie la notification, et dit si elle est partie (pas sans la
  * permission d'Android).
  */
-export function createAnnouncer<T>(notify: (items: T[]) => Promise<boolean>) {
+export function createAnnouncer<T>(notify: (items: T[]) => Promise<boolean>): Announcer<T> {
   const listeners = new Set<Listener<T>>();
   return {
     /** Annonce `items` ; dit si l'annonce a été affichée ou envoyée. */

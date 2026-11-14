@@ -1,6 +1,8 @@
 -- SQLite refuse d'ajouter une colonne NOT NULL sans valeur par défaut : la
 -- table est reconstruite. Les Versions déjà possédées entrent dans la
 -- Collection le jour de cette migration (référence des Alertes de prix).
+-- Une migration SQL n'a pas l'horloge injectée : la date vient de SQLite, à
+-- quelques instants près celle de la Sauvegarde de sécurité qui la précède.
 CREATE TABLE `__new_collection_entry` (
 	`printing_code` text PRIMARY KEY NOT NULL,
 	`quantity` integer NOT NULL,

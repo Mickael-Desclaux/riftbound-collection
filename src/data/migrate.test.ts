@@ -19,6 +19,7 @@ const ENTERED = new Date('2026-11-01T10:00:00.000Z');
 
 const JINX = 'OGN-030a' as PrintingCode;
 const now = () => new Date('2026-11-14T10:00:00.000Z');
+const NOW_ISO = now().toISOString();
 
 /** Les migrations de l'app, suivies d'une nouvelle migration `sql`. */
 function withNewMigration(sql: string): Migrations {
@@ -78,7 +79,7 @@ describe('migrateSafely', () => {
       now,
     });
 
-    const result = readBackup(files.get('migration') ?? '');
+    const result = readBackup(files.get('migration') ?? '', NOW_ISO);
     expect(result.ok && result.backup.collection).toEqual([
       expect.objectContaining({ printingCode: JINX, quantity: 3, addedAt: ENTERED.toISOString() }),
     ]);
@@ -97,7 +98,7 @@ describe('migrateSafely', () => {
     await migrateSafely(db, migrations, { safetyBackups: store, now });
 
     // La Sauvegarde de sécurité, lue sur l'ancien schéma, reste une Sauvegarde valide.
-    const result = readBackup(files.get('migration') ?? '');
+    const result = readBackup(files.get('migration') ?? '', NOW_ISO);
     expect(result.ok && result.backup.collection).toEqual([
       expect.objectContaining({ printingCode: JINX, quantity: 3, addedAt: now().toISOString() }),
     ]);
@@ -137,7 +138,7 @@ describe('migrateSafely', () => {
       { safetyBackups: store, now },
     );
 
-    const result = readBackup(files.get('migration') ?? '');
+    const result = readBackup(files.get('migration') ?? '', NOW_ISO);
     expect(result.ok && result.backup.wishlist).toEqual([
       expect.objectContaining({ printingCode: JINX, lastAlertAt: null }),
     ]);

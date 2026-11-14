@@ -73,22 +73,27 @@ export type BackupReadError = {
 
 export type BackupReadResult = { ok: true; backup: Backup } | { ok: false; error: BackupReadError };
 
-/** Convertit un document de la version n vers la version n + 1. */
-export type BackupUpgrade = (document: Record<string, unknown>) => Record<string, unknown>;
+/** Convertit un document de la version n vers la version n + 1, lu à `readAt`. */
+export type BackupUpgrade = (
+  document: Record<string, unknown>,
+  readAt: IsoDateTime,
+) => Record<string, unknown>;
 
 /**
  * Format 1 → 2 : la Collection gagne sa date d'entrée et sa dernière Alerte
- * de prix. Faute de mieux, les Versions possédées y entrent à la date
- * d'export, comme le fait la migration de la base.
+ * de prix. Comme pour la migration de la base, les Versions possédées y
+ * entrent le jour où l'app les découvre, c'est-à-dire à la lecture : dater à
+ * l'export ferait d'un vieux prix la référence, et d'une restauration une
+ * avalanche d'alertes de hausse.
  */
-const addCollectionAlerts: BackupUpgrade = (document) => {
-  const { collection, exportedAt } = document;
+const addCollectionAlerts: BackupUpgrade = (document, readAt) => {
+  const { collection } = document;
   if (!Array.isArray(collection)) throw new Error('la Collection n’est pas une liste');
   return {
     ...document,
     version: 2,
     collection: collection.map((entry: unknown) => ({
-      addedAt: exportedAt,
+      addedAt: readAt,
       lastAlertPrice: null,
       lastAlertSource: null,
       lastAlertAt: null,
@@ -108,8 +113,11 @@ export function serializeBackup(backup: Backup): string {
   return JSON.stringify(backup);
 }
 
-/** Lit le texte d'un fichier de Sauvegarde, sans jamais lever d'erreur. */
-export function readBackup(text: string): BackupReadResult {
+/**
+ * Lit le texte d'un fichier de Sauvegarde, sans jamais lever d'erreur.
+ * `readAt` date ce que la conversion d'un format ancien doit inventer.
+ */
+export function readBackup(text: string, readAt: IsoDateTime): BackupReadResult {
   let document: unknown;
   try {
     document = JSON.parse(text);
@@ -131,7 +139,7 @@ export function readBackup(text: string): BackupReadResult {
 
   let upgraded: Record<string, unknown>;
   try {
-    upgraded = upgradeBackupDocument(header.data, BACKUP_VERSION, BACKUP_UPGRADES);
+    upgraded = upgradeBackupDocument(header.data, BACKUP_VERSION, BACKUP_UPGRADES, readAt);
   } catch (error) {
     return failure('damaged', `Conversion du format ${version} impossible : ${messageOf(error)}`);
   }
@@ -149,12 +157,13 @@ export function upgradeBackupDocument<T extends { version: number }>(
   document: T,
   targetVersion: number,
   upgrades: readonly BackupUpgrade[],
+  readAt: IsoDateTime,
 ): Record<string, unknown> {
   let current: Record<string, unknown> = document;
   for (let version = document.version; version < targetVersion; version++) {
     const upgrade = upgrades[version - 1];
     if (!upgrade) throw new Error(`aucune conversion depuis la version ${version}`);
-    current = upgrade(current);
+    current = upgrade(current, readAt);
   }
   return current;
 }
