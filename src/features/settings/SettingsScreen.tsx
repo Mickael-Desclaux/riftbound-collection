@@ -2,14 +2,17 @@ import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSetting } from '@/data/useSetting';
+import { BackupSettings } from '@/features/backup/BackupSettings';
+import { useBackupActions } from '@/features/backup/useBackupActions';
 import { colors } from '@/ui/theme';
 
 import { PriceSettings } from './PriceSettings';
 
-/** Onglet Réglages, première version : les réglages des prix. */
+/** Onglet Réglages : les réglages des prix et les Sauvegardes. */
 export function SettingsScreen() {
   const [displayCurrency, setDisplayCurrency] = useSetting('displayCurrency');
   const [priceSource, setPriceSource] = useSetting('priceSource');
+  const backupActions = useBackupActions();
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -20,6 +23,7 @@ export function SettingsScreen() {
           onDisplayCurrencyChange={setDisplayCurrency}
           onPriceSourceChange={setPriceSource}
         />
+        <BackupSettings actions={backupActions} />
       </ScrollView>
     </SafeAreaView>
   );

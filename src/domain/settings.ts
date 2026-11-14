@@ -74,6 +74,12 @@ const SETTINGS = {
 export type SettingKey = keyof typeof SETTINGS;
 export type SettingValue<K extends SettingKey> = (typeof SETTINGS)[K]['defaultValue'];
 
+/** Tous les réglages connus de l'app. */
+export const SETTING_KEYS = Object.keys(SETTINGS) as SettingKey[];
+
+/** Des réglages et leur valeur, chacun facultatif. */
+export type SettingValues = { [K in SettingKey]?: SettingValue<K> };
+
 function definitionOf<K extends SettingKey>(key: K): SettingDefinition<SettingValue<K>> {
   return SETTINGS[key];
 }
