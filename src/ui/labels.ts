@@ -4,6 +4,7 @@
  */
 import type { PrintingVariant } from '@/domain/catalog';
 import type { Finish, PriceSource } from '@/domain/price';
+import type { ChartPresetPeriod } from '@/domain/settings';
 
 const RARITIES: Record<string, string> = {
   common: 'Commune',
@@ -66,4 +67,13 @@ export const FINISH_LABELS: Record<Finish, string> = { normal: 'Normale', foil: 
 export const PRICE_SOURCE_LABELS: Record<PriceSource, string> = {
   tcgplayer: 'TCGplayer',
   cardmarket: 'Cardmarket',
+};
+
+/** Périodes prédéfinies des graphiques d'évolution. */
+export const CHART_PERIOD_LABELS: Record<ChartPresetPeriod, string> = {
+  '7d': '7 j',
+  '30d': '30 j',
+  '90d': '90 j',
+  '1y': '1 an',
+  all: 'Tout',
 };

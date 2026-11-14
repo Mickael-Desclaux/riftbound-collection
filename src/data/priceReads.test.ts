@@ -1,9 +1,11 @@
 import type { CurrentPrice } from '@/domain/priceRecords';
 import type { PrintingCode } from '@/domain/printingCode';
 
+import { setOwnedQuantity } from './collection';
 import { readExchangeRates, saveExchangeRates } from './exchangeRates';
 import {
   latestPublishedAt,
+  readCollectionPriceHistory,
   readCurrentPrices,
   readPrintingHistory,
   referenceMetricValuesOn,
@@ -154,6 +156,54 @@ describe('referenceMetricValuesOn', () => {
 
     expect(referenceMetricValuesOn(db, 'tcgplayer', '2026-11-03')).toEqual(
       new Map([['OGN-030a|foil', 2.8]]),
+    );
+  });
+});
+
+describe('readCollectionPriceHistory', () => {
+  const record = (code: string, recordedAt: string, value: number, overrides = {}) => ({
+    printingCode: code as PrintingCode,
+    source: 'tcgplayer' as const,
+    finish: 'normal' as const,
+    recordedAt,
+    value,
+    ...overrides,
+  });
+
+  it('donne, pour une source, les relevés des seules Versions possédées, dans l’ordre', async () => {
+    const { db } = await createTestDatabase();
+    savePrices(
+      db,
+      'tcgplayer',
+      [],
+      [
+        record('OGN-001', '2026-11-03T00:00:00.000Z', 2),
+        record('OGN-001', '2026-11-01T00:00:00.000Z', 1),
+        record('OGN-001', '2026-11-01T00:00:00.000Z', 9, { finish: 'foil' }),
+        record('OGN-002', '2026-11-01T00:00:00.000Z', 5),
+      ],
+    );
+    savePrices(
+      db,
+      'cardmarket',
+      [],
+      [record('OGN-001', '2026-11-01T00:00:00.000Z', 7, { source: 'cardmarket' })],
+    );
+    setOwnedQuantity(db, 'OGN-001' as PrintingCode, 2);
+
+    const history = readCollectionPriceHistory(db, 'tcgplayer');
+
+    expect(history).toEqual(
+      new Map([
+        [
+          'OGN-001|normal',
+          [
+            { recordedAt: '2026-11-01T00:00:00.000Z', value: 1 },
+            { recordedAt: '2026-11-03T00:00:00.000Z', value: 2 },
+          ],
+        ],
+        ['OGN-001|foil', [{ recordedAt: '2026-11-01T00:00:00.000Z', value: 9 }]],
+      ]),
     );
   });
 });

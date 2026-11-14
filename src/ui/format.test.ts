@@ -1,4 +1,11 @@
-import { formatIsoDate, formatPercentChange, formatPrice, parseAmount } from './format';
+import {
+  formatCollectionCounts,
+  formatCompletion,
+  formatIsoDate,
+  formatPercentChange,
+  formatPrice,
+  parseAmount,
+} from './format';
 
 /** Espace insécable, et espace fine insécable (séparateur de milliers en français). */
 const NBSP = '\u00a0';
@@ -49,5 +56,24 @@ describe('formatPercentChange', () => {
     expect(formatPercentChange(10)).toBe(`+10,0${NBSP}%`);
     expect(formatPercentChange(-3.46)).toBe(`−3,5${NBSP}%`);
     expect(formatPercentChange(0)).toBe(`0,0${NBSP}%`);
+  });
+});
+
+describe('formatCollectionCounts', () => {
+  it('écrit « N versions · M cartes · K sans prix », au singulier comme au pluriel', () => {
+    expect(formatCollectionCounts({ printingCount: 12, cardCount: 1234, unpricedCount: 2 })).toBe(
+      `12 versions · 1${NNBSP}234 cartes · 2 sans prix`,
+    );
+    expect(formatCollectionCounts({ printingCount: 1, cardCount: 1, unpricedCount: 0 })).toBe(
+      '1 version · 1 carte · 0 sans prix',
+    );
+  });
+});
+
+describe('formatCompletion', () => {
+  it('écrit « 54 / 352 · 15 % »', () => {
+    expect(formatCompletion({ expansionCode: 'OGN', owned: 54, total: 352 })).toBe(
+      `54 / 352 · 15${NBSP}%`,
+    );
   });
 });

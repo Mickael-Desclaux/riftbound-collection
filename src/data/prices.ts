@@ -1,5 +1,5 @@
 /** Prix du jour (Données de référence) et historique des Relevés de prix (Données précieuses). */
-import { and, asc, count, eq, isNotNull, lt, max, min, sql } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, lt, max, min, sql } from 'drizzle-orm';
 
 import { addDays, toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dates';
 
@@ -16,7 +16,7 @@ import type { PrintingCode } from '@/domain/printingCode';
 
 import type { AppDatabase } from './database';
 import { chunks } from './chunks';
-import { currentPrice, printing, priceRecord } from './schema';
+import { collectionEntry, currentPrice, printing, priceRecord } from './schema';
 
 /** Code de version de chaque produit TCGplayer du Catalogue. */
 export function printingCodesByTcgId(db: AppDatabase): Map<number, PrintingCode> {
@@ -192,4 +192,40 @@ export function referenceMetricValuesOn(
     .groupBy(priceRecord.printingCode, priceRecord.finish)
     .all();
   return new Map(rows.map((row) => [printingFinishKey(row), row.value]));
+}
+
+/**
+ * Les Relevés de prix d'une source pour les Versions de la Collection, par
+ * Version × Finition (`printingFinishKey`), du plus ancien au plus récent.
+ */
+export function readCollectionPriceHistory(
+  db: AppDatabase,
+  source: PriceSource,
+): Map<string, Pick<PriceRecord, 'recordedAt' | 'value'>[]> {
+  const rows = db
+    .select({
+      printingCode: priceRecord.printingCode,
+      finish: priceRecord.finish,
+      recordedAt: priceRecord.recordedAt,
+      value: priceRecord.value,
+    })
+    .from(priceRecord)
+    .where(
+      and(
+        eq(priceRecord.source, source),
+        inArray(
+          priceRecord.printingCode,
+          db.select({ printingCode: collectionEntry.printingCode }).from(collectionEntry),
+        ),
+      ),
+    )
+    .orderBy(asc(priceRecord.recordedAt))
+    .all();
+  const history = new Map<string, Pick<PriceRecord, 'recordedAt' | 'value'>[]>();
+  for (const { recordedAt, value, ...key } of rows) {
+    const series = history.get(printingFinishKey(key)) ?? [];
+    series.push({ recordedAt, value });
+    history.set(printingFinishKey(key), series);
+  }
+  return history;
 }

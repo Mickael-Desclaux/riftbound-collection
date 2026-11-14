@@ -2,29 +2,60 @@ import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { selectExpansionChips } from '@/data/catalogGrid';
+import { useDatabase } from '@/data/DatabaseProvider';
+import { readExchangeRates } from '@/data/exchangeRates';
+import { readCollectionPriceHistory } from '@/data/prices';
+import { useReactiveQuery } from '@/data/useReactiveQuery';
+import { useSetting } from '@/data/useSetting';
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '@/domain/catalogFilters';
 import { COLLECTION_SORTS } from '@/domain/catalogSort';
 import { collectionEntries } from '@/domain/collection';
+import { toIsoDate } from '@/domain/dates';
+import { SOURCE_CURRENCY } from '@/domain/price';
 import { PrintingBrowser } from '@/features/printing-browser/PrintingBrowser';
 import { usePrintingEntries } from '@/features/printing-browser/usePrintingEntries';
+import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
+import { missingInExpansionHref } from '@/ui/printingHref';
 import { colors } from '@/ui/theme';
 
+import { CollectionHeader } from './CollectionHeader';
 import { useToggleOwned } from './useToggleOwned';
 
 /** Les promos possédées sont des cartes de la Collection comme les autres : visibles d'emblée. */
 const COLLECTION_FILTERS: CatalogFilters = { ...DEFAULT_CATALOG_FILTERS, showPromo: true };
 
 /**
- * Onglet Collection (spec § 2.3) : la grille commune limitée aux Versions
- * possédées, triée par « Valeur » (quantité × prix). Les Versions inconnues
- * suivent, en fin de liste.
+ * Onglet Collection (spec § 2.3) : la Valeur de la collection et la Complétion,
+ * puis la grille commune limitée aux Versions possédées, triée par « Valeur »
+ * (quantité × prix). Les Versions inconnues suivent, en fin de liste.
  */
 export function CollectionScreen() {
   const router = useRouter();
   const { entries, owned } = usePrintingEntries();
   const collection = useMemo(() => collectionEntries(entries, owned), [entries, owned]);
   const toggleOwned = useToggleOwned();
+  const db = useDatabase();
+  const now = useClock();
+  const [displayCurrency] = useSetting('displayCurrency');
+  const [priceSource] = useSetting('priceSource');
+  const history = useReactiveQuery(
+    () => readCollectionPriceHistory(db, priceSource),
+    [db, priceSource],
+    ['price_record', 'collection_entry'],
+  );
+  const rates = useReactiveQuery(() => readExchangeRates(db), [db], ['exchange_rate']);
+  const expansionNames = useReactiveQuery(
+    () =>
+      new Map(
+        selectExpansionChips(db, false)
+          .all()
+          .map((e) => [e.code, e.name]),
+      ),
+    [db],
+    ['expansion'],
+  );
   return (
     <PrintingBrowser
       tab="collection"
@@ -34,6 +65,19 @@ export function CollectionScreen() {
       defaultFilters={COLLECTION_FILTERS}
       lockedCriteria={['promo', 'ownership']}
       onToggleOwned={toggleOwned}
+      banner={
+        <CollectionHeader
+          owned={collection}
+          catalog={entries}
+          expansionNames={expansionNames}
+          history={history}
+          sourceCurrency={SOURCE_CURRENCY[priceSource]}
+          displayCurrency={displayCurrency}
+          rates={rates}
+          today={toIsoDate(now())}
+          onOpenCompletion={(code) => router.navigate(missingInExpansionHref(code, now()))}
+        />
+      }
       emptyState={
         <View style={styles.empty}>
           <Text style={styles.title}>Ta collection est vide.</Text>
