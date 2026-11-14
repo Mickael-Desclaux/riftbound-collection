@@ -8,7 +8,7 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import type { Backup, BackupReadError, BackupReadResult } from '@/domain/backup';
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
-import { formatDate, formatPrintingCount } from '@/ui/format';
+import { formatDate, formatPrintingCount, formatWishCount } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
 export type BackupActions = {
@@ -47,6 +47,7 @@ export function BackupSettings({ actions }: Readonly<{ actions: BackupActions }>
   async function run(task: () => Promise<Status | undefined>, failure: string) {
     if (busy.current) return;
     busy.current = true;
+    setStatus(null);
     try {
       const next = await task();
       if (next) setStatus(next);
@@ -60,7 +61,6 @@ export function BackupSettings({ actions }: Readonly<{ actions: BackupActions }>
 
   const exportBackup = () =>
     run(async () => {
-      setStatus(null);
       await actions.exportBackup();
       return undefined;
     }, 'La sauvegarde n’a pas pu être exportée. Réessaie.');
@@ -122,8 +122,7 @@ export function BackupSettings({ actions }: Readonly<{ actions: BackupActions }>
 
 /** « Sauvegarde du 14 novembre 2026 : 12 versions dans la Collection, 3 souhaits. » */
 function summaryOf(backup: Backup): string {
-  const wishes = backup.wishlist.length;
-  return `Sauvegarde du ${formatDate(backup.exportedAt)} : ${formatPrintingCount(backup.collection.length)} dans la Collection, ${wishes} ${wishes > 1 ? 'souhaits' : 'souhait'}.`;
+  return `Sauvegarde du ${formatDate(backup.exportedAt)} : ${formatPrintingCount(backup.collection.length)} dans la Collection, ${formatWishCount(backup.wishlist.length)}.`;
 }
 
 function confirm(title: string, message: string, confirmLabel: string): Promise<boolean> {

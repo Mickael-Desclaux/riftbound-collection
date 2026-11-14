@@ -3,11 +3,16 @@ import { useMemo } from 'react';
 import { readPreciousData, restoreBackup, undoLastRestore } from '@/data/backup';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { createBackup, readBackup, serializeBackup } from '@/domain/backup';
-import { toIsoDate } from '@/domain/dates';
 import { useClock } from '@/ui/ClockContext';
 
 import type { BackupActions } from './BackupSettings';
 import { fileSystemSafetyBackups, pickBackupFile, shareBackupFile } from './backupFiles';
+
+/** La date du jour à l'heure du téléphone, `AAAA-MM-JJ`, pour nommer le fichier. */
+function localIsoDate(at: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`;
+}
 
 /** Les actions de la section « Données », branchées sur la base et les fichiers du téléphone. */
 export function useBackupActions(): BackupActions {
@@ -20,7 +25,7 @@ export function useBackupActions(): BackupActions {
         const backup = createBackup(readPreciousData(db), at.toISOString());
         return shareBackupFile(
           serializeBackup(backup),
-          `riftbound-collection-${toIsoDate(at)}.json`,
+          `riftbound-collection-${localIsoDate(at)}.json`,
         );
       },
       pickBackup: async () => {

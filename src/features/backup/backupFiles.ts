@@ -31,7 +31,7 @@ export async function pickBackupFile(): Promise<string | null> {
   return new File(asset.uri).text();
 }
 
-/** Les Sauvegardes de sécurité, dans le dossier privé de l'app (non partagé, non sauvegardé ailleurs). */
+/** Les Sauvegardes de sécurité, dans le dossier privé de l'app. */
 function safetyBackupFile(kind: SafetyBackupKind): File {
   return new File(new Directory(Paths.document, 'safety-backups'), `${kind}.json`);
 }

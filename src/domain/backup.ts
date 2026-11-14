@@ -168,9 +168,9 @@ const headerSchema = z.looseObject({
   version: z.number().int().positive(),
 });
 
-const printingCode = z.string().min(1);
-const dateTime = z.iso.datetime();
-const price = z.number().nonnegative();
+const printingCodeSchema = z.string().min(1);
+const dateTimeSchema = z.iso.datetime();
+const priceSchema = z.number().nonnegative();
 
 /** Refuse un tableau où deux éléments ont la même clé. */
 function unique<T>(keyOf: (item: T) => string, what: string) {
@@ -201,11 +201,11 @@ const settingsSchema = z.strictObject(
 );
 
 const priceSeriesSchema = z.strictObject({
-  printingCode,
+  printingCode: printingCodeSchema,
   source: z.enum(PRICE_SOURCES),
   finish: z.enum(FINISHES),
   points: z
-    .array(z.tuple([dateTime, price]))
+    .array(z.tuple([dateTimeSchema, priceSchema]))
     .min(1)
     .superRefine(unique(([recordedAt]) => recordedAt, 'Relevé de prix')),
 });
@@ -213,26 +213,41 @@ const priceSeriesSchema = z.strictObject({
 const backupSchema = z.strictObject({
   format: z.literal(BACKUP_FORMAT),
   version: z.literal(BACKUP_VERSION),
-  exportedAt: dateTime,
+  exportedAt: dateTimeSchema,
   settings: settingsSchema,
   collection: z
-    .array(z.strictObject({ printingCode, quantity: z.number().int().positive() }))
+    .array(
+      z.strictObject({ printingCode: printingCodeSchema, quantity: z.number().int().positive() }),
+    )
     .superRefine(unique((entry) => entry.printingCode, 'Version')),
   wishlist: z
     .array(
-      z.strictObject({
-        printingCode,
-        addedAt: dateTime,
-        lastAlertPrice: price.nullable(),
-        lastAlertSource: z.enum(PRICE_SOURCES).nullable(),
-        lastAlertAt: dateTime.nullable(),
-      }),
+      z
+        .strictObject({
+          printingCode: printingCodeSchema,
+          addedAt: dateTimeSchema,
+          lastAlertPrice: priceSchema.nullable(),
+          lastAlertSource: z.enum(PRICE_SOURCES).nullable(),
+          lastAlertAt: dateTimeSchema.nullable(),
+        })
+        .refine(
+          // La dernière Alerte de prix est entière, ou absente.
+          ({ lastAlertPrice, lastAlertSource, lastAlertAt }) =>
+            new Set([lastAlertPrice, lastAlertSource, lastAlertAt].map((v) => v === null)).size ===
+            1,
+          { message: 'dernière Alerte de prix incomplète' },
+        ),
     )
     .superRefine(unique((entry) => entry.printingCode, 'Version')),
-  binderSelection: z.array(printingCode).superRefine(unique((code: string) => code, 'Version')),
+  binderSelection: z
+    .array(printingCodeSchema)
+    .superRefine(unique((code: string) => code, 'Version')),
   priceHistory: z
     .array(priceSeriesSchema)
     .superRefine(
-      unique((series) => `${series.printingCode} ${series.source} ${series.finish}`, 'Série'),
+      unique(
+        (series: z.infer<typeof priceSeriesSchema>) => priceKey(series as PriceSeries),
+        'Historique de prix',
+      ),
     ),
 });

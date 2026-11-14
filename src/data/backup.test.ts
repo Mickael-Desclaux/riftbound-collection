@@ -155,6 +155,21 @@ describe('Sauvegarde', () => {
     expect(readPreciousData(db)).toEqual(before);
   });
 
+  it('garde la restauration précédente annulable si le remplacement échoue', async () => {
+    const db = await filledDatabase();
+    const { store, files } = memorySafetyBackups();
+    files.set('restore', 'restauration précédente');
+    const invalid = { ...OTHER_DATA, collection: [{ printingCode: JINX, quantity: 0 }] };
+
+    await expect(
+      restoreBackup(db, createBackup(invalid, NOW.toISOString()), {
+        safetyBackups: store,
+        now: () => NOW,
+      }),
+    ).rejects.toThrow();
+    expect(files.get('restore')).toBe('restauration précédente');
+  });
+
   it('refuse d’annuler quand il n’y a pas eu de restauration', async () => {
     const db = await filledDatabase();
     const before = readPreciousData(db);

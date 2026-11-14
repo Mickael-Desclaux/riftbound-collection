@@ -196,6 +196,19 @@ describe('readBackup', () => {
         ]),
     ],
     ['deux séries pour le même prix', (d) => (d.priceHistory = [series(), series()])],
+    [
+      'une dernière Alerte de prix incomplète',
+      (d) =>
+        (d.wishlist = [
+          {
+            printingCode: 'OGN-303s',
+            addedAt: '2026-11-01T08:00:00.000Z',
+            lastAlertPrice: 12.5,
+            lastAlertSource: null,
+            lastAlertAt: '2026-11-10T08:00:00.000Z',
+          },
+        ]),
+    ],
   ])('signale une Sauvegarde abîmée : %s', (_, change) => {
     const result = readBackup(tamperedText(change));
 

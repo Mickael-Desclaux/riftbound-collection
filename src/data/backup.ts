@@ -115,16 +115,26 @@ type RestoreDependencies = { safetyBackups: SafetyBackupStore; now: () => Date }
  * Restaure une Sauvegarde déjà validée (`readBackup`) : les Données précieuses
  * actuelles partent d'abord dans la Sauvegarde de sécurité de restauration,
  * puis sont remplacées d'un bloc. Si l'écriture de la Sauvegarde de sécurité
- * échoue, rien n'est modifié.
+ * échoue, rien n'est modifié ; si le remplacement échoue, la Sauvegarde de
+ * sécurité précédente est remise.
  */
 export async function restoreBackup(
   db: AppDatabase,
   backup: Backup,
   { safetyBackups, now }: RestoreDependencies,
 ): Promise<void> {
+  const previous = await safetyBackups.read('restore');
   const current = createBackup(readPreciousData(db), now().toISOString());
   await safetyBackups.write('restore', serializeBackup(current));
-  replacePreciousData(db, backup);
+  try {
+    replacePreciousData(db, backup);
+  } catch (error) {
+    // Rien n'a été restauré : la restauration précédente reste celle qu'on peut annuler.
+    await (previous === null
+      ? safetyBackups.remove('restore')
+      : safetyBackups.write('restore', previous));
+    throw error;
+  }
 }
 
 /**
