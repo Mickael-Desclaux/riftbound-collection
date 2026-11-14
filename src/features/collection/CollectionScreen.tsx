@@ -15,6 +15,7 @@ import { SOURCE_CURRENCY } from '@/domain/price';
 import { useOpenCatalog } from '@/features/catalog/catalogRequest';
 import { PrintingBrowser } from '@/features/printing-browser/PrintingBrowser';
 import { usePrintingEntries } from '@/features/printing-browser/usePrintingEntries';
+import { useToggleWishlisted } from '@/features/wishlist/useToggleWishlisted';
 import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
@@ -32,9 +33,13 @@ const COLLECTION_FILTERS: CatalogFilters = { ...DEFAULT_CATALOG_FILTERS, showPro
  */
 export function CollectionScreen() {
   const openCatalog = useOpenCatalog();
-  const { entries, owned } = usePrintingEntries();
-  const collection = useMemo(() => collectionEntries(entries, owned), [entries, owned]);
+  const { entries, owned, wishlist } = usePrintingEntries();
+  const collection = useMemo(
+    () => collectionEntries(entries, owned, wishlist),
+    [entries, owned, wishlist],
+  );
   const toggleOwned = useToggleOwned();
+  const toggleWishlisted = useToggleWishlisted();
   const db = useDatabase();
   const now = useClock();
   const [displayCurrency] = useSetting('displayCurrency');
@@ -64,6 +69,7 @@ export function CollectionScreen() {
       defaultFilters={COLLECTION_FILTERS}
       lockedCriteria={['promo', 'ownership']}
       onToggleOwned={toggleOwned}
+      onToggleWishlisted={toggleWishlisted}
       banner={
         <CollectionHeader
           owned={collection}

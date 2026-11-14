@@ -9,13 +9,18 @@ import {
   firstOwnedRecordDay,
   ownedPrintingsOf,
   type OwnedPrinting,
-  type OwnedPrintingHistory,
 } from '@/domain/collectionValue';
 import { completion } from '@/domain/completion';
 import type { IsoDate } from '@/domain/dates';
 import type { ExchangeRate } from '@/domain/exchangeRates';
 import type { Currency } from '@/domain/price';
-import { alignSeries, convertSeries, isHistoryBuilding, periodRange } from '@/domain/priceHistory';
+import {
+  alignSeries,
+  convertSeries,
+  isHistoryBuilding,
+  periodRange,
+  type PrintingFinishHistory,
+} from '@/domain/priceHistory';
 import { CHART_PRESET_PERIODS, type ChartPresetPeriod } from '@/domain/settings';
 import { Chip } from '@/ui/controls';
 import {
@@ -37,7 +42,7 @@ export type CollectionHeaderProps = {
   /** Nom de chaque Extension, par code. */
   expansionNames: ReadonlyMap<string, string>;
   /** Les Relevés de prix des Versions possédées, pour la Source de prix choisie. */
-  history: OwnedPrintingHistory;
+  history: PrintingFinishHistory;
   /** Devise d'origine de la Source de prix choisie. */
   sourceCurrency: Currency;
   displayCurrency: Currency;

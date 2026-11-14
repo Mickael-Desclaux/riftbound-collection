@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PrintingDetail, PrintingState } from '@/data/printingDetail';
 import type { ExchangeRate } from '@/domain/exchangeRates';
 import type { PrintingHistory } from '@/data/prices';
-import type { IsoDate } from '@/domain/dates';
+import type { IsoDate, IsoDateTime } from '@/domain/dates';
 import { SOURCE_CURRENCY, type Currency, type PriceSource } from '@/domain/price';
 import type { ChartPeriod, CustomChartPeriod } from '@/domain/settings';
 import {
@@ -16,9 +16,17 @@ import {
   type CellKey,
   type PriceCell,
 } from '@/domain/printingDetail';
+import type { RecordedValue } from '@/domain/priceHistory';
 import type { PrintingCode } from '@/domain/printingCode';
+import { wishlistPriceChange } from '@/domain/wishlist';
 import { controlStyles } from '@/ui/controls';
-import { formatDate, formatIsoDate, formatPrice } from '@/ui/format';
+import {
+  formatDate,
+  formatNumericDayMonth,
+  formatIsoDate,
+  formatPercentChange,
+  formatPrice,
+} from '@/ui/format';
 import {
   domainLabel,
   FINISH_LABELS,
@@ -139,6 +147,14 @@ export function PrintingDetailView({
             </Text>
           )}
         </View>
+
+        {state.wishlistedAt !== null && (
+          <WishlistNote
+            wishlistedAt={state.wishlistedAt}
+            records={shown && history[shown.source]?.[shown.finish]}
+            today={today}
+          />
+        )}
 
         {shown && (
           <Section title="Évolution">
@@ -267,6 +283,30 @@ function PriceCellButton({
   );
 }
 
+/**
+ * « Dans tes souhaits depuis le JJ/MM : ±x % depuis l'ajout », pour la case de
+ * prix affichée, en devise d'origine (spec § 2.2, § 3 point 9).
+ */
+function WishlistNote({
+  wishlistedAt,
+  records,
+  today,
+}: Readonly<{
+  wishlistedAt: IsoDateTime;
+  records: readonly RecordedValue[] | undefined;
+  today: IsoDate;
+}>) {
+  const change = records ? wishlistPriceChange(records, wishlistedAt, today) : null;
+  return (
+    <View style={styles.wishlistNote}>
+      <Text style={styles.wishlistNoteText}>
+        Dans tes souhaits depuis le {formatNumericDayMonth(wishlistedAt)}
+        {change !== null && ` : ${formatPercentChange(change)} depuis l’ajout`}
+      </Text>
+    </View>
+  );
+}
+
 function PriceDates({ cell }: Readonly<{ cell: PriceCell }>) {
   if (cell.publishedAt === null)
     return <Text style={styles.note}>Pas de prix pour cette case.</Text>;
@@ -386,6 +426,8 @@ const styles = StyleSheet.create({
   name: { color: colors.text, fontSize: 22, fontWeight: '700' },
   muted: { color: colors.muted, fontSize: 13 },
   bigPrice: { color: colors.accent, fontSize: 30, fontWeight: '700', marginTop: 6 },
+  wishlistNote: { ...controlStyles.idle, borderRadius: 10, padding: 12 },
+  wishlistNoteText: { color: colors.text, fontSize: 14 },
   section: { gap: 8 },
   sectionTitle: {
     color: colors.muted,

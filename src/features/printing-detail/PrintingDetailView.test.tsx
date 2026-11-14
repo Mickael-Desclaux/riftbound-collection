@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import type { PrintingHistory } from '@/data/prices';
 import type { PrintingDetail, PrintingState } from '@/data/printingDetail';
 import type { ExchangeRate } from '@/domain/exchangeRates';
 import type { PrintingCode } from '@/domain/printingCode';
@@ -49,7 +50,11 @@ const rates: ExchangeRate[] = [
   },
 ];
 
-async function setup(state: Partial<PrintingState> = {}, shown: PrintingDetail = detail) {
+async function setup(
+  state: Partial<PrintingState> = {},
+  shown: PrintingDetail = detail,
+  history: PrintingHistory = {},
+) {
   const handlers = {
     onBack: jest.fn(),
     onOpenPrinting: jest.fn(),
@@ -65,7 +70,7 @@ async function setup(state: Partial<PrintingState> = {}, shown: PrintingDetail =
       displayCurrency="EUR"
       priceSource="tcgplayer"
       rates={rates}
-      history={{}}
+      history={history}
       today="2026-11-11"
       chartPeriod="30d"
       onChartPeriodChange={jest.fn()}
@@ -77,6 +82,33 @@ async function setup(state: Partial<PrintingState> = {}, shown: PrintingDetail =
 }
 
 describe('PrintingDetailView', () => {
+  it('donne la variation depuis l’ajout d’une Version en souhait, pour la case affichée', async () => {
+    await setup({ wishlistedAt: '2026-11-01T12:00:00.000Z' }, detail, {
+      tcgplayer: {
+        foil: [
+          { recordedAt: '2026-11-01T17:00:00.000Z', value: 10 },
+          { recordedAt: '2026-11-05T17:00:00.000Z', value: 8 },
+        ],
+      },
+    });
+
+    expect(
+      screen.getByText('Dans tes souhaits depuis le 01/11 : −20,0 % depuis l’ajout'),
+    ).toBeTruthy();
+  });
+
+  it('donne seulement la date d’ajout d’un souhait sans historique', async () => {
+    await setup({ wishlistedAt: '2026-11-01T12:00:00.000Z' });
+
+    expect(screen.getByText('Dans tes souhaits depuis le 01/11')).toBeTruthy();
+  });
+
+  it('n’affiche pas l’encart pour une Version hors des souhaits', async () => {
+    await setup();
+
+    expect(screen.queryByText(/Dans tes souhaits/)).toBeNull();
+  });
+
   it('affiche la Version et le prix de la Source des Réglages', async () => {
     await setup();
 

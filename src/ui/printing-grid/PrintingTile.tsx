@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Currency } from '@/domain/price';
-import { formatPrice } from '@/ui/format';
+import { formatPercentChange, formatPrice } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
 import { CARD_ASPECT_RATIO, gridImageUri, type GridPrinting } from './gridPrinting';
@@ -14,22 +14,29 @@ const RETRY_DELAY_MS = 5_000;
 
 /**
  * Une case de grille : image, nom, Code de version et prix ; badge « ×n » si
- * la Version est possédée, et ✓ qui bascule possédée / non possédée.
+ * la Version est possédée, ✓ qui bascule possédée / non possédée, et ♡ qui
+ * l'ajoute à la Liste de souhaits ou l'en retire.
  */
 export function PrintingTile({
   printing,
   displayCurrency,
   onPress,
   onToggleOwned,
+  onToggleWishlisted,
+  showWishlistChange,
 }: Readonly<{
   printing: GridPrinting;
   displayCurrency: Currency;
   onPress: () => void;
   onToggleOwned: () => void;
+  onToggleWishlisted: () => void;
+  showWishlistChange: boolean;
 }>) {
   const uri = gridImageUri(printing);
   const price = formatPrice(printing.price, displayCurrency);
   const owned = printing.ownedQuantity > 0;
+  const wished = printing.wishlistedAt !== null;
+  const change = printing.wishlistPriceChange;
   return (
     <Pressable
       accessibilityRole="button"
@@ -61,6 +68,16 @@ export function PrintingTile({
         >
           <Text style={[styles.checkMark, owned && styles.checkMarkOn]}>✓</Text>
         </Pressable>
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: wished }}
+          accessibilityLabel={`En souhait : ${printing.name}`}
+          onPress={onToggleWishlisted}
+          hitSlop={6}
+          style={[styles.check, styles.heart]}
+        >
+          <Text style={[styles.checkMark, wished && styles.heartOn]}>{wished ? '♥' : '♡'}</Text>
+        </Pressable>
       </View>
       <Text numberOfLines={1} style={styles.name}>
         {printing.name}
@@ -69,6 +86,13 @@ export function PrintingTile({
         <Text style={styles.code}>{printing.printingCode}</Text>
         <Text style={styles.price}>{price}</Text>
       </View>
+      {showWishlistChange && wished && (
+        <Text style={styles.code}>
+          {change === null
+            ? 'Pas encore de variation'
+            : `${formatPercentChange(change)} depuis l’ajout`}
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -149,6 +173,8 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: '#000a',
   },
+  heart: { right: undefined, left: 6 },
+  heartOn: { color: colors.accent },
   checkOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   checkMark: { color: colors.text, fontSize: 16, fontWeight: '700' },
   checkMarkOn: { color: colors.background },

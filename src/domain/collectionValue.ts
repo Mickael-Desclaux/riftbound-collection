@@ -8,8 +8,14 @@ import type { CatalogEntry } from './catalogEntry';
 import { addDays, type DateRange, type IsoDate } from './dates';
 import type { Finish } from './price';
 import { referenceFinish } from './priceDisplay';
-import { dailySeries, firstRecordDay, percentChange, type DailyPoint } from './priceHistory';
-import { printingFinishKey, type PriceRecord } from './priceRecords';
+import {
+  dailySeries,
+  firstRecordDay,
+  percentChange,
+  type DailyPoint,
+  type PrintingFinishHistory,
+} from './priceHistory';
+import { printingFinishKey } from './priceRecords';
 import type { PrintingCode } from './printingCode';
 
 /** « N versions · M cartes · K sans prix », et la valeur dans la Devise d'affichage. */
@@ -50,19 +56,10 @@ export function ownedPrintingsOf(entries: readonly CatalogEntry[]): OwnedPrintin
   });
 }
 
-/**
- * Les Relevés de prix de la Source de prix choisie, en devise d'origine, par
- * Version × Finition (`printingFinishKey`), du plus ancien au plus récent.
- */
-export type OwnedPrintingHistory = ReadonlyMap<
-  string,
-  readonly Pick<PriceRecord, 'recordedAt' | 'value'>[]
->;
-
 /** Le jour (UTC) du plus ancien relevé des Versions possédées : le début de « Tout ». */
 export function firstOwnedRecordDay(
   ownedPrintings: readonly OwnedPrinting[],
-  history: OwnedPrintingHistory,
+  history: PrintingFinishHistory,
 ): IsoDate | undefined {
   let first: IsoDate | undefined;
   for (const ownedPrinting of ownedPrintings) {
@@ -75,7 +72,7 @@ export function firstOwnedRecordDay(
 /** La valeur de chaque jour de `range` de chaque Version possédée, quantité comprise. */
 function ownedPrintingSeries(
   ownedPrintings: readonly OwnedPrinting[],
-  history: OwnedPrintingHistory,
+  history: PrintingFinishHistory,
   range: DateRange,
 ): DailyPoint[][] {
   return ownedPrintings.map((ownedPrinting) =>
@@ -94,7 +91,7 @@ function ownedPrintingSeries(
  */
 export function collectionValueSeries(
   ownedPrintings: readonly OwnedPrinting[],
-  history: OwnedPrintingHistory,
+  history: PrintingFinishHistory,
   range: DateRange,
 ): DailyPoint[] {
   const totals = new Map<IsoDate, number>();
@@ -113,7 +110,7 @@ export function collectionValueSeries(
  */
 export function collectionValueChange(
   ownedPrintings: readonly OwnedPrinting[],
-  history: OwnedPrintingHistory,
+  history: PrintingFinishHistory,
   today: IsoDate,
 ): number | null {
   const start = addDays(today, -30);

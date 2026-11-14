@@ -10,7 +10,13 @@ import type { PriceRecord } from './priceRecords';
 import type { ChartPeriod, ChartPresetPeriod } from './settings';
 
 /** Ce qui compte d'un Relevé de prix pour son historique (devise d'origine). */
-type RecordedValue = Pick<PriceRecord, 'recordedAt' | 'value'>;
+export type RecordedValue = Pick<PriceRecord, 'recordedAt' | 'value'>;
+
+/**
+ * Les Relevés de prix de la Source de prix choisie, en devise d'origine, par
+ * Version × Finition (`printingFinishKey`), du plus ancien au plus récent.
+ */
+export type PrintingFinishHistory = ReadonlyMap<string, readonly RecordedValue[]>;
 
 /** La valeur d'un jour. */
 export type DailyPoint = { date: IsoDate; value: number };

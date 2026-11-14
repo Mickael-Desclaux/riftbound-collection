@@ -40,6 +40,7 @@ const SORT_LABELS: Record<CatalogSort, string> = {
   change30dAsc: 'Variation 30 j ↑',
   change30dDesc: 'Variation 30 j ↓',
   valueDesc: 'Valeur',
+  wishlistChangeAsc: 'Plus forte baisse',
 };
 
 const NO_LOCKED_CRITERIA: readonly LockedCriterion[] = [];
@@ -61,6 +62,10 @@ type Props = {
   lockedCriteria?: readonly LockedCriterion[];
   /** ✓ d'une case : bascule possédée / non possédée. */
   onToggleOwned: (printing: GridPrinting) => void;
+  /** ♡ d'une case : ajoute aux souhaits ou en retire. */
+  onToggleWishlisted: (printing: GridPrinting) => void;
+  /** Onglet Souhaits : chaque case montre sa variation depuis l'ajout. */
+  showWishlistChange?: boolean;
   /** Affiché à la place de la grille quand l'onglet n'a aucune Version. */
   emptyState?: ReactElement;
   /** Affiché en haut de l'en-tête, au-dessus de la recherche. */
@@ -86,6 +91,8 @@ export function PrintingBrowser({
   defaultFilters = DEFAULT_CATALOG_FILTERS,
   lockedCriteria = NO_LOCKED_CRITERIA,
   onToggleOwned,
+  onToggleWishlisted,
+  showWishlistChange = false,
   emptyState,
   banner,
   filtersRequest = null,
@@ -183,6 +190,8 @@ export function PrintingBrowser({
         onClearFilters={() => changeFilters(defaultFilters)}
         onOpenPrinting={(code) => router.push(printingHref(tab, code))}
         onToggleOwned={onToggleOwned}
+        onToggleWishlisted={onToggleWishlisted}
+        showWishlistChange={showWishlistChange}
         onRefresh={onRefresh}
         refreshing={refreshing}
         header={

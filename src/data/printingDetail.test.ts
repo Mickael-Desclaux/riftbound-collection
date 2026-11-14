@@ -1,12 +1,7 @@
 import type { PrintingCode } from '@/domain/printingCode';
 
 import { replaceCatalog } from './catalog';
-import {
-  readPrintingDetail,
-  readPrintingState,
-  setInBinderSelection,
-  setWishlisted,
-} from './printingDetail';
+import { readPrintingDetail, readPrintingState, setInBinderSelection } from './printingDetail';
 import { setOwnedQuantity } from './collection';
 import { savePrices } from './prices';
 import { catalogOf, expansionOf, printingOf } from './testing/catalogFactory';
@@ -100,25 +95,6 @@ describe('actions de la fiche', () => {
 
     setOwnedQuantity(db, JINX, 0);
     expect(readPrintingState(db, JINX).quantity).toBe(0);
-  });
-
-  it('ajoute aux souhaits avec la date d’ajout, puis les retire', async () => {
-    const db = await catalogDatabase();
-
-    setWishlisted(db, JINX, '2026-11-11T12:00:00.000Z');
-    expect(readPrintingState(db, JINX).wishlistedAt).toBe('2026-11-11T12:00:00.000Z');
-
-    setWishlisted(db, JINX, null);
-    expect(readPrintingState(db, JINX).wishlistedAt).toBeNull();
-  });
-
-  it('garde la date d’ajout d’origine si la Version est déjà en souhait', async () => {
-    const db = await catalogDatabase();
-
-    setWishlisted(db, JINX, '2026-11-11T12:00:00.000Z');
-    setWishlisted(db, JINX, '2026-11-12T12:00:00.000Z');
-
-    expect(readPrintingState(db, JINX).wishlistedAt).toBe('2026-11-11T12:00:00.000Z');
   });
 
   it('ajoute la Version à la Sélection du classeur, puis l’en retire', async () => {

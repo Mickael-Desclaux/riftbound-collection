@@ -12,6 +12,8 @@ const jinx: GridPrinting = {
   price: 12.4,
   ownedQuantity: 3,
   inCatalog: true,
+  wishlistedAt: null,
+  wishlistPriceChange: null,
 };
 const ahri: GridPrinting = {
   printingCode: 'OGN-303s' as PrintingCode,
@@ -21,6 +23,8 @@ const ahri: GridPrinting = {
   price: null,
   ownedQuantity: 0,
   inCatalog: true,
+  wishlistedAt: '2026-11-01T09:00:00.000Z',
+  wishlistPriceChange: -12.5,
 };
 
 async function setup(props: Partial<PrintingGridProps> = {}) {
@@ -28,6 +32,7 @@ async function setup(props: Partial<PrintingGridProps> = {}) {
   const onClearFilters = jest.fn();
   const onOpenPrinting = jest.fn();
   const onToggleOwned = jest.fn();
+  const onToggleWishlisted = jest.fn();
   await render(
     <PrintingGrid
       items={[jinx, ahri]}
@@ -38,10 +43,11 @@ async function setup(props: Partial<PrintingGridProps> = {}) {
       displayCurrency="CAD"
       onOpenPrinting={onOpenPrinting}
       onToggleOwned={onToggleOwned}
+      onToggleWishlisted={onToggleWishlisted}
       {...props}
     />,
   );
-  return { onPageChange, onClearFilters, onOpenPrinting, onToggleOwned };
+  return { onPageChange, onClearFilters, onOpenPrinting, onToggleOwned, onToggleWishlisted };
 }
 
 describe('PrintingGrid', () => {
@@ -86,6 +92,28 @@ describe('PrintingGrid', () => {
 
     expect(onToggleOwned).toHaveBeenCalledWith(ahri);
     expect(onOpenPrinting).not.toHaveBeenCalled();
+  });
+
+  it('ajoute aux souhaits ou en retire avec ♡, sans ouvrir la fiche', async () => {
+    const { onToggleWishlisted, onOpenPrinting } = await setup();
+
+    expect(
+      screen.getByRole('checkbox', { name: 'En souhait : Jinx, Demolitionist' }),
+    ).not.toBeChecked();
+    await fireEvent.press(
+      screen.getByRole('checkbox', { name: 'En souhait : Ahri, Nine-Tailed Fox' }),
+    );
+
+    expect(onToggleWishlisted).toHaveBeenCalledWith(ahri);
+    expect(onOpenPrinting).not.toHaveBeenCalled();
+  });
+
+  it('montre la variation depuis l’ajout dans l’onglet Souhaits seulement', async () => {
+    await setup();
+    expect(screen.queryByText(/depuis l’ajout/)).toBeNull();
+
+    await setup({ showWishlistChange: true });
+    expect(screen.getByText('−12,5 % depuis l’ajout')).toBeTruthy();
   });
 
   it('change de page depuis la pagination numérotée', async () => {

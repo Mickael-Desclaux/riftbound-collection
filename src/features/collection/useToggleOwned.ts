@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
-import { setOwnedQuantity } from '@/data/collection';
-import { useDatabase } from '@/data/DatabaseProvider';
 import { toggleOwned } from '@/domain/collection';
 import type { GridPrinting } from '@/ui/printing-grid/gridPrinting';
 import { useToast } from '@/ui/Toast';
+
+import { useSetOwnedQuantity } from './useSetOwnedQuantity';
 
 /** Ce que le ✓ doit savoir d'une case de grille. */
 export type OwnedToggleTarget = Pick<GridPrinting, 'printingCode' | 'ownedQuantity' | 'inCatalog'>;
@@ -15,19 +15,19 @@ export type OwnedToggleTarget = Pick<GridPrinting, 'printingCode' | 'ownedQuanti
  * « Retirée de la collection (×n) · Annuler », comme une Version inconnue.
  */
 export function useToggleOwned(): (printing: OwnedToggleTarget) => void {
-  const db = useDatabase();
+  const setOwnedQuantity = useSetOwnedQuantity();
   const showToast = useToast();
   return useCallback(
     ({ printingCode, ownedQuantity, inCatalog }) => {
       const { quantity, undoQuantity } = toggleOwned(ownedQuantity, inCatalog);
-      setOwnedQuantity(db, printingCode, quantity);
+      setOwnedQuantity(printingCode, quantity);
       if (undoQuantity === null) return;
       showToast({
         message: `Retirée de la collection (×${undoQuantity})`,
         actionLabel: 'Annuler',
-        onAction: () => setOwnedQuantity(db, printingCode, undoQuantity),
+        onAction: () => setOwnedQuantity(printingCode, undoQuantity),
       });
     },
-    [db, showToast],
+    [setOwnedQuantity, showToast],
   );
 }

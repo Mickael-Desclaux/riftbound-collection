@@ -1,3 +1,4 @@
+import type { IsoDateTime } from '@/domain/dates';
 import type { PrintingCode } from '@/domain/printingCode';
 
 /** Format des cartes Riftbound (largeur / hauteur). */
@@ -15,6 +16,10 @@ export type GridPrinting = {
   ownedQuantity: number;
   /** Faux pour une Version inconnue (absente du Catalogue) : cadre gris. */
   inCatalog: boolean;
+  /** Date d'ajout à la Liste de souhaits : ♡ plein si elle n'est pas `null`. */
+  wishlistedAt: IsoDateTime | null;
+  /** Variation de prix depuis l'ajout aux souhaits, en % (`null` : pas de relevé). */
+  wishlistPriceChange: number | null;
 };
 
 /**

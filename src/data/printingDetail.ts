@@ -153,22 +153,6 @@ export function readPrintingState(db: AppDatabase, printingCode: PrintingCode): 
   };
 }
 
-/**
- * Ajoute la Version à la Liste de souhaits à la date `addedAt`, ou l'en retire
- * (`null`). Déjà en souhait, elle garde sa date d'ajout d'origine.
- */
-export function setWishlisted(
-  db: AppDatabase,
-  printingCode: PrintingCode,
-  addedAt: IsoDateTime | null,
-): void {
-  if (addedAt === null) {
-    db.delete(wishlistEntry).where(eq(wishlistEntry.printingCode, printingCode)).run();
-    return;
-  }
-  db.insert(wishlistEntry).values({ printingCode, addedAt }).onConflictDoNothing().run();
-}
-
 export function setInBinderSelection(
   db: AppDatabase,
   printingCode: PrintingCode,

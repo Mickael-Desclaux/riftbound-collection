@@ -24,6 +24,10 @@ export type PrintingGridProps = {
   onOpenPrinting: (printingCode: PrintingCode) => void;
   /** ✓ d'une case : bascule possédée / non possédée. */
   onToggleOwned: (printing: GridPrinting) => void;
+  /** ♡ d'une case : ajoute à la Liste de souhaits ou l'en retire. */
+  onToggleWishlisted: (printing: GridPrinting) => void;
+  /** Onglet Souhaits : chaque case montre sa variation depuis l'ajout. */
+  showWishlistChange?: boolean;
   /** Affiché au-dessus de la grille (recherche, puces, compteur…). */
   header?: ReactElement;
   /** Tirer-pour-rafraîchir : force la mise à jour des données (spec § 5). */
@@ -44,6 +48,8 @@ export function PrintingGrid({
   onClearFilters,
   onOpenPrinting,
   onToggleOwned,
+  onToggleWishlisted,
+  showWishlistChange = false,
   header,
   onRefresh,
   refreshing = false,
@@ -81,6 +87,8 @@ export function PrintingGrid({
             displayCurrency={displayCurrency}
             onPress={() => onOpenPrinting(item.printingCode)}
             onToggleOwned={() => onToggleOwned(item)}
+            onToggleWishlisted={() => onToggleWishlisted(item)}
+            showWishlistChange={showWishlistChange}
           />
         )}
         ListEmptyComponent={<EmptyResult onClearFilters={onClearFilters} />}

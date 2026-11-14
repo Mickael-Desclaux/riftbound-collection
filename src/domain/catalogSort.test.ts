@@ -114,6 +114,20 @@ describe('sortCatalog', () => {
     expect(codes(sortCatalog(owned, 'valueDesc'))).toEqual(['OGN-002', 'OGN-001', 'OGN-003']);
   });
 
+  it('par plus forte baisse depuis l’ajout aux souhaits, les Versions sans variation en dernier', () => {
+    const wished = [
+      entry('OGN-001', { wishlistPriceChange: 5 }),
+      entry('OGN-002', { wishlistPriceChange: null }),
+      entry('OGN-003', { wishlistPriceChange: -30 }),
+    ];
+
+    expect(codes(sortCatalog(wished, 'wishlistChangeAsc'))).toEqual([
+      'OGN-003',
+      'OGN-001',
+      'OGN-002',
+    ]);
+  });
+
   it('place les Versions inconnues en fin de liste, quel que soit le tri', () => {
     const mixed = [
       entry('AAA-001', { inCatalog: false, name: 'AAA-001' }),
