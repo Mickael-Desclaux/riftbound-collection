@@ -20,6 +20,26 @@ export type Expansion = {
   cardCount: number;
 };
 
+/** Une Extension apparue dans le Catalogue, telle qu'on l'annonce (spec § 5). */
+export type NewExpansion = Pick<Expansion, 'code' | 'name' | 'isPromo'>;
+
+type ExpansionSize = Pick<Expansion, 'code' | 'cardCount'>;
+
+/**
+ * Les Extensions de `latest` qui viennent d'apparaître (spec § 5 : nouvelle
+ * Extension). Une Extension n'apparaît qu'avec ses premières cartes : annoncée
+ * vide, elle ouvrirait un Catalogue vide. Au premier téléchargement, rien
+ * n'est signalé.
+ */
+export function newExpansions<T extends ExpansionSize>(
+  stored: readonly ExpansionSize[],
+  latest: readonly T[],
+): T[] {
+  if (stored.length === 0) return [];
+  const known = new Set(stored.filter((e) => e.cardCount > 0).map((e) => e.code));
+  return latest.filter((e) => e.cardCount > 0 && !known.has(e.code));
+}
+
 export type Card = {
   oracleId: string;
   name: string;

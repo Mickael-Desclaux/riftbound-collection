@@ -1,5 +1,5 @@
 /** Filtres des grilles de Versions (spec § 2.1), en règles pures. */
-import { isPromoExpansion, type PrintingVariant } from './catalog';
+import { isPromoExpansion, type Expansion, type PrintingVariant } from './catalog';
 import type { CatalogEntry } from './catalogEntry';
 
 /**
@@ -50,6 +50,20 @@ export const DEFAULT_CATALOG_FILTERS: CatalogFilters = {
   ownership: 'all',
   priceRange: NO_PRICE_RANGE,
 };
+
+/**
+ * Les filtres qui ouvrent le Catalogue sur ces Extensions, promo comprises
+ * (masquées par défaut, elles laisseraient la grille vide).
+ */
+export function expansionFilters(
+  expansions: readonly Pick<Expansion, 'code' | 'isPromo'>[],
+): CatalogFilters {
+  return {
+    ...DEFAULT_CATALOG_FILTERS,
+    expansionCodes: expansions.map((e) => e.code),
+    showPromo: expansions.some((e) => e.isPromo),
+  };
+}
 
 /** Vrai si aucune valeur n'est choisie, ou si `value` en fait partie. */
 function allows<T>(chosen: T[], value: T): boolean {

@@ -4,6 +4,8 @@ import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 
 import { CatalogRequestProvider } from '@/features/catalog/catalogRequest';
+import { NewExpansionsFrame } from '@/features/notifications/NewExpansionsFrame';
+import { NotificationResponses } from '@/features/notifications/NotificationResponses';
 import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
 import { colors } from '@/ui/theme';
 import { ToastProvider } from '@/ui/Toast';
@@ -28,33 +30,39 @@ export default function TabsLayout() {
   return (
     <StalePricesFrame>
       <ToastProvider bottomOffset={TAB_BAR_HEIGHT}>
-        <CatalogRequestProvider>
-          <Tabs
-            screenOptions={{
-              headerShown: false,
-              tabBarActiveTintColor: colors.accent,
-              tabBarInactiveTintColor: colors.muted,
-              tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
-            }}
-          >
-            <Tabs.Screen
-              name="catalog"
-              options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
-            />
-            <Tabs.Screen
-              name="collection"
-              options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
-            />
-            <Tabs.Screen
-              name="wishlist"
-              options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
-            />
-            <Tabs.Screen
-              name="settings"
-              options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
-            />
-          </Tabs>
-        </CatalogRequestProvider>
+        <Tabs
+          // La mise en page reçoit le navigateur des onglets : le bandeau et
+          // les notifications touchées peuvent ainsi ouvrir le Catalogue.
+          layout={({ children, navigation }) => (
+            <CatalogRequestProvider showCatalogTab={() => navigation.navigate('catalog')}>
+              <NotificationResponses />
+              <NewExpansionsFrame>{children}</NewExpansionsFrame>
+            </CatalogRequestProvider>
+          )}
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: colors.accent,
+            tabBarInactiveTintColor: colors.muted,
+            tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
+          }}
+        >
+          <Tabs.Screen
+            name="catalog"
+            options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
+          />
+          <Tabs.Screen
+            name="collection"
+            options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
+          />
+          <Tabs.Screen
+            name="wishlist"
+            options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
+          />
+        </Tabs>
       </ToastProvider>
     </StalePricesFrame>
   );

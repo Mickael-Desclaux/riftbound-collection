@@ -3,10 +3,10 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { DatabaseProvider } from '@/data/DatabaseProvider';
 import { MigrationError, migrateSafely, type MigrationStep } from '@/data/migrate';
 import migrations from '@/data/migrations/migrations';
-import { openAppDatabase } from '@/data/openAppDatabase';
 import { localIsoDate } from '@/domain/dates';
 import { fileSystemSafetyBackups, shareBackupFile } from '@/features/backup/backupFiles';
 
+import { appDatabase, syncsIdle } from './appSync';
 import { MigrationFailedScreen } from './MigrationFailedScreen';
 
 type State =
@@ -21,14 +21,15 @@ type State =
  * pas faites ; en cas d'échec, l'écran propose d'exporter la Sauvegarde de sécurité.
  */
 export function AppDatabaseProvider({ children }: { children: ReactNode }) {
-  const [db] = useState(openAppDatabase);
+  const [db] = useState(appDatabase);
   const [state, setState] = useState<State>({ step: 'migrating' });
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let current = true;
     const now = () => new Date();
-    migrateSafely(db, migrations, { safetyBackups: fileSystemSafetyBackups, now })
+    syncsIdle()
+      .then(() => migrateSafely(db, migrations, { safetyBackups: fileSystemSafetyBackups, now }))
       .then(() => {
         if (current) setState({ step: 'ready' });
       })

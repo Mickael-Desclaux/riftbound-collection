@@ -2,6 +2,7 @@ import type { CatalogEntry } from './catalogEntry';
 import { entry } from './testing/catalogEntries';
 import {
   activeFilters,
+  expansionFilters,
   DEFAULT_CATALOG_FILTERS,
   filterCatalog,
   removeActiveFilter,
@@ -194,5 +195,22 @@ describe('activeFilters', () => {
     expect(activeFilters(current, ['promo', 'ownership'])).toEqual([
       { criterion: 'rarity', value: 'epic' },
     ]);
+  });
+});
+
+describe('expansionFilters', () => {
+  it('ouvre le Catalogue sur les Extensions données', () => {
+    expect(expansionFilters([{ code: 'VEN', isPromo: false }])).toEqual(
+      filters({ expansionCodes: ['VEN'] }),
+    );
+  });
+
+  it('affiche les Extensions promo quand l’une d’elles est une promo', () => {
+    const shown = expansionFilters([
+      { code: 'VEN', isPromo: false },
+      { code: 'NEW', isPromo: true },
+    ]);
+
+    expect(shown).toEqual(filters({ expansionCodes: ['VEN', 'NEW'], showPromo: true }));
   });
 });

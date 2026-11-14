@@ -138,8 +138,18 @@ export function hasCatalog(db: AppDatabase): boolean {
 }
 
 /** Extensions enregistrées, pour détecter un changement de Catalogue. */
-export function storedExpansions(db: AppDatabase): Pick<Expansion, 'code' | 'cardCount'>[] {
-  return db.select({ code: expansion.code, cardCount: expansion.cardCount }).from(expansion).all();
+export function storedExpansions(
+  db: AppDatabase,
+): Pick<Expansion, 'code' | 'name' | 'isPromo' | 'cardCount'>[] {
+  return db
+    .select({
+      code: expansion.code,
+      name: expansion.name,
+      isPromo: expansion.isPromo,
+      cardCount: expansion.cardCount,
+    })
+    .from(expansion)
+    .all();
 }
 
 /**
