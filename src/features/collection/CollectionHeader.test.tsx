@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import type { HoldingHistory } from '@/domain/collectionValue';
+import type { OwnedPrintingHistory } from '@/domain/collectionValue';
 import { entry } from '@/domain/testing/catalogEntries';
 import type { PriceLineChartProps } from '@/ui/PriceLineChart';
 
@@ -22,7 +22,7 @@ const owned = [
   entry('OGN-002', { ownedQuantity: 1, price: null }),
 ];
 const catalog = [...owned, entry('OGN-003')];
-const history: HoldingHistory = new Map([
+const history: OwnedPrintingHistory = new Map([
   ['OGN-001|normal', [{ recordedAt: '2026-10-01T12:00:00.000Z', value: 1 }]],
 ]);
 

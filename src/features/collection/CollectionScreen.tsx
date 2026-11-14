@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -13,11 +12,11 @@ import { COLLECTION_SORTS } from '@/domain/catalogSort';
 import { collectionEntries } from '@/domain/collection';
 import { toIsoDate } from '@/domain/dates';
 import { SOURCE_CURRENCY } from '@/domain/price';
+import { useOpenCatalog } from '@/features/catalog/catalogRequest';
 import { PrintingBrowser } from '@/features/printing-browser/PrintingBrowser';
 import { usePrintingEntries } from '@/features/printing-browser/usePrintingEntries';
 import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
-import { missingInExpansionHref } from '@/ui/printingHref';
 import { colors } from '@/ui/theme';
 
 import { CollectionHeader } from './CollectionHeader';
@@ -32,7 +31,7 @@ const COLLECTION_FILTERS: CatalogFilters = { ...DEFAULT_CATALOG_FILTERS, showPro
  * (quantité × prix). Les Versions inconnues suivent, en fin de liste.
  */
 export function CollectionScreen() {
-  const router = useRouter();
+  const openCatalog = useOpenCatalog();
   const { entries, owned } = usePrintingEntries();
   const collection = useMemo(() => collectionEntries(entries, owned), [entries, owned]);
   const toggleOwned = useToggleOwned();
@@ -51,7 +50,7 @@ export function CollectionScreen() {
       new Map(
         selectExpansionChips(db, false)
           .all()
-          .map((e) => [e.code, e.name]),
+          .map((expansion) => [expansion.code, expansion.name]),
       ),
     [db],
     ['expansion'],
@@ -75,18 +74,20 @@ export function CollectionScreen() {
           displayCurrency={displayCurrency}
           rates={rates}
           today={toIsoDate(now())}
-          onOpenCompletion={(code) => router.navigate(missingInExpansionHref(code, now()))}
+          onOpenCompletion={(expansionCode) =>
+            openCatalog({
+              ...DEFAULT_CATALOG_FILTERS,
+              expansionCodes: [expansionCode],
+              ownership: 'missing',
+            })
+          }
         />
       }
       emptyState={
         <View style={styles.empty}>
           <Text style={styles.title}>Ta collection est vide.</Text>
           <Text style={styles.hint}>Marque tes cartes avec ✓ dans le Catalogue.</Text>
-          <Button
-            label="Parcourir le Catalogue"
-            variant="primary"
-            onPress={() => router.navigate('/catalog')}
-          />
+          <Button label="Parcourir le Catalogue" variant="primary" onPress={() => openCatalog()} />
         </View>
       }
     />

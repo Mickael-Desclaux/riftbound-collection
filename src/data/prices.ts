@@ -1,6 +1,7 @@
 /** Prix du jour (Données de référence) et historique des Relevés de prix (Données précieuses). */
 import { and, asc, count, eq, inArray, isNotNull, lt, max, min, sql } from 'drizzle-orm';
 
+import type { OwnedPrintingHistory } from '@/domain/collectionValue';
 import { addDays, toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dates';
 
 import type { Finish, PriceSource } from '@/domain/price';
@@ -201,7 +202,7 @@ export function referenceMetricValuesOn(
 export function readCollectionPriceHistory(
   db: AppDatabase,
   source: PriceSource,
-): Map<string, Pick<PriceRecord, 'recordedAt' | 'value'>[]> {
+): OwnedPrintingHistory {
   const rows = db
     .select({
       printingCode: priceRecord.printingCode,
@@ -222,10 +223,9 @@ export function readCollectionPriceHistory(
     .orderBy(asc(priceRecord.recordedAt))
     .all();
   const history = new Map<string, Pick<PriceRecord, 'recordedAt' | 'value'>[]>();
-  for (const { recordedAt, value, ...key } of rows) {
-    const series = history.get(printingFinishKey(key)) ?? [];
-    series.push({ recordedAt, value });
-    history.set(printingFinishKey(key), series);
+  for (const { recordedAt, value, ...printingFinish } of rows) {
+    const key = printingFinishKey(printingFinish);
+    history.set(key, [...(history.get(key) ?? []), { recordedAt, value }]);
   }
   return history;
 }

@@ -6,10 +6,10 @@ import {
   collectionValue,
   collectionValueChange,
   collectionValueSeries,
-  firstHoldingRecordDay,
-  holdingsOf,
-  type Holding,
-  type HoldingHistory,
+  firstOwnedRecordDay,
+  ownedPrintingsOf,
+  type OwnedPrinting,
+  type OwnedPrintingHistory,
 } from '@/domain/collectionValue';
 import { completion } from '@/domain/completion';
 import type { IsoDate } from '@/domain/dates';
@@ -37,7 +37,7 @@ export type CollectionHeaderProps = {
   /** Nom de chaque Extension, par code. */
   expansionNames: ReadonlyMap<string, string>;
   /** Les Relevés de prix des Versions possédées, pour la Source de prix choisie. */
-  history: HoldingHistory;
+  history: OwnedPrintingHistory;
   /** Devise d'origine de la Source de prix choisie. */
   sourceCurrency: Currency;
   displayCurrency: Currency;
@@ -67,10 +67,10 @@ export function CollectionHeader({
   const [chartOpen, setChartOpen] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
   const summary = collectionValue(owned);
-  const holdings = useMemo(() => holdingsOf(owned), [owned]);
+  const ownedPrintings = useMemo(() => ownedPrintingsOf(owned), [owned]);
   const change = useMemo(
-    () => collectionValueChange(holdings, history, today),
-    [holdings, history, today],
+    () => collectionValueChange(ownedPrintings, history, today),
+    [ownedPrintings, history, today],
   );
   const completions = useMemo(() => completion(catalog), [catalog]);
 
@@ -97,7 +97,7 @@ export function CollectionHeader({
 
       {chartOpen && (
         <ValueChart
-          holdings={holdings}
+          ownedPrintings={ownedPrintings}
           history={history}
           sourceCurrency={sourceCurrency}
           displayCurrency={displayCurrency}
@@ -140,7 +140,7 @@ export function CollectionHeader({
 type ValueChartProps = Pick<
   CollectionHeaderProps,
   'history' | 'sourceCurrency' | 'displayCurrency' | 'rates' | 'today'
-> & { holdings: readonly Holding[] };
+> & { ownedPrintings: readonly OwnedPrinting[] };
 
 /**
  * Graphique de la valeur des cartes possédées aujourd'hui : chaque jour,
@@ -148,7 +148,7 @@ type ValueChartProps = Pick<
  * date (spec § 3).
  */
 function ValueChart({
-  holdings,
+  ownedPrintings,
   history,
   sourceCurrency,
   displayCurrency,
@@ -156,17 +156,20 @@ function ValueChart({
   today,
 }: Readonly<ValueChartProps>) {
   const [period, setPeriod] = useState<ChartPresetPeriod>('30d');
-  const firstDay = useMemo(() => firstHoldingRecordDay(holdings, history), [holdings, history]);
+  const firstDay = useMemo(
+    () => firstOwnedRecordDay(ownedPrintings, history),
+    [ownedPrintings, history],
+  );
   const range = useMemo(() => periodRange(period, today, firstDay), [period, today, firstDay]);
   const points = useMemo(
     () =>
       convertSeries(
-        collectionValueSeries(holdings, history, range),
+        collectionValueSeries(ownedPrintings, history, range),
         sourceCurrency,
         displayCurrency,
         rates,
       ),
-    [holdings, history, range, sourceCurrency, displayCurrency, rates],
+    [ownedPrintings, history, range, sourceCurrency, displayCurrency, rates],
   );
 
   return (

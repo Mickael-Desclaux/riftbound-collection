@@ -34,13 +34,18 @@ export function collectionValue(entries: readonly CatalogEntry[]): CollectionVal
 }
 
 /** Une Version possédée, valorisée par sa Finition de référence. */
-export type Holding = { printingCode: PrintingCode; finish: Finish; quantity: number };
+export type OwnedPrinting = { printingCode: PrintingCode; finish: Finish; quantity: number };
 
-/** Les Versions possédées qui ont une Finition de référence (une Version inconnue n'en a pas). */
-export function holdingsOf(entries: readonly CatalogEntry[]): Holding[] {
+/**
+ * Les Versions possédées qui ont un prix aujourd'hui, valorisées par leur
+ * Finition de référence. Comme la Valeur de la collection, l'évolution écarte
+ * les Versions sans prix (dont les Versions inconnues) : leur dernier relevé
+ * ne compte plus.
+ */
+export function ownedPrintingsOf(entries: readonly CatalogEntry[]): OwnedPrinting[] {
   return entries.flatMap((entry) => {
     const finish = referenceFinish(entry.finishes);
-    if (entry.ownedQuantity <= 0 || !entry.inCatalog || !finish) return [];
+    if (entry.ownedQuantity <= 0 || entry.price === null || !finish) return [];
     return [{ printingCode: entry.printingCode, finish, quantity: entry.ownedQuantity }];
   });
 }
@@ -49,35 +54,37 @@ export function holdingsOf(entries: readonly CatalogEntry[]): Holding[] {
  * Les Relevés de prix de la Source de prix choisie, en devise d'origine, par
  * Version × Finition (`printingFinishKey`), du plus ancien au plus récent.
  */
-export type HoldingHistory = ReadonlyMap<
+export type OwnedPrintingHistory = ReadonlyMap<
   string,
   readonly Pick<PriceRecord, 'recordedAt' | 'value'>[]
 >;
 
 /** Le jour (UTC) du plus ancien relevé des Versions possédées : le début de « Tout ». */
-export function firstHoldingRecordDay(
-  holdings: readonly Holding[],
-  history: HoldingHistory,
+export function firstOwnedRecordDay(
+  ownedPrintings: readonly OwnedPrinting[],
+  history: OwnedPrintingHistory,
 ): IsoDate | undefined {
   let first: IsoDate | undefined;
-  for (const holding of holdings) {
-    const day = firstRecordDay(history.get(printingFinishKey(holding)) ?? []);
+  for (const ownedPrinting of ownedPrintings) {
+    const day = firstRecordDay(history.get(printingFinishKey(ownedPrinting)) ?? []);
     if (day !== undefined && (first === undefined || day < first)) first = day;
   }
   return first;
 }
 
 /** La valeur de chaque jour de `range` de chaque Version possédée, quantité comprise. */
-function holdingSeries(
-  holdings: readonly Holding[],
-  history: HoldingHistory,
+function ownedPrintingSeries(
+  ownedPrintings: readonly OwnedPrinting[],
+  history: OwnedPrintingHistory,
   range: DateRange,
 ): DailyPoint[][] {
-  return holdings.map((holding) =>
-    dailySeries(history.get(printingFinishKey(holding)) ?? [], range).map(({ date, value }) => ({
-      date,
-      value: value * holding.quantity,
-    })),
+  return ownedPrintings.map((ownedPrinting) =>
+    dailySeries(history.get(printingFinishKey(ownedPrinting)) ?? [], range).map(
+      ({ date, value }) => ({
+        date,
+        value: value * ownedPrinting.quantity,
+      }),
+    ),
   );
 }
 
@@ -86,12 +93,12 @@ function holdingSeries(
  * d'origine. Un jour où aucune n'a encore de relevé n'a pas de point.
  */
 export function collectionValueSeries(
-  holdings: readonly Holding[],
-  history: HoldingHistory,
+  ownedPrintings: readonly OwnedPrinting[],
+  history: OwnedPrintingHistory,
   range: DateRange,
 ): DailyPoint[] {
   const totals = new Map<IsoDate, number>();
-  for (const series of holdingSeries(holdings, history, range)) {
+  for (const series of ownedPrintingSeries(ownedPrintings, history, range)) {
     for (const { date, value } of series) totals.set(date, (totals.get(date) ?? 0) + value);
   }
   return [...totals.entries()]
@@ -105,14 +112,14 @@ export function collectionValueSeries(
  * 30 jours : un prix apparu entre-temps n'est pas une hausse.
  */
 export function collectionValueChange(
-  holdings: readonly Holding[],
-  history: HoldingHistory,
+  ownedPrintings: readonly OwnedPrinting[],
+  history: OwnedPrintingHistory,
   today: IsoDate,
 ): number | null {
   const start = addDays(today, -30);
   let before = 0;
   let after = 0;
-  for (const series of holdingSeries(holdings, history, { start, end: today })) {
+  for (const series of ownedPrintingSeries(ownedPrintings, history, { start, end: today })) {
     const first = series[0];
     const last = series.at(-1);
     if (first?.date !== start || last === undefined) continue;
