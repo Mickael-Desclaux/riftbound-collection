@@ -1,16 +1,19 @@
 import { addNetworkStateListener } from 'expo-network';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { AppState } from 'react-native';
+import { Alert, AppState } from 'react-native';
 
 import { hasCatalog } from '@/data/catalog';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { fileSystemImageStore } from '@/features/binder/binderFiles';
+import { requestNotificationPermission } from '@/features/notifications/notifications';
 import { downloadBinderImages } from '@/sync/binderImages';
-import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
-import { syncAll, type ResyncMode, type SyncMode, type SyncReport } from '@/sync/syncAll';
+import { syncCatalog, type OnProgress } from '@/sync/catalog';
+import { EMPTY_SYNC_REPORT, type ResyncMode, type SyncMode, type SyncReport } from '@/sync/syncAll';
 import { ClockContext } from '@/ui/ClockContext';
 import { SyncContext } from '@/ui/SyncContext';
 
+import { appSyncDeps, synchronizeApp } from './appSync';
+import { registerBackgroundSync } from './backgroundSync';
 import { CatalogGate } from './CatalogGate';
 
 /**
@@ -32,52 +35,62 @@ function subscribeToOnline(listener: () => void): () => void {
 }
 
 /**
- * Branche `CatalogGate` sur l'app. C'est ici, à la racine, que `fetch` et
- * l'horloge sont créés puis injectés dans `sync/` (synchronisation, images du
- * classeur).
+ * Une phrase d'explication, puis la question d'Android (spec § 5 : une seule
+ * permission, demandée à la fin de la première synchronisation).
+ */
+function askForNotifications(): void {
+  const request = () => {
+    requestNotificationPermission().catch((error: unknown) =>
+      console.warn('Permission des notifications impossible à demander', error),
+    );
+  };
+  Alert.alert(
+    'Notifications',
+    'L’app peut vous prévenir quand une nouvelle extension sort, ou quand une carte de vos souhaits baisse. Vous pourrez couper chaque alerte dans les Réglages.',
+    [{ text: 'Continuer', onPress: request }],
+    { cancelable: false },
+  );
+}
+
+/**
+ * Branche `CatalogGate` sur l'app, avec les dépendances créées par `appSync`.
  *
- * - Catalogue absent : premier téléchargement, piloté par `CatalogGate`.
+ * - Catalogue absent : premier téléchargement, piloté par `CatalogGate`, puis
+ *   la permission des notifications.
  * - Catalogue présent : toutes les sources (`syncAll`) sont vérifiées à
- *   l'ouverture, à chaque retour dans l'app et au tirer-pour-rafraîchir. Les
- *   échecs sont notés dans `source_state` et réessayés la fois suivante.
+ *   l'ouverture, à chaque retour dans l'app et au tirer-pour-rafraîchir, et
+ *   environ deux fois par jour en arrière-plan. Les échecs sont notés dans
+ *   `source_state` (Réglages → « État des sources ») et réessayés la fois suivante.
  */
 export function AppCatalogGate({ children }: { children: ReactNode }) {
   const db = useDatabase();
-  const deps = useMemo<SyncDeps>(
-    () => ({ db, fetch: globalThis.fetch, now: () => new Date() }),
-    [db],
-  );
+  const deps = appSyncDeps();
   // Lu une seule fois au démarrage : l'écran n'a pas à réagir à ce changement,
   // c'est `CatalogGate` qui passe à l'app à la fin du premier téléchargement.
   const [hadCatalogAtStart] = useState(() => hasCatalog(db));
   const catalogReady = useRef(hadCatalogAtStart);
 
-  // Une seule synchronisation à la fois. Une vérification ordinaire demandée
-  // pendant qu'elle tourne la rejoint ; une mise à jour demandée par
-  // l'utilisateur (tirer-pour-rafraîchir, Réglages) attend sa fin puis est lancée.
-  // Les échecs sont notés dans source_state (Réglages → « État des sources »).
-  const running = useRef<Promise<SyncReport> | null>(null);
+  // Une seule synchronisation à la fois, partagée avec la tâche en arrière-plan.
   const synchronize = useCallback(
-    function synchronize(mode: SyncMode): Promise<SyncReport> {
-      if (!catalogReady.current) return Promise.resolve({ failures: [] });
-      if (running.current) {
-        return mode === 'auto' ? running.current : running.current.then(() => synchronize(mode));
-      }
-      running.current = syncAll(deps, { mode }).finally(() => {
-        running.current = null;
-      });
-      return running.current;
-    },
-    [deps],
+    (mode: SyncMode): Promise<SyncReport> =>
+      catalogReady.current ? synchronizeApp(mode) : Promise.resolve(EMPTY_SYNC_REPORT),
+    [],
   );
 
-  useEffect(() => {
+  const startSyncing = useCallback(() => {
     void synchronize('auto');
+    registerBackgroundSync().catch((error: unknown) =>
+      console.warn('Synchronisation en arrière-plan impossible à inscrire', error),
+    );
+  }, [synchronize]);
+
+  useEffect(() => {
+    if (catalogReady.current) startSyncing();
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') void synchronize('auto');
     });
     return () => subscription.remove();
-  }, [synchronize]);
+  }, [synchronize, startSyncing]);
 
   const sync = useMemo(
     () => ({
@@ -96,10 +109,11 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
     async (onProgress: OnProgress) => {
       await syncCatalog(deps, { onProgress });
       catalogReady.current = true;
+      askForNotifications();
       // Les prix suivent en arrière-plan : seul le Catalogue est bloquant (spec § 6).
-      void synchronize('auto');
+      startSyncing();
     },
-    [deps, synchronize],
+    [deps, startSyncing],
   );
 
   return (

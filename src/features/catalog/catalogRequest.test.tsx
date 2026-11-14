@@ -17,11 +17,11 @@ function CatalogGrid() {
   return <Text>grille {request ? request.expansionCodes.join() : 'sans demande'}</Text>;
 }
 
-function CollectionGrid() {
+function CollectionGrid({ label = 'ORIGINS' }: Readonly<{ label?: string }>) {
   const openCatalog = useOpenCatalog();
   return (
     <Pressable accessibilityRole="button" onPress={() => openCatalog(MISSING_OGN)}>
-      <Text>ORIGINS</Text>
+      <Text>{label}</Text>
     </Pressable>
   );
 }
@@ -34,18 +34,23 @@ async function setup() {
     {
       _layout: stack,
       '(tabs)/_layout': () => (
-        <CatalogRequestProvider>
-          <Tabs>
-            <Tabs.Screen name="catalog" />
-            <Tabs.Screen name="collection" />
-          </Tabs>
-        </CatalogRequestProvider>
+        <Tabs
+          layout={({ children, navigation }) => (
+            <CatalogRequestProvider showCatalogTab={() => navigation.navigate('catalog')}>
+              <CollectionGrid label="BANDEAU" />
+              {children}
+            </CatalogRequestProvider>
+          )}
+        >
+          <Tabs.Screen name="catalog" />
+          <Tabs.Screen name="collection" />
+        </Tabs>
       ),
       '(tabs)/catalog/_layout': stack,
       '(tabs)/catalog/index': CatalogGrid,
       '(tabs)/catalog/[printingCode]': () => <Text>fiche</Text>,
       '(tabs)/collection/_layout': stack,
-      '(tabs)/collection/index': CollectionGrid,
+      '(tabs)/collection/index': () => <CollectionGrid />,
     },
     { initialUrl: '/catalog' },
   );
@@ -58,6 +63,18 @@ describe('useOpenCatalog', () => {
     await act(async () => router.navigate('/collection'));
 
     await fireEvent.press(screen.getByRole('button', { name: 'ORIGINS' }));
+
+    expect(screen).toHavePathname('/catalog');
+    expect(screen.getByText('grille OGN')).toBeTruthy();
+    expect(screen.queryByText('fiche')).toBeNull();
+  });
+
+  it('marche aussi depuis un bandeau posé au-dessus des onglets', async () => {
+    await setup();
+    await act(async () => router.push('/catalog/OGN-001'));
+    await act(async () => router.navigate('/collection'));
+
+    await fireEvent.press(screen.getByRole('button', { name: 'BANDEAU' }));
 
     expect(screen).toHavePathname('/catalog');
     expect(screen.getByText('grille OGN')).toBeTruthy();

@@ -5,7 +5,9 @@
  * indépendante (spec § 5) : une panne est notée dans `source_state` et
  * n'empêche pas les suivantes.
  */
+import { storedExpansions } from '@/data/catalog';
 import { forgetAllLastModified } from '@/data/sourceState';
+import { newExpansions, type Expansion } from '@/domain/catalog';
 
 import { syncCardmarketLinks } from './cardmarketLinks';
 import { syncCatalog, type SyncDeps } from './catalog';
@@ -27,7 +29,16 @@ export type SyncMode = 'auto' | 'refresh' | 'resync' | 'rebuild';
 /** Les synchronisations lancées depuis les Réglages. */
 export type ResyncMode = Extract<SyncMode, 'resync' | 'rebuild'>;
 
-export type SyncReport = { failures: { step: SyncStep; error: unknown }[] };
+/** Une Extension apparue pendant la synchronisation (spec § 5). */
+export type NewExpansion = Pick<Expansion, 'code' | 'name' | 'isPromo'>;
+
+export type SyncReport = {
+  failures: { step: SyncStep; error: unknown }[];
+  /** Les Extensions apparues dans le Catalogue ; aucune au premier téléchargement. */
+  newExpansions: NewExpansion[];
+};
+
+export const EMPTY_SYNC_REPORT: SyncReport = { failures: [], newExpansions: [] };
 
 export async function syncAll(
   deps: SyncDeps,
@@ -36,6 +47,7 @@ export async function syncAll(
   const refresh = mode !== 'auto';
   const full = mode === 'resync' || mode === 'rebuild';
   if (full) forgetAllLastModified(deps.db);
+  const expansionsBefore = storedExpansions(deps.db);
   const steps: { step: SyncStep; run: () => Promise<unknown> }[] = [
     {
       step: 'catalog',
@@ -57,5 +69,9 @@ export async function syncAll(
       failures.push({ step: step.step, error });
     }
   }
-  return { failures };
+  const appeared = newExpansions(expansionsBefore, storedExpansions(deps.db));
+  return {
+    failures,
+    newExpansions: appeared.map(({ code, name, isPromo }) => ({ code, name, isPromo })),
+  };
 }

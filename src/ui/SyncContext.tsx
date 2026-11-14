@@ -22,7 +22,7 @@ type SyncControls = {
 
 export const SyncContext = createContext<SyncControls>({
   refresh: async () => {},
-  resynchronize: () => Promise.resolve({ failures: [] }),
+  resynchronize: () => Promise.resolve({ failures: [], newExpansions: [] }),
   downloadBinderImages: async (urls) => new Set(urls),
 });
 

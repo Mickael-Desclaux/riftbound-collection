@@ -10,13 +10,15 @@ import { useBackupActions } from '@/features/backup/useBackupActions';
 import { useSync } from '@/ui/SyncContext';
 import { colors } from '@/ui/theme';
 
+import { NotificationSettings } from './NotificationSettings';
 import { PriceSettings } from './PriceSettings';
 import { SourceSettings } from './SourceSettings';
 
-/** Onglet Réglages : les réglages des prix, les Sauvegardes et l'état des sources. */
+/** Onglet Réglages : les prix, les notifications, les Sauvegardes et l'état des sources. */
 export function SettingsScreen() {
   const [displayCurrency, setDisplayCurrency] = useSetting('displayCurrency');
   const [priceSource, setPriceSource] = useSetting('priceSource');
+  const [newExpansions, setNewExpansions] = useSetting('newExpansionNotifications');
   const backupActions = useBackupActions();
   const db = useDatabase();
   const sourceStates = useReactiveQuery(() => readSourceStates(db), [db], ['source_state']);
@@ -30,6 +32,10 @@ export function SettingsScreen() {
           priceSource={priceSource}
           onDisplayCurrencyChange={setDisplayCurrency}
           onPriceSourceChange={setPriceSource}
+        />
+        <NotificationSettings
+          newExpansions={newExpansions}
+          onNewExpansionsChange={setNewExpansions}
         />
         <BackupSettings actions={backupActions} />
         <SourceSettings states={sourceStates} resynchronize={resynchronize} />

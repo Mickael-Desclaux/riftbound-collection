@@ -7,7 +7,7 @@ import type { PrintingCode } from '@/domain/printingCode';
 
 import { setOwnedQuantity } from './collection';
 import type { AppDatabase } from './database';
-import { MigrationError, migrateSafely, type Migrations } from './migrate';
+import { isUpToDate, MigrationError, migrateSafely, type Migrations } from './migrate';
 import migrations from './migrations/migrations';
 import * as schema from './schema';
 import { collectionEntry } from './schema';
@@ -141,5 +141,21 @@ describe('migrateSafely', () => {
     }).catch((e: unknown) => e);
 
     expect((error as MigrationError).safetyBackupWritten).toBe(false);
+  });
+});
+
+describe('isUpToDate', () => {
+  it('est faux pour une base neuve, jamais migrée', () => {
+    expect(isUpToDate(emptyDatabase(), migrations)).toBe(false);
+  });
+
+  it('est vrai quand toutes les migrations sont appliquées', async () => {
+    expect(isUpToDate(await installedDatabase(), migrations)).toBe(true);
+  });
+
+  it('est faux tant qu’une migration attend', async () => {
+    const db = await installedDatabase();
+
+    expect(isUpToDate(db, withNewMigration('SELECT 1;'))).toBe(false);
   });
 });

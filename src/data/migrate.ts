@@ -70,20 +70,37 @@ export async function migrateSafely(
 const MIGRATIONS_TABLE = '__drizzle_migrations';
 
 /**
+ * La base a-t-elle reçu toutes les migrations ? Faux pour une base neuve.
+ * La tâche en arrière-plan ne synchronise qu'à cette condition : les
+ * migrations, et leur écran d'échec, restent l'affaire de l'app ouverte.
+ */
+export function isUpToDate(db: AppDatabase, migrations: Migrations): boolean {
+  const appliedUntil = lastAppliedAt(db);
+  return (
+    appliedUntil !== null && migrations.journal.entries.every((entry) => entry.when <= appliedUntil)
+  );
+}
+
+/** Date de la dernière migration appliquée ; `null` si aucune ne l'a été. */
+function lastAppliedAt(db: AppDatabase): number | null {
+  const table = db.get<{ name: string } | undefined>(
+    sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ${MIGRATIONS_TABLE}`,
+  );
+  if (!table) return null;
+  const last = db.get<{ createdAt: number | null }>(
+    sql`SELECT max(created_at) AS createdAt FROM ${sql.identifier(MIGRATIONS_TABLE)}`,
+  );
+  return last?.createdAt == null ? null : Number(last.createdAt);
+}
+
+/**
  * Le SQL des migrations pas encore appliquées, selon la même règle que le
  * migrateur de Drizzle (plus récentes que la dernière appliquée). Une base
  * neuve n'en a aucune à protéger : elle n'a pas encore de Données précieuses.
  */
 function pendingMigrations(db: AppDatabase, { journal, migrations }: Migrations): string[] {
-  const table = db.get<{ name: string } | undefined>(
-    sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ${MIGRATIONS_TABLE}`,
-  );
-  if (!table) return [];
-  const last = db.get<{ createdAt: number | null }>(
-    sql`SELECT max(created_at) AS createdAt FROM ${sql.identifier(MIGRATIONS_TABLE)}`,
-  );
-  if (last?.createdAt == null) return [];
-  const appliedUntil = Number(last.createdAt);
+  const appliedUntil = lastAppliedAt(db);
+  if (appliedUntil === null) return [];
   return journal.entries
     .filter((entry) => entry.when > appliedUntil)
     .map((entry) => migrations[`m${String(entry.idx).padStart(4, '0')}`] ?? '');

@@ -20,6 +20,19 @@ export type Expansion = {
   cardCount: number;
 };
 
+/**
+ * Les Extensions de `latest` absentes de `stored` (spec § 5 : nouvelle
+ * Extension). Au premier téléchargement, rien n'est nouveau : tout l'est.
+ */
+export function newExpansions<T extends Pick<Expansion, 'code'>>(
+  stored: readonly Pick<Expansion, 'code'>[],
+  latest: readonly T[],
+): T[] {
+  if (stored.length === 0) return [];
+  const known = new Set(stored.map((e) => e.code));
+  return latest.filter((e) => !known.has(e.code));
+}
+
 export type Card = {
   oracleId: string;
   name: string;

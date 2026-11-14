@@ -12,7 +12,12 @@ import prices from '@/sources/rifthunt/__fixtures__/prices.json';
 import range from '@/sources/frankfurter/__fixtures__/range.json';
 import { frankfurterRangeUrl } from '@/sources/frankfurter/frankfurter';
 import { RIFTHUNT_PRICES_URL } from '@/sources/rifthunt/prices';
-import { pageUrl, rifthuntResponses, SETS_URL } from '@/sources/rifthunt/testing/rifthuntResponses';
+import {
+  pageUrl,
+  rifthuntResponses,
+  sets,
+  SETS_URL,
+} from '@/sources/rifthunt/testing/rifthuntResponses';
 import { fakeFetch } from '@/sources/testing/fakeFetch';
 
 import { syncCatalog } from './catalog';
@@ -189,6 +194,56 @@ describe('syncAll', () => {
 
       expect(report.failures.map((f) => f.step)).toContain('catalog');
       expect(db.select().from(printing).all()).toHaveLength(before);
+    });
+  });
+
+  describe('Nouvelle Extension', () => {
+    /** Le Catalogue téléchargé avant la sortie de Vendetta. */
+    async function databaseBeforeVendetta() {
+      const { db } = await createTestDatabase();
+      const withoutVendetta = { ...sets, data: sets.data.filter((set) => set.code !== 'ven') };
+      await syncCatalog({
+        db,
+        fetch: fakeFetch({ ...rifthuntResponses, [SETS_URL]: { body: withoutVendetta } }).fetch,
+        now: at('2026-11-08T10:00:00Z'),
+      });
+      return db;
+    }
+
+    it('signale une Extension apparue dans /sets', async () => {
+      const db = await databaseBeforeVendetta();
+
+      const report = await syncAll({
+        db,
+        fetch: fakeFetch(responses()).fetch,
+        now: at('2026-11-09T10:00:00Z'),
+      });
+
+      expect(report.newExpansions).toEqual([{ code: 'VEN', name: 'Vendetta', isPromo: false }]);
+    });
+
+    it('ne la signale qu’une fois', async () => {
+      const db = await databaseBeforeVendetta();
+      await syncAll({ db, fetch: fakeFetch(responses()).fetch, now: at('2026-11-09T10:00:00Z') });
+
+      const report = await syncAll(
+        { db, fetch: fakeFetch(responses()).fetch, now: at('2026-11-10T10:00:00Z') },
+        { mode: 'refresh' },
+      );
+
+      expect(report.newExpansions).toEqual([]);
+    });
+
+    it('ne signale rien si le Catalogue n’a pas pu être mis à jour', async () => {
+      const db = await databaseBeforeVendetta();
+
+      const report = await syncAll({
+        db,
+        fetch: fakeFetch(responses([pageUrl(1)])).fetch,
+        now: at('2026-11-09T10:00:00Z'),
+      });
+
+      expect(report.newExpansions).toEqual([]);
     });
   });
 });

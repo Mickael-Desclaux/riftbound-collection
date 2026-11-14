@@ -6,9 +6,13 @@
  * `/catalog` empilerait une seconde grille Catalogue au-dessus d'une fiche
  * restée ouverte. On saute donc à l'onglet, et la grille existante applique
  * les filtres puis referme les fiches de sa pile.
+ *
+ * Le saut d'onglet est fourni par la mise en page des onglets (prop `layout`
+ * de `Tabs`, qui reçoit leur navigateur) : il marche ainsi depuis un écran
+ * comme depuis un bandeau posé au-dessus des onglets.
  */
 import { useNavigation } from 'expo-router';
-import { StackActions, type NavigationProp } from 'expo-router/react-navigation';
+import { StackActions } from 'expo-router/react-navigation';
 import {
   createContext,
   use,
@@ -25,14 +29,22 @@ type CatalogRequestState = {
   /** Les derniers filtres demandés ; chaque demande est un objet neuf. */
   request: CatalogFilters | null;
   setRequest: (filters: CatalogFilters) => void;
+  showCatalogTab: () => void;
 };
 
 const CatalogRequestContext = createContext<CatalogRequestState | null>(null);
 
 /** À placer autour des onglets, qui partagent ainsi la demande. */
-export function CatalogRequestProvider({ children }: Readonly<{ children: ReactNode }>) {
+export function CatalogRequestProvider({
+  showCatalogTab,
+  children,
+}: Readonly<{
+  /** Affiche l'onglet Catalogue, sans toucher à sa pile. */
+  showCatalogTab: () => void;
+  children: ReactNode;
+}>) {
   const [request, setRequest] = useState<CatalogFilters | null>(null);
-  const value = useMemo(() => ({ request, setRequest }), [request]);
+  const value = useMemo(() => ({ request, setRequest, showCatalogTab }), [request, showCatalogTab]);
   return <CatalogRequestContext value={value}>{children}</CatalogRequestContext>;
 }
 
@@ -44,15 +56,14 @@ function useCatalogRequestState(): CatalogRequestState {
 
 /** Ouvre l'onglet Catalogue ; avec `filters`, sa grille les applique. */
 export function useOpenCatalog(): (filters?: CatalogFilters) => void {
-  const { setRequest } = useCatalogRequestState();
-  const tabs = useNavigation<NavigationProp<{ catalog: undefined }>>('/(tabs)');
+  const { setRequest, showCatalogTab } = useCatalogRequestState();
   return useCallback(
     (filters) => {
       // Une copie : deux touchers sur la même ligne font deux demandes.
       if (filters) setRequest({ ...filters });
-      tabs.navigate('catalog');
+      showCatalogTab();
     },
-    [setRequest, tabs],
+    [setRequest, showCatalogTab],
   );
 }
 
