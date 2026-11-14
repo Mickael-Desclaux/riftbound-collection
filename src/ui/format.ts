@@ -3,6 +3,7 @@ import type { CollectionValue } from '@/domain/collectionValue';
 import { completionPercent, type ExpansionCompletion } from '@/domain/completion';
 import type { IsoDate, IsoDateTime } from '@/domain/dates';
 import type { Currency } from '@/domain/price';
+import type { WishlistCost } from '@/domain/wishlist';
 
 const formatInteger = new Intl.NumberFormat('fr-FR').format;
 
@@ -17,8 +18,12 @@ export function formatCollectionCounts({
   cardCount,
   unpricedCount,
 }: Omit<CollectionValue, 'value'>): string {
-  const cards = `${formatInteger(cardCount)} ${cardCount > 1 ? 'cartes' : 'carte'}`;
-  return `${formatPrintingCount(printingCount)} · ${cards} · ${formatInteger(unpricedCount)} sans prix`;
+  return `${formatPrintingCount(printingCount)} · ${formatCardCount(cardCount)} · ${formatInteger(unpricedCount)} sans prix`;
+}
+
+/** « 1 carte », « 30 cartes ». */
+function formatCardCount(count: number): string {
+  return `${formatInteger(count)} ${count > 1 ? 'cartes' : 'carte'}`;
 }
 
 /** Espace insécable : le montant et sa devise ne se séparent jamais. */
@@ -101,4 +106,22 @@ export function formatShortIsoDate(date: IsoDate): string {
 export function formatCompletion(completion: ExpansionCompletion): string {
   const { owned, total } = completion;
   return `${formatInteger(owned)} / ${formatInteger(total)} · ${completionPercent(completion)}${NBSP}%`;
+}
+
+/** « 3 cartes · coût total 12,40 € · 1 sans prix » : l'en-tête des Souhaits. */
+export function formatWishlistCost(
+  { printingCount, total, unpricedCount }: WishlistCost,
+  currency: Currency,
+): string {
+  return `${formatCardCount(printingCount)} · coût total ${formatPrice(total, currency)} · ${formatInteger(unpricedCount)} sans prix`;
+}
+
+const formatTwoDigitDayMonth = new Intl.DateTimeFormat('fr-FR', {
+  day: '2-digit',
+  month: '2-digit',
+}).format;
+
+/** « 11/11 », à l'heure de l'appareil. */
+export function formatNumericDayMonth(at: IsoDateTime): string {
+  return formatTwoDigitDayMonth(new Date(at));
 }

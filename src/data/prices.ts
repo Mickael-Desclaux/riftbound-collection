@@ -1,7 +1,19 @@
 /** Prix du jour (Données de référence) et historique des Relevés de prix (Données précieuses). */
-import { and, asc, count, eq, inArray, isNotNull, lt, max, min, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  lt,
+  max,
+  min,
+  sql,
+  type SQLWrapper,
+} from 'drizzle-orm';
 
-import type { OwnedPrintingHistory } from '@/domain/collectionValue';
+import type { PrintingFinishHistory } from '@/domain/priceHistory';
 import { addDays, toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dates';
 
 import type { Finish, PriceSource } from '@/domain/price';
@@ -17,7 +29,7 @@ import type { PrintingCode } from '@/domain/printingCode';
 
 import type { AppDatabase } from './database';
 import { chunks } from './chunks';
-import { collectionEntry, currentPrice, printing, priceRecord } from './schema';
+import { collectionEntry, currentPrice, printing, priceRecord, wishlistEntry } from './schema';
 
 /** Code de version de chaque produit TCGplayer du Catalogue. */
 export function printingCodesByTcgId(db: AppDatabase): Map<number, PrintingCode> {
@@ -196,13 +208,15 @@ export function referenceMetricValuesOn(
 }
 
 /**
- * Les Relevés de prix d'une source pour les Versions de la Collection, par
- * Version × Finition (`printingFinishKey`), du plus ancien au plus récent.
+ * Les Relevés de prix d'une source pour les Versions de `printingCodes` (une
+ * sous-requête), par Version × Finition (`printingFinishKey`), du plus ancien
+ * au plus récent.
  */
-export function readCollectionPriceHistory(
+function readPriceHistoryOf(
   db: AppDatabase,
   source: PriceSource,
-): OwnedPrintingHistory {
+  printingCodes: SQLWrapper,
+): PrintingFinishHistory {
   const rows = db
     .select({
       printingCode: priceRecord.printingCode,
@@ -211,15 +225,7 @@ export function readCollectionPriceHistory(
       value: priceRecord.value,
     })
     .from(priceRecord)
-    .where(
-      and(
-        eq(priceRecord.source, source),
-        inArray(
-          priceRecord.printingCode,
-          db.select({ printingCode: collectionEntry.printingCode }).from(collectionEntry),
-        ),
-      ),
-    )
+    .where(and(eq(priceRecord.source, source), inArray(priceRecord.printingCode, printingCodes)))
     .orderBy(asc(priceRecord.recordedAt))
     .all();
   const history = new Map<string, Pick<PriceRecord, 'recordedAt' | 'value'>[]>();
@@ -228,4 +234,28 @@ export function readCollectionPriceHistory(
     history.set(key, [...(history.get(key) ?? []), { recordedAt, value }]);
   }
   return history;
+}
+
+/** Les Relevés de prix d'une source pour les Versions de la Collection. */
+export function readCollectionPriceHistory(
+  db: AppDatabase,
+  source: PriceSource,
+): PrintingFinishHistory {
+  return readPriceHistoryOf(
+    db,
+    source,
+    db.select({ printingCode: collectionEntry.printingCode }).from(collectionEntry),
+  );
+}
+
+/** Les Relevés de prix d'une source pour les Versions de la Liste de souhaits. */
+export function readWishlistPriceHistory(
+  db: AppDatabase,
+  source: PriceSource,
+): PrintingFinishHistory {
+  return readPriceHistoryOf(
+    db,
+    source,
+    db.select({ printingCode: wishlistEntry.printingCode }).from(wishlistEntry),
+  );
 }

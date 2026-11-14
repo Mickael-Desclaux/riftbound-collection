@@ -69,6 +69,8 @@ export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
       price: null,
       priceChange7d: null,
       priceChange30d: null,
+      wishlistedAt: null,
+      wishlistPriceChange: null,
     }));
 }
 

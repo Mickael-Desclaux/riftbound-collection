@@ -91,7 +91,7 @@ Les cartes que l'utilisateur possède, chacune avec une quantité.
 _À éviter_ : inventaire, « cartes cochées »
 
 **Version inconnue** :
-Une Version de la Collection dont le Code de version n'est plus dans le Catalogue. Elle s'affiche en fin de liste dans un cadre gris, sans prix, et n'est jamais supprimée par l'app.
+Une Version de la Collection ou de la Liste de souhaits dont le Code de version n'est plus dans le Catalogue. Elle s'affiche en fin de liste dans un cadre gris, sans prix, et n'est jamais supprimée par l'app.
 _À éviter_ : version orpheline, carte supprimée
 
 **Liste de souhaits** :

@@ -11,7 +11,9 @@ export type CatalogSort =
   | 'change30dAsc'
   | 'change30dDesc'
   /** « Valeur » : quantité possédée × prix, la plus forte d'abord (onglet Collection). */
-  | 'valueDesc';
+  | 'valueDesc'
+  /** « Plus forte baisse » depuis l'ajout aux souhaits (onglet Souhaits). */
+  | 'wishlistChangeAsc';
 
 export const DEFAULT_CATALOG_SORT: CatalogSort = 'number';
 
@@ -30,6 +32,9 @@ export const CATALOG_SORTS: readonly CatalogSort[] = [
 /** Les tris de la Collection : « Valeur » en tête, puis ceux du Catalogue. */
 export const COLLECTION_SORTS: readonly CatalogSort[] = ['valueDesc', ...CATALOG_SORTS];
 
+/** Les tris des Souhaits : « Plus forte baisse » en tête, puis ceux du Catalogue. */
+export const WISHLIST_SORTS: readonly CatalogSort[] = ['wishlistChangeAsc', ...CATALOG_SORTS];
+
 /** Comparaison par code (numéros, Codes de version), sans règles de langue. */
 function byText(a: string, b: string): number {
   if (a < b) return -1;
@@ -41,7 +46,7 @@ function byText(a: string, b: string): number {
 type NumericValue = (entry: CatalogEntry) => number | null;
 
 const field =
-  (name: 'price' | 'priceChange7d' | 'priceChange30d'): NumericValue =>
+  (name: 'price' | 'priceChange7d' | 'priceChange30d' | 'wishlistPriceChange'): NumericValue =>
   (entry) =>
     entry[name];
 
@@ -80,6 +85,7 @@ const comparators: Record<CatalogSort, (a: CatalogEntry, b: CatalogEntry) => num
   change30dAsc: byNumber(field('priceChange30d'), 1),
   change30dDesc: byNumber(field('priceChange30d'), -1),
   valueDesc: byNumber(ownedValue, -1),
+  wishlistChangeAsc: byNumber(field('wishlistPriceChange'), 1),
 };
 
 /**

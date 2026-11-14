@@ -1,5 +1,6 @@
 import {
   formatCollectionCounts,
+  formatWishlistCost,
   formatCompletion,
   formatIsoDate,
   formatPercentChange,
@@ -66,6 +67,17 @@ describe('formatCollectionCounts', () => {
     );
     expect(formatCollectionCounts({ printingCount: 1, cardCount: 1, unpricedCount: 0 })).toBe(
       '1 version · 1 carte · 0 sans prix',
+    );
+  });
+});
+
+describe('formatWishlistCost', () => {
+  it('écrit « N cartes · coût total X · K sans prix »', () => {
+    expect(formatWishlistCost({ printingCount: 3, total: 12.4, unpricedCount: 1 }, 'EUR')).toBe(
+      '3 cartes · coût total 12,40\u00a0€ · 1 sans prix',
+    );
+    expect(formatWishlistCost({ printingCount: 1, total: 0, unpricedCount: 0 }, 'USD')).toBe(
+      '1 carte · coût total 0,00\u00a0$\u00a0US · 0 sans prix',
     );
   });
 });

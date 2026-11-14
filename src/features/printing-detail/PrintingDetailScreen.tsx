@@ -2,7 +2,6 @@ import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { setOwnedQuantity } from '@/data/collection';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { readExchangeRates } from '@/data/exchangeRates';
 import { readPrintingHistory } from '@/data/prices';
@@ -12,12 +11,13 @@ import {
   readPrintingDetail,
   readPrintingState,
   setInBinderSelection,
-  setWishlisted,
 } from '@/data/printingDetail';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
+import { setWishlisted } from '@/data/wishlist';
 import { useSetting } from '@/data/useSetting';
 import { toIsoDate } from '@/domain/dates';
 import type { PrintingCode } from '@/domain/printingCode';
+import { useSetOwnedQuantity } from '@/features/collection/useSetOwnedQuantity';
 import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
 import { colors } from '@/ui/theme';
@@ -33,6 +33,7 @@ export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
   const db = useDatabase();
   const now = useClock();
   const router = useRouter();
+  const setOwnedQuantity = useSetOwnedQuantity();
   const [displayCurrency] = useSetting('displayCurrency');
   const [priceSource] = useSetting('priceSource');
   const detail = useReactiveQuery(
@@ -80,7 +81,7 @@ export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
       onBack={goBack}
       onOpenPrinting={(other) => router.push(printingHref(tab, other))}
       onOpenUrl={(url) => void Linking.openURL(url)}
-      onQuantityChange={(quantity) => setOwnedQuantity(db, code, quantity)}
+      onQuantityChange={(quantity) => setOwnedQuantity(code, quantity)}
       onWishlistChange={(wished) => setWishlisted(db, code, wished ? now().toISOString() : null)}
       onBinderSelectionChange={(selected) => setInBinderSelection(db, code, selected)}
     />

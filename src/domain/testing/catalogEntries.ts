@@ -21,6 +21,8 @@ export function entry(code: string, overrides: Partial<CatalogEntry> = {}): Cata
     price: null,
     priceChange7d: null,
     priceChange30d: null,
+    wishlistedAt: null,
+    wishlistPriceChange: null,
     imageSmall: null,
     imageNormal: null,
     ...overrides,

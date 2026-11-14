@@ -2,6 +2,7 @@ import { CATALOG_SORTS, DEFAULT_CATALOG_SORT } from '@/domain/catalogSort';
 import { useToggleOwned } from '@/features/collection/useToggleOwned';
 import { PrintingBrowser } from '@/features/printing-browser/PrintingBrowser';
 import { usePrintingEntries } from '@/features/printing-browser/usePrintingEntries';
+import { useToggleWishlisted } from '@/features/wishlist/useToggleWishlisted';
 
 import { useCatalogRequest } from './catalogRequest';
 
@@ -12,6 +13,7 @@ import { useCatalogRequest } from './catalogRequest';
 export function CatalogScreen() {
   const { entries } = usePrintingEntries();
   const toggleOwned = useToggleOwned();
+  const toggleWishlisted = useToggleWishlisted();
   const filtersRequest = useCatalogRequest();
   return (
     <PrintingBrowser
@@ -20,6 +22,7 @@ export function CatalogScreen() {
       sorts={CATALOG_SORTS}
       defaultSort={DEFAULT_CATALOG_SORT}
       onToggleOwned={toggleOwned}
+      onToggleWishlisted={toggleWishlisted}
       filtersRequest={filtersRequest}
     />
   );

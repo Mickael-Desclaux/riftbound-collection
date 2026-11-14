@@ -1,10 +1,11 @@
-import type { PrintingVariant } from './catalog';
+import { isPromoExpansion, type PrintingVariant } from './catalog';
+import type { IsoDateTime } from './dates';
 import { latestRatePerPair, type ExchangeRate } from './exchangeRates';
 import type { Currency, Finish } from './price';
 import { referenceFinish, referencePrice, type FinishPrices } from './priceDisplay';
 import { percentChange } from './priceHistory';
 import { printingFinishKey } from './priceRecords';
-import type { PrintingCode } from './printingCode';
+import { expansionCodeOf, type PrintingCode } from './printingCode';
 
 /** Une Version telle que les grilles la filtrent, la trient et l'affichent. */
 export type CatalogEntry = {
@@ -31,9 +32,64 @@ export type CatalogEntry = {
   /** Variation de prix sur 7 / 30 jours, en % (`null` : pas assez d'historique). */
   priceChange7d: number | null;
   priceChange30d: number | null;
+  /** Date d'ajout à la Liste de souhaits ; `null` si la Version n'y est pas. */
+  wishlistedAt: IsoDateTime | null;
+  /** Variation de prix depuis l'ajout aux souhaits, en % (`null` : pas de relevé). */
+  wishlistPriceChange: number | null;
   imageSmall: string | null;
   imageNormal: string | null;
 };
+
+/**
+ * Une Version inconnue : son Code de version, gardé dans les Données précieuses
+ * (Collection, Liste de souhaits), n'est plus dans le Catalogue. Sans prix, elle
+ * est exclue de la valeur ; on ne la supprime jamais.
+ */
+function unknownEntry(
+  printingCode: PrintingCode,
+  ownedQuantity: number,
+  wishlistedAt: IsoDateTime | null,
+): CatalogEntry {
+  const expansionCode = expansionCodeOf(printingCode);
+  return {
+    printingCode,
+    name: printingCode,
+    expansionCode,
+    expansionRank: Number.MAX_SAFE_INTEGER,
+    isPromo: isPromoExpansion(expansionCode),
+    collectorNumber: '',
+    rarity: '',
+    variant: 'normal',
+    type: '',
+    domains: [],
+    inCatalog: false,
+    ownedQuantity,
+    finishes: [],
+    price: null,
+    priceChange7d: null,
+    priceChange30d: null,
+    wishlistedAt,
+    wishlistPriceChange: null,
+    imageSmall: null,
+    imageNormal: null,
+  };
+}
+
+/**
+ * Les Versions inconnues parmi `codes` : celles absentes de `entries` (le
+ * Catalogue), avec leur quantité possédée et leur date d'ajout aux souhaits.
+ */
+export function unknownEntries(
+  entries: readonly CatalogEntry[],
+  codes: Iterable<PrintingCode>,
+  owned: ReadonlyMap<PrintingCode, number>,
+  wishlist: ReadonlyMap<PrintingCode, IsoDateTime>,
+): CatalogEntry[] {
+  const known = new Set(entries.map((entry) => entry.printingCode));
+  return [...codes]
+    .filter((code) => !known.has(code))
+    .map((code) => unknownEntry(code, owned.get(code) ?? 0, wishlist.get(code) ?? null));
+}
 
 /** Les Versions, avec la quantité possédée de chacune (0 si absente de la Collection). */
 export function withOwnedQuantities(

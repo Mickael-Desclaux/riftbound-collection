@@ -1,10 +1,3 @@
-import { PlaceholderScreen } from '@/ui/PlaceholderScreen';
+import { WishlistScreen } from '@/features/wishlist/WishlistScreen';
 
-export default function WishlistScreen() {
-  return (
-    <PlaceholderScreen
-      title="Souhaits"
-      description="Les cartes que tu veux acquérir et l'évolution de leur prix."
-    />
-  );
-}
+export default WishlistScreen;

@@ -4,8 +4,8 @@ import {
   collectionValueSeries,
   firstOwnedRecordDay,
   ownedPrintingsOf,
-  type OwnedPrintingHistory,
 } from './collectionValue';
+import type { PrintingFinishHistory } from './priceHistory';
 import type { PrintingCode } from './printingCode';
 import { entry } from './testing/catalogEntries';
 
@@ -88,7 +88,7 @@ describe('collectionValueSeries', () => {
   ];
 
   it('additionne chaque jour quantité × valeur, prolongée entre deux relevés', () => {
-    const history: OwnedPrintingHistory = new Map([
+    const history: PrintingFinishHistory = new Map([
       ['OGN-001|normal', [at('2026-11-01', 1), at('2026-11-03', 2)]],
       ['OGN-002|foil', [at('2026-11-02', 10)]],
     ]);
@@ -104,7 +104,7 @@ describe('collectionValueSeries', () => {
   });
 
   it("n'a pas de point les jours où aucune Version n'a encore de relevé", () => {
-    const history: OwnedPrintingHistory = new Map([['OGN-002|foil', [at('2026-11-03', 10)]]]);
+    const history: PrintingFinishHistory = new Map([['OGN-002|foil', [at('2026-11-03', 10)]]]);
 
     expect(
       collectionValueSeries(ownedPrintings, history, { start: '2026-11-01', end: '2026-11-04' }),
@@ -115,7 +115,7 @@ describe('collectionValueSeries', () => {
   });
 
   it("ignore l'historique d'une autre Finition", () => {
-    const history: OwnedPrintingHistory = new Map([['OGN-001|foil', [at('2026-11-01', 50)]]]);
+    const history: PrintingFinishHistory = new Map([['OGN-001|foil', [at('2026-11-01', 50)]]]);
 
     expect(
       collectionValueSeries(ownedPrintings, history, { start: '2026-11-01', end: '2026-11-01' }),
@@ -130,7 +130,7 @@ describe('collectionValueChange', () => {
   ];
 
   it('compare la valeur du jour à celle d’il y a 30 jours', () => {
-    const history: OwnedPrintingHistory = new Map([
+    const history: PrintingFinishHistory = new Map([
       ['OGN-001|normal', [at('2026-10-10', 5), at('2026-11-10', 10)]],
       ['OGN-002|normal', [at('2026-10-01', 10)]],
     ]);
@@ -140,7 +140,7 @@ describe('collectionValueChange', () => {
   });
 
   it('ne compare que les Versions qui avaient déjà un prix il y a 30 jours', () => {
-    const history: OwnedPrintingHistory = new Map([
+    const history: PrintingFinishHistory = new Map([
       ['OGN-001|normal', [at('2026-10-01', 5), at('2026-11-10', 6)]],
       ['OGN-002|normal', [at('2026-11-01', 1000)]],
     ]);
@@ -149,7 +149,7 @@ describe('collectionValueChange', () => {
   });
 
   it("vaut null sans historique d'il y a 30 jours", () => {
-    const history: OwnedPrintingHistory = new Map([['OGN-001|normal', [at('2026-11-01', 5)]]]);
+    const history: PrintingFinishHistory = new Map([['OGN-001|normal', [at('2026-11-01', 5)]]]);
 
     expect(collectionValueChange(ownedPrintings, history, '2026-11-14')).toBeNull();
   });
@@ -161,7 +161,7 @@ describe('firstOwnedRecordDay', () => {
       { printingCode: code('OGN-001'), finish: 'normal' as const, quantity: 1 },
       { printingCode: code('OGN-002'), finish: 'normal' as const, quantity: 1 },
     ];
-    const history: OwnedPrintingHistory = new Map([
+    const history: PrintingFinishHistory = new Map([
       ['OGN-001|normal', [at('2026-11-05', 1)]],
       ['OGN-002|normal', [at('2026-11-02', 1), at('2026-11-06', 2)]],
       ['OGN-003|normal', [at('2026-10-01', 1)]],
