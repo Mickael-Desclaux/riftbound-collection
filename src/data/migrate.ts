@@ -89,11 +89,11 @@ function pendingMigrations(db: AppDatabase, { journal, migrations }: Migrations)
     .map((entry) => migrations[`m${String(entry.idx).padStart(4, '0')}`] ?? '');
 }
 
-const PRECIOUS_TABLE_NAMES = Object.values(preciousDataTables).map(getTableName);
+const PRECIOUS_TABLE_NAMES = Object.values(preciousDataTables).map((table) => getTableName(table));
 
 /** Le SQL cite-t-il une table précieuse (comme nom entier, pas dans `__new_…`) ? */
 function touchesPreciousData(migrationSql: string): boolean {
   return PRECIOUS_TABLE_NAMES.some((name) =>
-    new RegExp(`(?<!\\w)${name}(?!\\w)`).test(migrationSql),
+    new RegExp(String.raw`(?<!\w)${name}(?!\w)`).test(migrationSql),
   );
 }

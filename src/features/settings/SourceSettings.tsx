@@ -85,7 +85,7 @@ export function SourceSettings({ states, resynchronize }: Readonly<Props>) {
   );
 }
 
-function StatusMessage({ status }: { status: Status }) {
+function StatusMessage({ status }: Readonly<{ status: Status }>) {
   if (status.tone === 'running') {
     return (
       <View accessibilityLiveRegion="polite" style={styles.running}>
@@ -114,7 +114,10 @@ function reportStatus({ failures }: SyncReport): Status {
   };
 }
 
-function SourceRow({ source, state }: { source: SourceId; state: SourceState | undefined }) {
+function SourceRow({
+  source,
+  state,
+}: Readonly<{ source: SourceId; state: SourceState | undefined }>) {
   const health = sourceHealth(state);
   return (
     <View style={styles.row}>

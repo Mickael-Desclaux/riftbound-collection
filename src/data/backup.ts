@@ -77,9 +77,8 @@ function readRows<T extends SQLiteTable>(
   orderBy: SQLiteColumn[],
 ): T['$inferSelect'][] {
   const columns = Object.entries(getTableColumns(table));
-  const rows = db.all<Record<string, unknown>>(
-    sql`SELECT * FROM ${table} ORDER BY ${sql.join(orderBy, sql`, `)}`,
-  );
+  const order = sql.join(orderBy, sql`, `);
+  const rows = db.all<Record<string, unknown>>(sql`SELECT * FROM ${table} ORDER BY ${order}`);
   return rows.map(
     (row) =>
       Object.fromEntries(

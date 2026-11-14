@@ -4,7 +4,10 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from './theme';
 
-export function MessageScreen({ title, children }: { title: string; children: ReactNode }) {
+export function MessageScreen({
+  title,
+  children,
+}: Readonly<{ title: string; children: ReactNode }>) {
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>{title}</Text>
@@ -13,7 +16,7 @@ export function MessageScreen({ title, children }: { title: string; children: Re
   );
 }
 
-export function MessageText({ children }: { children: ReactNode }) {
+export function MessageText({ children }: Readonly<{ children: ReactNode }>) {
   return <Text style={styles.text}>{children}</Text>;
 }
 
