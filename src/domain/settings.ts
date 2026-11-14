@@ -15,7 +15,9 @@ export const CHART_PRESET_PERIODS = ['7d', '30d', '90d', '1y', 'all'] as const;
 export type ChartPresetPeriod = (typeof CHART_PRESET_PERIODS)[number];
 
 /** Période du graphique d'évolution : une période prédéfinie, ou « Dates… ». */
-export type ChartPeriod = ChartPresetPeriod | { from: IsoDate; to: IsoDate };
+/** « Dates… » : une plage choisie dans le calendrier. */
+export type CustomChartPeriod = { from: IsoDate; to: IsoDate };
+export type ChartPeriod = ChartPresetPeriod | CustomChartPeriod;
 
 type SettingDefinition<T> = {
   defaultValue: T;

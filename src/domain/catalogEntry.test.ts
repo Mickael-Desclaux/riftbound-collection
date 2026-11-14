@@ -1,4 +1,4 @@
-import { withOwnedQuantities, withPrices } from './catalogEntry';
+import { withOwnedQuantities, withPriceChanges, withPrices } from './catalogEntry';
 import type { ExchangeRate } from './exchangeRates';
 import { entry } from './testing/catalogEntries';
 
@@ -37,5 +37,33 @@ describe('withPrices', () => {
     const result = withPrices(entries, prices, 'CAD', rates);
 
     expect(result.map((e) => e.price)).toEqual([14.136, 2.8272, null]);
+  });
+});
+
+describe('withPriceChanges', () => {
+  it('donne la Variation de prix 7 j / 30 j de la Finition de référence, en devise d’origine', () => {
+    const entries = [
+      entry('OGN-001', { finishes: ['normal', 'foil'] }),
+      entry('OGN-002', { finishes: ['foil'] }),
+    ];
+    const values = {
+      today: new Map([
+        ['OGN-001|normal', 11],
+        ['OGN-001|foil', 50],
+        ['OGN-002|foil', 3],
+      ]),
+      daysAgo7: new Map([
+        ['OGN-001|normal', 10],
+        ['OGN-002|foil', 4],
+      ]),
+      daysAgo30: new Map([['OGN-001|foil', 40]]),
+    };
+
+    const result = withPriceChanges(entries, values);
+
+    expect(result[0]?.priceChange7d).toBeCloseTo(10, 6);
+    // Le prix foil a varié sur 30 jours, mais la Finition de référence est la normale.
+    expect(result[0]?.priceChange30d).toBeNull();
+    expect(result[1]?.priceChange7d).toBeCloseTo(-25, 6);
   });
 });

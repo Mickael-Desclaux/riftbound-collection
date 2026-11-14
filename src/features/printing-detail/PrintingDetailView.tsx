@@ -5,7 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { PrintingDetail, PrintingState } from '@/data/printingDetail';
 import type { ExchangeRate } from '@/domain/exchangeRates';
-import type { Currency, PriceSource } from '@/domain/price';
+import type { PrintingHistory } from '@/data/prices';
+import type { IsoDate } from '@/domain/dates';
+import { SOURCE_CURRENCY, type Currency, type PriceSource } from '@/domain/price';
+import type { ChartPeriod, CustomChartPeriod } from '@/domain/settings';
 import {
   defaultCell,
   priceCells,
@@ -27,6 +30,8 @@ import {
 import { CARD_ASPECT_RATIO, gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { colors } from '@/ui/theme';
 
+import { PriceHistorySection } from './PriceHistorySection';
+
 type Props = {
   detail: PrintingDetail;
   state: PrintingState;
@@ -34,6 +39,13 @@ type Props = {
   /** Source de prix des Réglages : celle de la case affichée à l'ouverture. */
   priceSource: PriceSource;
   rates: readonly ExchangeRate[];
+  /** Relevés de prix de la Version, pour le graphique d'évolution. */
+  history: PrintingHistory;
+  today: IsoDate;
+  /** Période du graphique, retenue d'une fiche à l'autre (réglage). */
+  chartPeriod: ChartPeriod;
+  onChartPeriodChange: (period: ChartPeriod) => void;
+  pickDates: () => Promise<CustomChartPeriod | null>;
   onBack: () => void;
   onOpenPrinting: (printingCode: PrintingCode) => void;
   onOpenUrl: (url: string) => void;
@@ -41,6 +53,9 @@ type Props = {
   onWishlistChange: (wishlisted: boolean) => void;
   onBinderSelectionChange: (selected: boolean) => void;
 };
+
+const otherSource = (source: PriceSource): PriceSource =>
+  source === 'tcgplayer' ? 'cardmarket' : 'tcgplayer';
 
 const sameCell = (a: CellKey | undefined, b: CellKey) =>
   a?.source === b.source && a.finish === b.finish;
@@ -55,6 +70,11 @@ export function PrintingDetailView({
   displayCurrency,
   priceSource,
   rates,
+  history,
+  today,
+  chartPeriod,
+  onChartPeriodChange,
+  pickDates,
   onBack,
   onOpenPrinting,
   onOpenUrl,
@@ -66,6 +86,8 @@ export function PrintingDetailView({
   const [selected, setSelected] = useState(() => defaultCell(detail.finishes, priceSource));
   const shown = cells.find((cell) => sameCell(selected, cell));
   const source = shown?.source ?? priceSource;
+  // « Comparer avec l'autre source » : décochée à chaque fiche.
+  const [compare, setCompare] = useState(false);
   const url = productUrl(source, detail);
   const image = detail.imageLarge ?? detail.imageNormal ?? detail.imageSmall;
   const gridUri = gridImageUri(detail);
@@ -117,6 +139,28 @@ export function PrintingDetailView({
             </Text>
           )}
         </View>
+
+        {shown && (
+          <Section title="Évolution">
+            <PriceHistorySection
+              source={shown.source}
+              finish={shown.finish}
+              history={history[shown.source]?.[shown.finish]}
+              currency={SOURCE_CURRENCY[shown.source]}
+              otherSource={otherSource(shown.source)}
+              otherHistory={history[otherSource(shown.source)]?.[shown.finish]}
+              otherCurrency={SOURCE_CURRENCY[otherSource(shown.source)]}
+              displayCurrency={displayCurrency}
+              rates={rates}
+              today={today}
+              period={chartPeriod}
+              onPeriodChange={onChartPeriodChange}
+              compare={compare}
+              onCompareChange={setCompare}
+              pickDates={pickDates}
+            />
+          </Section>
+        )}
 
         <Section title="Prix">
           <View style={styles.cells}>

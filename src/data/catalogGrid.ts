@@ -66,6 +66,8 @@ export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
       expansionRank: rank.get(row.expansionCode) ?? rank.size,
       ownedQuantity: 0,
       price: null,
+      priceChange7d: null,
+      priceChange30d: null,
     }));
 }
 

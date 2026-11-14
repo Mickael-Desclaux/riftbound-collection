@@ -65,6 +65,11 @@ async function setup(state: Partial<PrintingState> = {}, shown: PrintingDetail =
       displayCurrency="EUR"
       priceSource="tcgplayer"
       rates={rates}
+      history={{}}
+      today="2026-11-11"
+      chartPeriod="30d"
+      onChartPeriodChange={jest.fn()}
+      pickDates={jest.fn()}
       {...handlers}
     />,
   );
