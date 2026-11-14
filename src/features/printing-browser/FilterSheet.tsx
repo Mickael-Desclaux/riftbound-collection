@@ -49,6 +49,8 @@ type Props = {
   resultCount: number;
   /** Devise de la fourchette de prix. */
   displayCurrency: Currency;
+  /** Critère « possédées / manquantes », masqué dans l'onglet Collection. */
+  showOwnership?: boolean;
   onChange: (filters: CatalogFilters) => void;
   onClose: () => void;
 };
@@ -69,6 +71,7 @@ export function FilterSheet({
   options,
   resultCount,
   displayCurrency,
+  showOwnership = true,
   onChange,
   onClose,
 }: Readonly<Props>) {
@@ -152,16 +155,18 @@ export function FilterSheet({
               />
             ))}
           </Section>
-          <Section title="Collection">
-            {OWNERSHIP.map(({ value, label }) => (
-              <Chip
-                key={value}
-                label={label}
-                selected={filters.ownership === value}
-                onPress={() => update({ ownership: value })}
-              />
-            ))}
-          </Section>
+          {showOwnership && (
+            <Section title="Collection">
+              {OWNERSHIP.map(({ value, label }) => (
+                <Chip
+                  key={value}
+                  label={label}
+                  selected={filters.ownership === value}
+                  onPress={() => update({ ownership: value })}
+                />
+              ))}
+            </Section>
+          )}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Prix ({currencySymbol(displayCurrency)})</Text>
             <View style={styles.priceRow}>

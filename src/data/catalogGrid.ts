@@ -8,7 +8,7 @@ import { asc, eq, sql } from 'drizzle-orm';
 import type { CatalogEntry } from '@/domain/catalogEntry';
 
 import type { AppDatabase } from './database';
-import { card, collectionEntry, expansion, printing } from './schema';
+import { card, expansion, printing } from './schema';
 
 /** Tables dont dépend `readCatalogEntries`, pour la relecture réactive. */
 export const CATALOG_ENTRY_TABLES = ['printing', 'card', 'expansion'];
@@ -64,17 +64,12 @@ export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
     .map((row) => ({
       ...row,
       expansionRank: rank.get(row.expansionCode) ?? rank.size,
+      inCatalog: true,
       ownedQuantity: 0,
       price: null,
       priceChange7d: null,
       priceChange30d: null,
     }));
-}
-
-/** Quantités de la Collection, par Code de version. */
-export function readOwnedQuantities(db: AppDatabase): Map<string, number> {
-  const rows = db.select().from(collectionEntry).all();
-  return new Map(rows.map((row) => [row.printingCode, row.quantity]));
 }
 
 /** Valeurs proposées par la feuille de filtres : celles présentes dans le Catalogue. */

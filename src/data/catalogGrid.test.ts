@@ -2,12 +2,8 @@ import { withOwnedQuantities } from '@/domain/catalogEntry';
 import type { PrintingCode } from '@/domain/printingCode';
 
 import { replaceCatalog } from './catalog';
-import {
-  readCatalogEntries,
-  readFilterOptions,
-  readOwnedQuantities,
-  selectExpansionChips,
-} from './catalogGrid';
+import { readCatalogEntries, readFilterOptions, selectExpansionChips } from './catalogGrid';
+import { readOwnedQuantities } from './collection';
 import { collectionEntry } from './schema';
 import { catalogOf, expansionOf, printingOf } from './testing/catalogFactory';
 import { createTestDatabase } from './testing/createTestDatabase';

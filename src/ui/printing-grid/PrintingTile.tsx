@@ -12,25 +12,56 @@ import { CARD_ASPECT_RATIO, gridImageUri, type GridPrinting } from './gridPrinti
 const AUTO_RETRIES = 3;
 const RETRY_DELAY_MS = 5_000;
 
-/** Une case de grille : image, nom, Code de version et prix. */
+/**
+ * Une case de grille : image, nom, Code de version et prix ; badge « ×n » si
+ * la Version est possédée, et ✓ qui bascule possédée / non possédée.
+ */
 export function PrintingTile({
   printing,
   displayCurrency,
   onPress,
-}: Readonly<{ printing: GridPrinting; displayCurrency: Currency; onPress: () => void }>) {
+  onToggleOwned,
+}: Readonly<{
+  printing: GridPrinting;
+  displayCurrency: Currency;
+  onPress: () => void;
+  onToggleOwned: () => void;
+}>) {
   const uri = gridImageUri(printing);
   const price = formatPrice(printing.price, displayCurrency);
+  const owned = printing.ownedQuantity > 0;
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      accessibilityLabel={`${printing.name}, ${printing.printingCode}, ${
-        printing.price === null ? 'prix inconnu' : price
-      }`}
-      style={styles.tile}
+      accessibilityLabel={[
+        printing.name,
+        printing.printingCode,
+        printing.price === null ? 'prix inconnu' : price,
+        ...(owned ? [`possédée ×${printing.ownedQuantity}`] : []),
+        ...(printing.inCatalog ? [] : ['absente du Catalogue']),
+      ].join(', ')}
+      style={[styles.tile, !printing.inCatalog && styles.unknown]}
     >
-      {/* `key` : une nouvelle adresse d'image repart d'un état neuf. */}
-      <PrintingImage key={uri} printing={printing} uri={uri} />
+      <View>
+        {/* `key` : une nouvelle adresse d'image repart d'un état neuf. */}
+        <PrintingImage key={uri} printing={printing} uri={uri} />
+        {owned && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeLabel}>×{printing.ownedQuantity}</Text>
+          </View>
+        )}
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: owned }}
+          accessibilityLabel={`Possédée : ${printing.name}`}
+          onPress={onToggleOwned}
+          hitSlop={6}
+          style={[styles.check, owned && styles.checkOn]}
+        >
+          <Text style={[styles.checkMark, owned && styles.checkMarkOn]}>✓</Text>
+        </Pressable>
+      </View>
       <Text numberOfLines={1} style={styles.name}>
         {printing.name}
       </Text>
@@ -94,6 +125,33 @@ function PrintingImage({ printing, uri }: { printing: GridPrinting; uri: string 
 
 const styles = StyleSheet.create({
   tile: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 6 },
+  unknown: { borderWidth: 1, borderColor: colors.muted, opacity: 0.7 },
+  badge: {
+    position: 'absolute',
+    left: 6,
+    bottom: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: colors.accent,
+  },
+  badgeLabel: { color: colors.background, fontSize: 12, fontWeight: '700' },
+  check: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: '#000a',
+  },
+  checkOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  checkMark: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  checkMarkOn: { color: colors.background },
   image: {
     width: '100%',
     aspectRatio: CARD_ASPECT_RATIO,

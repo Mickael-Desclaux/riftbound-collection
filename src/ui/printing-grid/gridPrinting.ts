@@ -11,6 +11,10 @@ export type GridPrinting = {
   imageNormal: string | null;
   /** Prix dans la Devise d'affichage ; `null` s'affiche « — ». */
   price: number | null;
+  /** Quantité dans la Collection : badge « ×n » au-dessus de 0. */
+  ownedQuantity: number;
+  /** Faux pour une Version inconnue (absente du Catalogue) : cadre gris. */
+  inCatalog: boolean;
 };
 
 /**

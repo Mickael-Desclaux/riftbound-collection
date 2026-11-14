@@ -15,6 +15,7 @@ export function entry(code: string, overrides: Partial<CatalogEntry> = {}): Cata
     variant: 'normal',
     type: 'Unit',
     domains: ['fury'],
+    inCatalog: true,
     ownedQuantity: 0,
     finishes: ['normal', 'foil'],
     price: null,

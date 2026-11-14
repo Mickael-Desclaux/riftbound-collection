@@ -103,4 +103,24 @@ describe('sortCatalog', () => {
 
     expect(codes(entries)).toEqual(before);
   });
+
+  it('par valeur : quantité × prix, les Versions sans prix en dernier', () => {
+    const owned = [
+      entry('OGN-001', { ownedQuantity: 1, price: 5 }),
+      entry('OGN-002', { ownedQuantity: 3, price: 2 }),
+      entry('OGN-003', { ownedQuantity: 2, price: null }),
+    ];
+
+    expect(codes(sortCatalog(owned, 'valueDesc'))).toEqual(['OGN-002', 'OGN-001', 'OGN-003']);
+  });
+
+  it('place les Versions inconnues en fin de liste, quel que soit le tri', () => {
+    const mixed = [
+      entry('AAA-001', { inCatalog: false, name: 'AAA-001' }),
+      entry('OGN-002', { name: 'Zed' }),
+    ];
+
+    expect(codes(sortCatalog(mixed, 'name'))).toEqual(['OGN-002', 'AAA-001']);
+    expect(codes(sortCatalog(mixed, 'number'))).toEqual(['OGN-002', 'AAA-001']);
+  });
 });
