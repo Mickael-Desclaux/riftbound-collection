@@ -4,7 +4,7 @@
  */
 import type { PrintingVariant } from '@/domain/catalog';
 import type { Finish, PriceSource } from '@/domain/price';
-import type { ChartPresetPeriod } from '@/domain/settings';
+import type { ChartPresetPeriod, Theme } from '@/domain/settings';
 
 const RARITIES: Record<string, string> = {
   common: 'Commune',
@@ -76,4 +76,10 @@ export const CHART_PERIOD_LABELS: Record<ChartPresetPeriod, string> = {
   '90d': '90 j',
   '1y': '1 an',
   all: 'Tout',
+};
+
+export const THEME_LABELS: Record<Theme, string> = {
+  system: 'Système',
+  light: 'Clair',
+  dark: 'Sombre',
 };

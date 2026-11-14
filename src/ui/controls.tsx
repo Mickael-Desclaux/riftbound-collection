@@ -1,7 +1,7 @@
 /** Boutons et puces partagés par les écrans. */
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors } from './theme';
+import { type Palette, useThemedStyles } from './theme';
 
 type ButtonProps = {
   label: string;
@@ -11,6 +11,7 @@ type ButtonProps = {
 };
 
 export function Button({ label, onPress, variant = 'secondary' }: ButtonProps) {
+  const styles = useThemedStyles(makeStyles);
   const primary = variant === 'primary';
   return (
     <Pressable
@@ -32,6 +33,7 @@ export function Chip({
   selected: boolean;
   onPress: () => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -44,28 +46,32 @@ export function Chip({
   );
 }
 
-export const controlStyles = StyleSheet.create({
-  /** Fond et bordure d'un contrôle au repos. */
-  idle: { borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface },
-  selected: { backgroundColor: colors.accent, borderColor: colors.accent },
-  selectedLabel: { color: colors.background, fontWeight: '600' },
-});
+/** Styles communs des contrôles, à étaler dans la feuille de styles d'un composant. */
+export function makeControlStyles(colors: Palette) {
+  return {
+    /** Fond et bordure d'un contrôle au repos. */
+    idle: { borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface },
+    selected: { backgroundColor: colors.accent, borderColor: colors.accent },
+    selectedLabel: { color: colors.onAccent, fontWeight: '600' },
+  } as const;
+}
 
-const styles = StyleSheet.create({
-  button: {
-    ...controlStyles.idle,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  chip: {
-    ...controlStyles.idle,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  label: { color: colors.text, fontSize: 15 },
-  chipLabel: { color: colors.text, fontSize: 13 },
-  selected: controlStyles.selected,
-  selectedLabel: controlStyles.selectedLabel,
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    button: {
+      ...makeControlStyles(colors).idle,
+      borderRadius: 8,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+    },
+    chip: {
+      ...makeControlStyles(colors).idle,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    label: { color: colors.text, fontSize: 15 },
+    chipLabel: { color: colors.text, fontSize: 13 },
+    selected: makeControlStyles(colors).selected,
+    selectedLabel: makeControlStyles(colors).selectedLabel,
+  });

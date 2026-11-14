@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { NewExpansion } from '@/domain/catalog';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import { newExpansionsText } from './newExpansionsText';
 
@@ -18,6 +18,7 @@ type Props = {
  * nouvelle Extension.
  */
 export function NewExpansionsNotice({ expansions, onOpen, onDismiss }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   if (expansions.length === 0) return null;
   return (
     <SafeAreaView edges={['top']} style={styles.banner}>
@@ -39,16 +40,17 @@ export function NewExpansionsNotice({ expansions, onOpen, onDismiss }: Readonly<
   );
 }
 
-const styles = StyleSheet.create({
-  banner: { backgroundColor: colors.surface, borderBottomWidth: 1, borderColor: colors.accent },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  text: { flex: 1, color: colors.text, fontSize: 13 },
-  action: { color: colors.accent, fontSize: 13, fontWeight: '700' },
-  close: { color: colors.muted, fontSize: 13 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    banner: { backgroundColor: colors.surface, borderBottomWidth: 1, borderColor: colors.accent },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    text: { flex: 1, color: colors.text, fontSize: 13 },
+    action: { color: colors.accent, fontSize: 13, fontWeight: '700' },
+    close: { color: colors.muted, fontSize: 13 },
+  });

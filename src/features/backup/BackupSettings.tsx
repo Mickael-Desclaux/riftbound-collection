@@ -9,7 +9,7 @@ import type { Backup, BackupReadError, BackupReadResult } from '@/domain/backup'
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
 import { formatDate, formatPrintingCount, formatWishCount } from '@/ui/format';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 export type BackupActions = {
   /** Écrit la Sauvegarde et ouvre la fenêtre de partage. */
@@ -31,6 +31,7 @@ export const BACKUP_READ_ERRORS: Record<BackupReadError['kind'], string> = {
 type Status = { tone: 'success' | 'error'; message: string; details?: string };
 
 export function BackupSettings({ actions }: Readonly<{ actions: BackupActions }>) {
+  const styles = useThemedStyles(makeStyles);
   const [status, setStatus] = useState<Status | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   const busy = useRef(false);
@@ -139,10 +140,11 @@ function confirm(title: string, message: string, confirmLabel: string): Promise<
   });
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 10, marginTop: 16 },
-  title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 8 },
-  status: { gap: 6 },
-  success: { color: colors.text, fontSize: 14 },
-  error: { color: colors.accent, fontSize: 14 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    container: { gap: 10, marginTop: 16 },
+    title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 8 },
+    status: { gap: 6 },
+    success: { color: colors.text, fontSize: 14 },
+    error: { color: colors.accent, fontSize: 14 },
+  });

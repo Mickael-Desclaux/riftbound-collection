@@ -4,10 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { BinderPage } from '@/domain/binder';
 import type { CatalogEntry } from '@/domain/catalogEntry';
-import { Button, controlStyles } from '@/ui/controls';
+import { Button, makeControlStyles } from '@/ui/controls';
 import { formatBinderSummary } from '@/ui/format';
 import { CARD_ASPECT_RATIO, gridImageUri } from '@/ui/printing-grid/gridPrinting';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
 /** Les options d'export, cochées par défaut (spec § 2.5). */
 export type BinderExportOptions = { showPrices: boolean; markOwned: boolean };
@@ -42,6 +42,7 @@ export function BinderView({
   onRemove,
   onBack,
 }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   const cardCount = pages.reduce((count, page) => count + page.printings.length, 0);
   const header = (
     <View style={styles.header}>
@@ -136,6 +137,7 @@ function ExportAction({
   status,
   onExport,
 }: Readonly<{ status: BinderExportStatus; onExport: () => void }>) {
+  const styles = useThemedStyles(makeStyles);
   if (status.step === 'idle') {
     return <Button label="Exporter en PDF" variant="primary" onPress={onExport} />;
   }
@@ -159,6 +161,8 @@ function Option({
   value,
   onChange,
 }: Readonly<{ label: string; value: boolean; onChange: (value: boolean) => void }>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.option}>
       <Text style={styles.optionLabel}>{label}</Text>
@@ -172,37 +176,38 @@ function Option({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 16, gap: 16, paddingBottom: 32 },
-  header: { gap: 12 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  back: { color: colors.text, fontSize: 22 },
-  title: { color: colors.text, fontSize: 20, fontWeight: '700' },
-  summary: { color: colors.text, fontSize: 15, fontWeight: '600' },
-  hint: { color: colors.muted, fontSize: 13 },
-  empty: { alignItems: 'center', gap: 8, paddingVertical: 48 },
-  emptyTitle: { color: colors.text, fontSize: 17, fontWeight: '600' },
-  option: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  optionLabel: { color: colors.text, fontSize: 15 },
-  progress: { ...controlStyles.idle, borderRadius: 8, padding: 12, gap: 8 },
-  progressLabel: { color: colors.text, fontSize: 14 },
-  progressTrack: { height: 6, borderRadius: 3, backgroundColor: colors.line, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: colors.accent },
-  page: { gap: 8 },
-  pageTitle: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  cards: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 10 },
-  // Largeur fixe : une rangée incomplète garde la même taille de case.
-  card: { width: '32%', gap: 4 },
-  cardSpacing: { marginRight: '2%' },
-  image: { width: '100%', aspectRatio: CARD_ASPECT_RATIO, borderRadius: 6 },
-  frame: { backgroundColor: colors.line, alignItems: 'center', justifyContent: 'center' },
-  frameText: { color: colors.muted, fontSize: 11 },
-  cardName: { color: colors.text, fontSize: 11 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.background },
+    content: { padding: 16, gap: 16, paddingBottom: 32 },
+    header: { gap: 12 },
+    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    back: { color: colors.text, fontSize: 22 },
+    title: { color: colors.text, fontSize: 20, fontWeight: '700' },
+    summary: { color: colors.text, fontSize: 15, fontWeight: '600' },
+    hint: { color: colors.muted, fontSize: 13 },
+    empty: { alignItems: 'center', gap: 8, paddingVertical: 48 },
+    emptyTitle: { color: colors.text, fontSize: 17, fontWeight: '600' },
+    option: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    optionLabel: { color: colors.text, fontSize: 15 },
+    progress: { ...makeControlStyles(colors).idle, borderRadius: 8, padding: 12, gap: 8 },
+    progressLabel: { color: colors.text, fontSize: 14 },
+    progressTrack: { height: 6, borderRadius: 3, backgroundColor: colors.line, overflow: 'hidden' },
+    progressFill: { height: '100%', backgroundColor: colors.accent },
+    page: { gap: 8 },
+    pageTitle: {
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    cards: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 10 },
+    // Largeur fixe : une rangée incomplète garde la même taille de case.
+    card: { width: '32%', gap: 4 },
+    cardSpacing: { marginRight: '2%' },
+    image: { width: '100%', aspectRatio: CARD_ASPECT_RATIO, borderRadius: 6 },
+    frame: { backgroundColor: colors.line, alignItems: 'center', justifyContent: 'center' },
+    frameText: { color: colors.muted, fontSize: 11 },
+    cardName: { color: colors.text, fontSize: 11 },
+  });

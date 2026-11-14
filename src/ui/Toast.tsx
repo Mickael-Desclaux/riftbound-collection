@@ -6,7 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors } from './theme';
+import { type Palette, useThemedStyles } from './theme';
 
 export type ToastMessage = {
   message: string;
@@ -33,6 +33,7 @@ export function ToastProvider({
   bottomOffset?: number;
   children: ReactNode;
 }>) {
+  const styles = useThemedStyles(makeStyles);
   // `id` : un toast identique affiché deux fois relance sa minuterie.
   const [toast, setToast] = useState<(ToastMessage & { id: number }) | null>(null);
   const show = useCallback(
@@ -76,23 +77,24 @@ export function ToastProvider({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  toast: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-  },
-  message: { flex: 1, color: colors.text, fontSize: 14 },
-  action: { color: colors.accent, fontSize: 14, fontWeight: '700' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    container: { flex: 1 },
+    toast: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.surface,
+    },
+    message: { flex: 1, color: colors.text, fontSize: 14 },
+    action: { color: colors.accent, fontSize: 14, fontWeight: '700' },
+  });

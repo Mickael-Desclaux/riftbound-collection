@@ -278,7 +278,7 @@ Trois trous entre décisions sont apparus à l'assemblage, et deux autres à l'i
 
 4. **Code de version** (2026-11-08, ticket #22) : sur le catalogue réel, la règle initiale (Extension + numéro, suffixe d'édition seulement en cas de collision) laissait 28 codes OPP en double, et une nouvelle promo aurait pu changer un code existant. L'utilisateur a choisi d'ajouter **toujours** la vague aux Versions OPP, PR et JDG, et **toujours** le suffixe d'édition quand le nom le porte (§ 4.1).
 
-5. **Transition grille → fiche** (2026-11-11, ticket #31) : essayés sur un vrai Android, le zoom partagé de Reanimated (expérimental) ne fonctionnait pas de façon fiable, et le repli « agrandissement puis fondu » ne plaisait pas : saccades, puis passage de fond trop brutal, la durée du fondu de la pile n'étant pas réglable sur Android. L'utilisateur a choisi de **ne pas animer** ce passage : la fiche s'ouvre avec la transition par défaut de la pile (§ 2.2). Reanimated n'est plus une dépendance. Un thème sombre de navigation évite le flash blanc pendant les transitions.
+5. **Transition grille → fiche** (2026-11-11, ticket #31) : essayés sur un vrai Android, le zoom partagé de Reanimated (expérimental) ne fonctionnait pas de façon fiable, et le repli « agrandissement puis fondu » ne plaisait pas : saccades, puis passage de fond trop brutal, la durée du fondu de la pile n'étant pas réglable sur Android. L'utilisateur a choisi de **ne pas animer** ce passage : la fiche s'ouvre avec la transition par défaut de la pile (§ 2.2). Reanimated n'est plus une dépendance. Un thème de navigation aux couleurs du thème actif évite les flashs pendant les transitions.
 
 ## 10. Écarts de nommage par rapport aux tickets
 

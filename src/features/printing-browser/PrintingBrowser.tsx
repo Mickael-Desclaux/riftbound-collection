@@ -20,14 +20,14 @@ import {
 } from '@/domain/catalogFilters';
 import { sortCatalog, type CatalogSort } from '@/domain/catalogSort';
 import { pageCount, pageOf } from '@/domain/pagination';
-import { Chip, controlStyles } from '@/ui/controls';
+import { Chip, makeControlStyles } from '@/ui/controls';
 import { formatBinderAdded, formatPrintingCount } from '@/ui/format';
 import { gridImageUri, type GridPrinting } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { printingHref, type PrintingTab } from '@/ui/printingHref';
 import { useSync } from '@/ui/SyncContext';
 import { useToast } from '@/ui/Toast';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';
@@ -99,6 +99,8 @@ export function PrintingBrowser({
   banner,
   filtersRequest = null,
 }: Readonly<Props>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const db = useDatabase();
   const [filters, setFilters] = useState<CatalogFilters>(defaultFilters);
   const [sort, setSort] = useState<CatalogSort>(defaultSort);
@@ -292,6 +294,7 @@ function SortMenu({
   sort: CatalogSort;
   onChange: (sort: CatalogSort) => void;
 }>) {
+  const styles = useThemedStyles(makeStyles);
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -322,32 +325,33 @@ function SortMenu({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    gap: 8,
-    borderBottomWidth: 1,
-    borderColor: colors.line,
-  },
-  search: {
-    color: colors.text,
-    backgroundColor: colors.surface,
-    borderColor: colors.line,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-  },
-  chips: { gap: 6 },
-  toolbar: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  count: { flex: 1, textAlign: 'right', color: colors.muted, fontSize: 13 },
-  menuScrim: { flex: 1, backgroundColor: '#0008', justifyContent: 'center', padding: 48 },
-  menu: { ...controlStyles.idle, borderRadius: 12, overflow: 'hidden' },
-  menuItem: { paddingHorizontal: 16, paddingVertical: 14 },
-  menuLabel: { color: colors.text, fontSize: 16 },
-  menuLabelSelected: { color: colors.accent, fontWeight: '700' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.background },
+    header: {
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 8,
+      gap: 8,
+      borderBottomWidth: 1,
+      borderColor: colors.line,
+    },
+    search: {
+      color: colors.text,
+      backgroundColor: colors.surface,
+      borderColor: colors.line,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 15,
+    },
+    chips: { gap: 6 },
+    toolbar: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    count: { flex: 1, textAlign: 'right', color: colors.muted, fontSize: 13 },
+    menuScrim: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'center', padding: 48 },
+    menu: { ...makeControlStyles(colors).idle, borderRadius: 12, overflow: 'hidden' },
+    menuItem: { paddingHorizontal: 16, paddingVertical: 14 },
+    menuLabel: { color: colors.text, fontSize: 16 },
+    menuLabelSelected: { color: colors.accent, fontWeight: '700' },
+  });

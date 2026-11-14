@@ -11,7 +11,7 @@ import type { ChartDay } from '@/domain/priceHistory';
 import type { Currency } from '@/domain/price';
 
 import { formatIsoDate, formatPrice } from './format';
-import { colors } from './theme';
+import { type Palette, useThemedStyles, usePalette } from './theme';
 
 export type PriceLineChartProps = {
   /** Un élément par jour, dans la Devise d'affichage. */
@@ -45,6 +45,8 @@ function toChartSeries(days: ChartDay[], valueOf: (day: ChartDay) => number | nu
 }
 
 export function PriceLineChart({ days, compare, displayCurrency }: Readonly<PriceLineChartProps>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const [width, setWidth] = useState(0);
   const shown = toChartSeries(days, (day) => day.value);
   const other = compare ? toChartSeries(days, (day) => day.compareValue) : undefined;
@@ -101,15 +103,16 @@ export function PriceLineChart({ days, compare, displayCurrency }: Readonly<Pric
   );
 }
 
-const styles = StyleSheet.create({
-  axis: { color: colors.muted, fontSize: 10 },
-  pointer: {
-    backgroundColor: colors.surface,
-    borderColor: colors.line,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 6,
-  },
-  pointerDate: { color: colors.muted, fontSize: 11 },
-  pointerPrice: { color: colors.text, fontSize: 13, fontWeight: '600' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    axis: { color: colors.muted, fontSize: 10 },
+    pointer: {
+      backgroundColor: colors.surface,
+      borderColor: colors.line,
+      borderWidth: 1,
+      borderRadius: 8,
+      padding: 6,
+    },
+    pointerDate: { color: colors.muted, fontSize: 11 },
+    pointerPrice: { color: colors.text, fontSize: 13, fontWeight: '600' },
+  });

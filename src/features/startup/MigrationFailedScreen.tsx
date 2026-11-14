@@ -9,7 +9,7 @@ import type { MigrationStep } from '@/data/migrate';
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
 import { MessageScreen, MessageText } from '@/ui/MessageScreen';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 export type MigrationFailedScreenProps = {
   step: MigrationStep;
@@ -37,6 +37,7 @@ export function MigrationFailedScreen({
   exportSafetyBackup,
   retry,
 }: Readonly<MigrationFailedScreenProps>) {
+  const styles = useThemedStyles(makeStyles);
   const [exportFailed, setExportFailed] = useState(false);
   const exportBackup = () => {
     setExportFailed(false);
@@ -63,6 +64,7 @@ export function MigrationFailedScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  error: { color: colors.accent, fontSize: 14, textAlign: 'center' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    error: { color: colors.accent, fontSize: 14, textAlign: 'center' },
+  });

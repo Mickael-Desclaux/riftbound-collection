@@ -19,7 +19,7 @@ import { usePrintingEntries } from '@/features/printing-browser/usePrintingEntri
 import { useToggleWishlisted } from '@/features/wishlist/useToggleWishlisted';
 import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import { CollectionHeader } from './CollectionHeader';
 import { useToggleOwned } from './useToggleOwned';
@@ -33,6 +33,7 @@ const COLLECTION_FILTERS: CatalogFilters = { ...DEFAULT_CATALOG_FILTERS, showPro
  * (quantité × prix). Les Versions inconnues suivent, en fin de liste.
  */
 export function CollectionScreen() {
+  const styles = useThemedStyles(makeStyles);
   const openCatalog = useOpenCatalog();
   const router = useRouter();
   const binderButton = (
@@ -109,10 +110,11 @@ export function CollectionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  banner: { gap: 8 },
-  binderRow: { flexDirection: 'row', justifyContent: 'flex-end' },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
-  title: { color: colors.text, fontSize: 17, fontWeight: '600' },
-  hint: { color: colors.muted, fontSize: 14, textAlign: 'center' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    banner: { gap: 8 },
+    binderRow: { flexDirection: 'row', justifyContent: 'flex-end' },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
+    title: { color: colors.text, fontSize: 17, fontWeight: '600' },
+    hint: { color: colors.muted, fontSize: 14, textAlign: 'center' },
+  });

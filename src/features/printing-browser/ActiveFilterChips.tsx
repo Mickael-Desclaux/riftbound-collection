@@ -7,8 +7,8 @@ import {
   type LockedCriterion,
 } from '@/domain/catalogFilters';
 import type { Currency } from '@/domain/price';
-import { controlStyles } from '@/ui/controls';
-import { colors } from '@/ui/theme';
+import { makeControlStyles } from '@/ui/controls';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import type { FilterOptions } from './FilterSheet';
 import { activeFilterLabel } from './filterLabels';
@@ -29,6 +29,7 @@ export function ActiveFilterChips({
   lockedCriteria,
   onChange,
 }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   const active = activeFilters(filters, lockedCriteria);
   if (active.length === 0) return null;
   const expansions = [...options.expansions, ...options.promoExpansions];
@@ -58,14 +59,15 @@ export function ActiveFilterChips({
   );
 }
 
-const styles = StyleSheet.create({
-  row: { gap: 6 },
-  chip: {
-    ...controlStyles.idle,
-    borderColor: colors.accent,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  label: { color: colors.accent, fontSize: 12 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: { gap: 6 },
+    chip: {
+      ...makeControlStyles(colors).idle,
+      borderColor: colors.accent,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    label: { color: colors.accent, fontSize: 12 },
+  });

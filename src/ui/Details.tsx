@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors } from './theme';
+import { type Palette, useThemedStyles } from './theme';
 
 export function Details({
   text,
@@ -11,6 +11,7 @@ export function Details({
   text: string | undefined;
   align?: 'center' | 'flex-start';
 }) {
+  const styles = useThemedStyles(makeStyles);
   const [open, setOpen] = useState(false);
   if (!text) return null;
   return (
@@ -27,8 +28,9 @@ export function Details({
   );
 }
 
-const styles = StyleSheet.create({
-  details: { gap: 8, alignSelf: 'stretch' },
-  link: { color: colors.muted, fontSize: 14, textDecorationLine: 'underline' },
-  text: { color: colors.muted, fontSize: 12, fontFamily: 'monospace' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    details: { gap: 8, alignSelf: 'stretch' },
+    link: { color: colors.muted, fontSize: 14, textDecorationLine: 'underline' },
+    text: { color: colors.muted, fontSize: 12, fontFamily: 'monospace' },
+  });

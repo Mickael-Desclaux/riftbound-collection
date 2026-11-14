@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { CURRENCIES, PRICE_SOURCES, type Currency, type PriceSource } from '@/domain/price';
 import { Chip } from '@/ui/controls';
 import { PRICE_SOURCE_LABELS } from '@/ui/labels';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 type Props = {
   displayCurrency: Currency;
@@ -19,6 +19,7 @@ export function PriceSettings({
   onDisplayCurrencyChange,
   onPriceSourceChange,
 }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Devise d’affichage</Text>
@@ -48,9 +49,10 @@ export function PriceSettings({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 10 },
-  title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 8 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  hint: { color: colors.muted, fontSize: 13 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    container: { gap: 10 },
+    title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 8 },
+    row: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    hint: { color: colors.muted, fontSize: 13 },
+  });

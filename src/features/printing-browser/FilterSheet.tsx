@@ -36,7 +36,7 @@ import {
   typeLabel,
   VARIANTS,
 } from '@/ui/labels';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
 export type FilterOptions = {
   expansions: { code: string; name: string }[];
@@ -87,6 +87,8 @@ export function FilterSheet({
   onClose,
   onAddToBinder,
 }: Readonly<Props>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const update = (change: Partial<CatalogFilters>) => onChange({ ...filters, ...change });
 
   return (
@@ -240,6 +242,8 @@ function AmountInput({
   value: number | null;
   onChange: (value: number | null) => void;
 }>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const [text, setText] = useState(amountText(value));
   const [shownValue, setShownValue] = useState(value);
   if (value !== shownValue) {
@@ -263,6 +267,7 @@ function AmountInput({
 }
 
 function Section({ title, children }: Readonly<{ title: string; children: React.ReactNode }>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -271,39 +276,40 @@ function Section({ title, children }: Readonly<{ title: string; children: React.
   );
 }
 
-const styles = StyleSheet.create({
-  scrim: { flex: 1, backgroundColor: '#000a' },
-  sheet: {
-    maxHeight: '85%',
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  content: { padding: 16, gap: 16 },
-  section: { gap: 8 },
-  sectionTitle: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  priceDash: { color: colors.muted, fontSize: 15 },
-  amount: {
-    flex: 1,
-    color: colors.text,
-    backgroundColor: colors.background,
-    borderColor: colors.line,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 15,
-  },
-  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  switchLabel: { color: colors.text, fontSize: 15 },
-  footer: { gap: 10, padding: 16, borderTopWidth: 1, borderColor: colors.line },
-  actions: { flexDirection: 'row', justifyContent: 'space-between' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    scrim: { flex: 1, backgroundColor: colors.scrim },
+    sheet: {
+      maxHeight: '85%',
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+    },
+    content: { padding: 16, gap: 16 },
+    section: { gap: 8 },
+    sectionTitle: {
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    priceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    priceDash: { color: colors.muted, fontSize: 15 },
+    amount: {
+      flex: 1,
+      color: colors.text,
+      backgroundColor: colors.background,
+      borderColor: colors.line,
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      fontSize: 15,
+    },
+    switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    switchLabel: { color: colors.text, fontSize: 15 },
+    footer: { gap: 10, padding: 16, borderTopWidth: 1, borderColor: colors.line },
+    actions: { flexDirection: 'row', justifyContent: 'space-between' },
+  });

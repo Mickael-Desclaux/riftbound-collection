@@ -20,7 +20,7 @@ import type { PrintingCode } from '@/domain/printingCode';
 import { useSetOwnedQuantity } from '@/features/collection/useSetOwnedQuantity';
 import { useClock } from '@/ui/ClockContext';
 import { Button } from '@/ui/controls';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import { pickDateRange } from './pickDateRange';
 import { PrintingDetailView } from './PrintingDetailView';
@@ -28,6 +28,7 @@ import { printingHref, type PrintingTab } from '@/ui/printingHref';
 
 /** Fiche d'une Version, ouverte dans la pile de l'onglet `tab`. */
 export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
+  const styles = useThemedStyles(makeStyles);
   const { printingCode } = useLocalSearchParams<{ printingCode: string }>();
   const code = printingCode as PrintingCode;
   const db = useDatabase();
@@ -88,14 +89,15 @@ export function PrintingDetailScreen({ tab }: Readonly<{ tab: PrintingTab }>) {
   );
 }
 
-const styles = StyleSheet.create({
-  missing: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    padding: 24,
-    backgroundColor: colors.background,
-  },
-  missingText: { color: colors.text, fontSize: 16, textAlign: 'center' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    missing: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 16,
+      padding: 24,
+      backgroundColor: colors.background,
+    },
+    missingText: { color: colors.text, fontSize: 16, textAlign: 'center' },
+  });
