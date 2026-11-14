@@ -13,6 +13,7 @@ function at(date: IsoDate): IsoDateTime {
 function candidate(overrides: Partial<PriceAlertCandidate> = {}): PriceAlertCandidate {
   return {
     printingCode: JINX,
+    cardName: 'Jinx',
     addedAt: ADDED,
     lastAlert: null,
     records: [
@@ -28,7 +29,13 @@ const RULE = { source: 'tcgplayer', threshold: 15, today: TODAY } as const;
 describe('priceAlerts', () => {
   it('alerte quand la baisse depuis l’ajout atteint le seuil', () => {
     expect(priceAlerts([candidate()], RULE)).toEqual([
-      { printingCode: JINX, price: 8.5, change: expect.closeTo(-15) },
+      {
+        printingCode: JINX,
+        cardName: 'Jinx',
+        source: 'tcgplayer',
+        price: 8.5,
+        change: expect.closeTo(-15),
+      },
     ]);
   });
 
@@ -48,7 +55,13 @@ describe('priceAlerts', () => {
     ];
 
     expect(priceAlerts([candidate({ records })], RULE)).toEqual([
-      { printingCode: JINX, price: 17, change: expect.closeTo(-15) },
+      {
+        printingCode: JINX,
+        cardName: 'Jinx',
+        source: 'tcgplayer',
+        price: 17,
+        change: expect.closeTo(-15),
+      },
     ]);
   });
 
@@ -62,7 +75,13 @@ describe('priceAlerts', () => {
 
     expect(priceAlerts([stillLow], RULE)).toEqual([]);
     expect(priceAlerts([lowerAgain], RULE)).toEqual([
-      { printingCode: JINX, price: 7.2, change: expect.closeTo(-15.29, 1) },
+      {
+        printingCode: JINX,
+        cardName: 'Jinx',
+        source: 'tcgplayer',
+        price: 7.2,
+        change: expect.closeTo(-15.29, 1),
+      },
     ]);
   });
 
@@ -70,7 +89,13 @@ describe('priceAlerts', () => {
     const lastAlert = { price: 5, source: 'cardmarket', at: at('2026-11-10') } as const;
 
     expect(priceAlerts([candidate({ lastAlert })], RULE)).toEqual([
-      { printingCode: JINX, price: 8.5, change: expect.closeTo(-15) },
+      {
+        printingCode: JINX,
+        cardName: 'Jinx',
+        source: 'tcgplayer',
+        price: 8.5,
+        change: expect.closeTo(-15),
+      },
     ]);
   });
 

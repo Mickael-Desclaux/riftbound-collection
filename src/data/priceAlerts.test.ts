@@ -3,7 +3,7 @@ import type { PriceRecord } from '@/domain/priceRecords';
 import type { PrintingCode } from '@/domain/printingCode';
 
 import { replaceCatalog } from './catalog';
-import { checkPriceAlerts } from './priceAlerts';
+import { findPriceAlerts, recordPriceAlerts } from './priceAlerts';
 import { savePrices } from './prices';
 import { wishlistEntry } from './schema';
 import { setSetting } from './settings';
@@ -44,8 +44,8 @@ async function setup() {
   return db;
 }
 
-describe('checkPriceAlerts', () => {
-  it('signale les souhaits qui ont baissé du seuil, dans la Finition de référence, et retient l’alerte', async () => {
+describe('findPriceAlerts et recordPriceAlerts', () => {
+  it('trouve les souhaits qui ont baissé du seuil, dans la Finition de référence, puis retient l’alerte annoncée', async () => {
     const db = await setup();
     savePrices(
       db,
@@ -61,9 +61,20 @@ describe('checkPriceAlerts', () => {
       ],
     );
 
-    expect(checkPriceAlerts(db, NOW)).toEqual([
-      { printingCode: JINX, cardName: 'Jinx', change: expect.closeTo(-20) },
+    const alerts = findPriceAlerts(db, NOW);
+    expect(alerts).toEqual([
+      {
+        printingCode: JINX,
+        cardName: 'Jinx',
+        source: 'tcgplayer',
+        price: 8,
+        change: expect.closeTo(-20),
+      },
     ]);
+    // Pas encore annoncée, donc pas encore retenue.
+    expect(findPriceAlerts(db, NOW)).toHaveLength(1);
+
+    recordPriceAlerts(db, alerts, NOW);
     expect(db.select().from(wishlistEntry).all()).toContainEqual({
       printingCode: JINX,
       addedAt: ADDED,
@@ -73,7 +84,7 @@ describe('checkPriceAlerts', () => {
     });
 
     // Rien de nouveau depuis : pas de seconde alerte.
-    expect(checkPriceAlerts(db, NOW)).toEqual([]);
+    expect(findPriceAlerts(db, NOW)).toEqual([]);
   });
 
   it('suit la Source de prix et le seuil choisis', async () => {
@@ -96,7 +107,7 @@ describe('checkPriceAlerts', () => {
       ],
     );
 
-    expect(checkPriceAlerts(db, NOW)).toEqual([]);
+    expect(findPriceAlerts(db, NOW)).toEqual([]);
   });
 
   it('ignore les Versions inconnues, sans prix ni nom', async () => {
@@ -110,6 +121,6 @@ describe('checkPriceAlerts', () => {
       [record(unknown, '2026-10-20', 10), record(unknown, '2026-11-10', 1)],
     );
 
-    expect(checkPriceAlerts(db, NOW)).toEqual([]);
+    expect(findPriceAlerts(db, NOW)).toEqual([]);
   });
 });

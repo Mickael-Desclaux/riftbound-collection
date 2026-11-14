@@ -15,13 +15,23 @@ export type LastPriceAlert = { price: number; source: PriceSource; at: IsoDateTi
 /** Un souhait à vérifier, avec les relevés de sa Finition de référence dans la source choisie. */
 export type PriceAlertCandidate = {
   printingCode: PrintingCode;
+  cardName: string;
   addedAt: IsoDateTime;
   lastAlert: LastPriceAlert | null;
   records: readonly RecordedValue[];
 };
 
-/** Une Alerte de prix : le prix du jour, et sa baisse en % depuis la base de comparaison. */
-export type PriceAlert = { printingCode: PrintingCode; price: number; change: number };
+/**
+ * Une Alerte de prix : le prix du jour dans la source choisie, et sa baisse en
+ * % depuis l'ajout ou depuis la dernière alerte.
+ */
+export type PriceAlert = {
+  printingCode: PrintingCode;
+  cardName: string;
+  source: PriceSource;
+  price: number;
+  change: number;
+};
 
 export type PriceAlertRule = {
   source: PriceSource;
@@ -39,14 +49,14 @@ export function priceAlerts(
   { source, threshold, today }: PriceAlertRule,
 ): PriceAlert[] {
   const alerts: PriceAlert[] = [];
-  for (const { printingCode, addedAt, lastAlert, records } of candidates) {
+  for (const { printingCode, cardName, addedAt, lastAlert, records } of candidates) {
     const series = dailySeries(records, { start: toIsoDate(new Date(addedAt)), end: today });
     const price = series.at(-1)?.value ?? null;
     // Une alerte donnée dans une autre source ne se compare pas à celle-ci.
     const base = lastAlert?.source === source ? lastAlert.price : (series[0]?.value ?? null);
     const change = percentChange(base, price);
     if (price !== null && change !== null && change <= -threshold + EPSILON) {
-      alerts.push({ printingCode, price, change });
+      alerts.push({ printingCode, cardName, source, price, change });
     }
   }
   return alerts;

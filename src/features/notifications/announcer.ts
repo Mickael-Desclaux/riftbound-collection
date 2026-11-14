@@ -4,7 +4,7 @@
  * par une notification Android sinon (détection en arrière-plan).
  */
 import type { NewExpansion } from '@/domain/catalog';
-import type { EmittedPriceAlert } from '@/data/priceAlerts';
+import type { PriceAlert } from '@/domain/priceAlert';
 
 import { notifyNewExpansions, notifyPriceAlerts } from './notifications';
 
@@ -17,17 +17,22 @@ export type AnnounceContext = {
   appIsActive: boolean;
 };
 
-export function createAnnouncer<T>(notify: (items: T[]) => Promise<void>) {
+/**
+ * `notify` envoie la notification, et dit si elle est partie (pas sans la
+ * permission d'Android).
+ */
+export function createAnnouncer<T>(notify: (items: T[]) => Promise<boolean>) {
   const listeners = new Set<Listener<T>>();
   return {
-    async announce(items: T[], { enabled, appIsActive }: AnnounceContext) {
-      if (!enabled || items.length === 0) return;
+    /** Annonce `items` ; dit si l'annonce a été affichée ou envoyée. */
+    async announce(items: T[], { enabled, appIsActive }: AnnounceContext): Promise<boolean> {
+      if (!enabled || items.length === 0) return false;
       // Sans écran pour l'afficher (app pas encore prête), l'annonce deviendrait muette.
       if (appIsActive && listeners.size > 0) {
         for (const listener of listeners) listener(items);
-        return;
+        return true;
       }
-      await notify(items);
+      return notify(items);
     },
     /** Pour l'annonce dans l'app ; renvoie de quoi se désabonner. */
     subscribe(listener: Listener<T>): () => void {
@@ -39,4 +44,4 @@ export function createAnnouncer<T>(notify: (items: T[]) => Promise<void>) {
 
 /** Les annonceurs de l'app, partagés par l'app ouverte et la tâche en arrière-plan. */
 export const newExpansionAnnouncer = createAnnouncer<NewExpansion>(notifyNewExpansions);
-export const priceAlertAnnouncer = createAnnouncer<EmittedPriceAlert>(notifyPriceAlerts);
+export const priceAlertAnnouncer = createAnnouncer<PriceAlert>(notifyPriceAlerts);

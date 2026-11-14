@@ -3,6 +3,7 @@ import { StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { isValidSetting } from '@/domain/settings';
 import { Button, controlStyles } from '@/ui/controls';
+import { formatEditableNumber } from '@/ui/format';
 import { colors } from '@/ui/theme';
 
 type Props = {
@@ -61,7 +62,7 @@ function ThresholdInput({
           accessibilityLabel="Seuil des alertes de prix, en %"
           style={styles.input}
           keyboardType="decimal-pad"
-          value={draft ?? String(value).replace('.', ',')}
+          value={draft ?? formatEditableNumber(value)}
           onChangeText={setDraft}
           onEndEditing={commit}
           onSubmitEditing={commit}

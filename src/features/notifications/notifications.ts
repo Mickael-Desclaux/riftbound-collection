@@ -5,8 +5,8 @@
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance, PermissionStatus } from 'expo-notifications';
 
-import type { EmittedPriceAlert } from '@/data/priceAlerts';
 import type { NewExpansion } from '@/domain/catalog';
+import type { PriceAlert } from '@/domain/priceAlert';
 
 import type { NotificationData } from './notificationData';
 import { newExpansionsText, newExpansionsTitle } from './newExpansionsText';
@@ -59,20 +59,21 @@ export async function requestNotificationPermission(): Promise<void> {
   await Notifications.requestPermissionsAsync();
 }
 
-/** Envoie une notification sur `channelId` ; rien sans la permission. */
+/** Envoie une notification sur `channelId` ; dit si elle est partie (pas sans la permission). */
 async function notify(
   channelId: string,
   content: { title: string; body: string; data: NotificationData },
-): Promise<void> {
+): Promise<boolean> {
   const { granted } = await Notifications.getPermissionsAsync();
-  if (!granted) return;
+  if (!granted) return false;
   await setUpChannels();
   await Notifications.scheduleNotificationAsync({ content, trigger: { channelId } });
+  return true;
 }
 
 /** Signale de nouvelles Extensions par une notification. */
-export async function notifyNewExpansions(expansions: readonly NewExpansion[]): Promise<void> {
-  await notify(NEW_EXPANSIONS_CHANNEL, {
+export async function notifyNewExpansions(expansions: readonly NewExpansion[]): Promise<boolean> {
+  return notify(NEW_EXPANSIONS_CHANNEL, {
     title: newExpansionsTitle(expansions),
     body: newExpansionsText(expansions),
     data: { kind: 'newExpansions', expansions: [...expansions] },
@@ -80,8 +81,8 @@ export async function notifyNewExpansions(expansions: readonly NewExpansion[]): 
 }
 
 /** Signale des Alertes de prix par une seule notification, qui ouvre l'onglet Souhaits. */
-export async function notifyPriceAlerts(alerts: readonly EmittedPriceAlert[]): Promise<void> {
-  await notify(PRICE_ALERTS_CHANNEL, {
+export async function notifyPriceAlerts(alerts: readonly PriceAlert[]): Promise<boolean> {
+  return notify(PRICE_ALERTS_CHANNEL, {
     title: priceAlertsTitle(alerts),
     body: priceAlertsText(alerts),
     data: { kind: 'priceAlerts' },

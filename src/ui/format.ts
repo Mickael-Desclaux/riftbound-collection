@@ -106,6 +106,13 @@ const formatOneDecimal = new Intl.NumberFormat('fr-FR', {
   maximumFractionDigits: 1,
 }).format;
 
+const formatDecimal = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format;
+
+/** « 15 », « 12,5 » : un nombre à saisir, sans zéros inutiles. */
+export function formatEditableNumber(value: number): string {
+  return formatDecimal(value);
+}
+
 /** « 10,0 % » : un pourcentage sans signe. */
 export function formatPercent(value: number): string {
   return `${formatOneDecimal(Math.abs(value))} %`;
