@@ -38,7 +38,7 @@ export type CatalogEntry = {
 /** Les Versions, avec la quantité possédée de chacune (0 si absente de la Collection). */
 export function withOwnedQuantities(
   entries: CatalogEntry[],
-  owned: Map<string, number>,
+  owned: Map<PrintingCode, number>,
 ): CatalogEntry[] {
   return entries.map((entry) => ({ ...entry, ownedQuantity: owned.get(entry.printingCode) ?? 0 }));
 }

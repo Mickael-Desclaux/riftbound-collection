@@ -15,6 +15,21 @@ export type CatalogSort =
 
 export const DEFAULT_CATALOG_SORT: CatalogSort = 'number';
 
+/** Les tris du Catalogue, dans l'ordre du menu. */
+export const CATALOG_SORTS: readonly CatalogSort[] = [
+  'number',
+  'name',
+  'priceAsc',
+  'priceDesc',
+  'change7dAsc',
+  'change7dDesc',
+  'change30dAsc',
+  'change30dDesc',
+];
+
+/** Les tris de la Collection : « Valeur » en tête, puis ceux du Catalogue. */
+export const COLLECTION_SORTS: readonly CatalogSort[] = ['valueDesc', ...CATALOG_SORTS];
+
 /** Comparaison par code (numéros, Codes de version), sans règles de langue. */
 function byText(a: string, b: string): number {
   if (a < b) return -1;

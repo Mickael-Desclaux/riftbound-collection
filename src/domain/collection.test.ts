@@ -1,17 +1,24 @@
 import { collectionEntries, toggleOwned } from './collection';
+import type { PrintingCode } from './printingCode';
 import { entry } from './testing/catalogEntries';
+
+const code = (value: string) => value as PrintingCode;
 
 describe('toggleOwned', () => {
   it('marque une Version non possédée ×1, sans rien à annuler', () => {
-    expect(toggleOwned(0)).toEqual({ quantity: 1, undoQuantity: null });
+    expect(toggleOwned(0, true)).toEqual({ quantity: 1, undoQuantity: null });
   });
 
   it('retire une Version possédée ×1, sans toast', () => {
-    expect(toggleOwned(1)).toEqual({ quantity: 0, undoQuantity: null });
+    expect(toggleOwned(1, true)).toEqual({ quantity: 0, undoQuantity: null });
   });
 
   it('remet à 0 une Version possédée ×n, en gardant n pour « Annuler »', () => {
-    expect(toggleOwned(3)).toEqual({ quantity: 0, undoQuantity: 3 });
+    expect(toggleOwned(3, true)).toEqual({ quantity: 0, undoQuantity: 3 });
+  });
+
+  it('propose toujours « Annuler » pour une Version inconnue : on ne pourrait plus la remettre', () => {
+    expect(toggleOwned(1, false)).toEqual({ quantity: 0, undoQuantity: 1 });
   });
 });
 
@@ -23,8 +30,8 @@ describe('collectionEntries', () => {
       entry('OGN-003', { ownedQuantity: 1 }),
     ];
     const owned = new Map([
-      ['OGN-001', 2],
-      ['OGN-003', 1],
+      [code('OGN-001'), 2],
+      [code('OGN-003'), 1],
     ]);
 
     const result = collectionEntries(entries, owned);
@@ -38,8 +45,8 @@ describe('collectionEntries', () => {
 
   it('ajoute les Versions inconnues : possédées mais absentes du Catalogue, sans prix', () => {
     const owned = new Map([
-      ['OGN-001', 1],
-      ['OPP-099-298', 4],
+      [code('OGN-001'), 1],
+      [code('OPP-099-298'), 4],
     ]);
 
     const unknown = collectionEntries([entry('OGN-001', { ownedQuantity: 1 })], owned).find(
@@ -50,7 +57,7 @@ describe('collectionEntries', () => {
       printingCode: 'OPP-099-298',
       name: 'OPP-099-298',
       expansionCode: 'OPP',
-      isPromo: false,
+      isPromo: true,
       ownedQuantity: 4,
       price: null,
       imageNormal: null,

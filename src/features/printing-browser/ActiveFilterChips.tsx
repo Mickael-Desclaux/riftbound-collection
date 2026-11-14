@@ -1,6 +1,11 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { activeFilters, removeActiveFilter, type CatalogFilters } from '@/domain/catalogFilters';
+import {
+  activeFilters,
+  removeActiveFilter,
+  type CatalogFilters,
+  type LockedCriterion,
+} from '@/domain/catalogFilters';
 import type { Currency } from '@/domain/price';
 import { controlStyles } from '@/ui/controls';
 import { colors } from '@/ui/theme';
@@ -12,6 +17,7 @@ type Props = {
   filters: CatalogFilters;
   options: Pick<FilterOptions, 'expansions' | 'promoExpansions'>;
   displayCurrency: Currency;
+  lockedCriteria: readonly LockedCriterion[];
   onChange: (filters: CatalogFilters) => void;
 };
 
@@ -20,9 +26,10 @@ export function ActiveFilterChips({
   filters,
   options,
   displayCurrency,
+  lockedCriteria,
   onChange,
 }: Readonly<Props>) {
-  const active = activeFilters(filters);
+  const active = activeFilters(filters, lockedCriteria);
   if (active.length === 0) return null;
   const expansions = [...options.expansions, ...options.promoExpansions];
   const expansionName = (code: string) => expansions.find((e) => e.code === code)?.name ?? code;

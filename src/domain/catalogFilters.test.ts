@@ -89,6 +89,26 @@ describe('filterCatalog', () => {
   });
 });
 
+describe('filterCatalog : Versions inconnues', () => {
+  const unknown = entry('OGN-999', { inCatalog: false, rarity: '', type: '', domains: [] });
+  const entries = [entry('OGN-001', { variant: 'normal' }), unknown];
+
+  it('les garde pour la recherche et l’Extension, qu’elles portent dans leur code', () => {
+    expect(codes(filterCatalog(entries, filters({ search: '999' })))).toEqual(['OGN-999']);
+    expect(codes(filterCatalog(entries, filters({ expansionCodes: ['OGN'] })))).toEqual([
+      'OGN-001',
+      'OGN-999',
+    ]);
+  });
+
+  it('les écarte dès qu’un critère de carte est choisi : on ne les connaît pas', () => {
+    expect(codes(filterCatalog(entries, filters({ variants: ['normal'] })))).toEqual(['OGN-001']);
+    expect(codes(filterCatalog(entries, filters({ priceRange: { min: null, max: 10 } })))).toEqual(
+      [],
+    );
+  });
+});
+
 describe('filterCatalog : fourchette de prix', () => {
   const entries = [
     entry('OGN-001', { price: 0.5 }),
@@ -166,5 +186,13 @@ describe('activeFilters', () => {
     const result = removeActiveFilter(withOpp, { criterion: 'promo', value: 'shown' });
 
     expect(result).toMatchObject({ showPromo: false, expansionCodes: ['OGN'] });
+  });
+
+  it('ignore les critères que l’onglet fixe lui-même', () => {
+    const current = filters({ showPromo: true, ownership: 'owned', rarities: ['epic'] });
+
+    expect(activeFilters(current, ['promo', 'ownership'])).toEqual([
+      { criterion: 'rarity', value: 'epic' },
+    ]);
   });
 });

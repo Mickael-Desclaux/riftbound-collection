@@ -90,6 +90,10 @@ _À éviter_ : données utilisateur (trop vague)
 Les cartes que l'utilisateur possède, chacune avec une quantité.
 _À éviter_ : inventaire, « cartes cochées »
 
+**Version inconnue** :
+Une Version de la Collection dont le Code de version n'est plus dans le Catalogue. Elle s'affiche en fin de liste dans un cadre gris, sans prix, et n'est jamais supprimée par l'app.
+_À éviter_ : version orpheline, carte supprimée
+
 **Liste de souhaits** :
 Les Versions que l'utilisateur veut acquérir et dont il surveille le prix depuis leur date d'ajout.
 _À éviter_ : wishlist, favoris
@@ -127,6 +131,7 @@ Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
 | Variation de prix       | `priceChange`                                                                       |
 | Devise d'affichage      | `DisplayCurrency`                                                                   |
 | Collection              | `Collection`                                                                        |
+| Version inconnue        | `inCatalog: false` sur une `CatalogEntry`                                           |
 | Valeur de la collection | `collectionValue`                                                                   |
 | Complétion              | `completion`                                                                        |
 | Alerte de prix          | `PriceAlert`                                                                        |

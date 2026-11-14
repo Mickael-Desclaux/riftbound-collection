@@ -13,10 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { PrintingVariant } from '@/domain/catalog';
 import {
-  DEFAULT_CATALOG_FILTERS,
   toggled,
   withPromoShown,
   type CatalogFilters,
+  type LockedCriterion,
   type Ownership,
 } from '@/domain/catalogFilters';
 import type { Currency } from '@/domain/price';
@@ -49,8 +49,10 @@ type Props = {
   resultCount: number;
   /** Devise de la fourchette de prix. */
   displayCurrency: Currency;
-  /** Critère « possédées / manquantes », masqué dans l'onglet Collection. */
-  showOwnership?: boolean;
+  /** Filtres rétablis par « Réinitialiser » (la recherche est gardée). */
+  defaultFilters: CatalogFilters;
+  /** Critères fixés par l'onglet, masqués ici. */
+  lockedCriteria: readonly LockedCriterion[];
   onChange: (filters: CatalogFilters) => void;
   onClose: () => void;
 };
@@ -71,7 +73,8 @@ export function FilterSheet({
   options,
   resultCount,
   displayCurrency,
-  showOwnership = true,
+  defaultFilters,
+  lockedCriteria,
   onChange,
   onClose,
 }: Readonly<Props>) {
@@ -92,15 +95,17 @@ export function FilterSheet({
               />
             ))}
           </Section>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Afficher les extensions promo</Text>
-            <Switch
-              accessibilityLabel="Afficher les extensions promo"
-              value={filters.showPromo}
-              onValueChange={(shown) => onChange(withPromoShown(filters, shown))}
-              trackColor={{ true: colors.accent, false: colors.line }}
-            />
-          </View>
+          {!lockedCriteria.includes('promo') && (
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>Afficher les extensions promo</Text>
+              <Switch
+                accessibilityLabel="Afficher les extensions promo"
+                value={filters.showPromo}
+                onValueChange={(shown) => onChange(withPromoShown(filters, shown))}
+                trackColor={{ true: colors.accent, false: colors.line }}
+              />
+            </View>
+          )}
           {filters.showPromo && (
             <View style={styles.chips}>
               {options.promoExpansions.map((e) => (
@@ -155,7 +160,7 @@ export function FilterSheet({
               />
             ))}
           </Section>
-          {showOwnership && (
+          {!lockedCriteria.includes('ownership') && (
             <Section title="Collection">
               {OWNERSHIP.map(({ value, label }) => (
                 <Chip
@@ -189,7 +194,7 @@ export function FilterSheet({
         <View style={styles.actions}>
           <Button
             label="Réinitialiser"
-            onPress={() => onChange({ ...DEFAULT_CATALOG_FILTERS, search: filters.search })}
+            onPress={() => onChange({ ...defaultFilters, search: filters.search })}
           />
           <Button
             label={`Voir ${formatPrintingCount(resultCount)}`}

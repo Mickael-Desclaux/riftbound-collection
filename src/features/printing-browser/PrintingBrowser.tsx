@@ -15,17 +15,17 @@ import {
   filterCatalog,
   toggled,
   type CatalogFilters,
+  type LockedCriterion,
 } from '@/domain/catalogFilters';
 import { sortCatalog, type CatalogSort } from '@/domain/catalogSort';
 import { pageCount, pageOf } from '@/domain/pagination';
 import { Chip, controlStyles } from '@/ui/controls';
 import { formatPrintingCount } from '@/ui/format';
-import { gridImageUri } from '@/ui/printing-grid/gridPrinting';
+import { gridImageUri, type GridPrinting } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
 import { printingHref, type PrintingTab } from '@/ui/printingHref';
 import { useSync } from '@/ui/SyncContext';
 import { colors } from '@/ui/theme';
-import { useToggleOwned } from '@/features/collection/useToggleOwned';
 
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';
@@ -42,6 +42,8 @@ const SORT_LABELS: Record<CatalogSort, string> = {
   valueDesc: 'Valeur',
 };
 
+const NO_LOCKED_CRITERIA: readonly LockedCriterion[] = [];
+
 type Props = {
   /** L'onglet, dont la pile ouvre la fiche. */
   tab: PrintingTab;
@@ -50,8 +52,15 @@ type Props = {
   /** Les tris proposés, dans l'ordre du menu. */
   sorts: readonly CatalogSort[];
   defaultSort: CatalogSort;
-  /** Le critère « possédées / manquantes » n'a pas de sens dans la Collection. */
-  showOwnershipFilter?: boolean;
+  /** Filtres à l'ouverture de l'onglet, et après « Effacer les filtres ». */
+  defaultFilters?: CatalogFilters;
+  /**
+   * Critères que l'onglet fixe par `defaultFilters` : la Collection montre
+   * toujours ses promos, et « possédées / manquantes » n'y a pas de sens.
+   */
+  lockedCriteria?: readonly LockedCriterion[];
+  /** ✓ d'une case : bascule possédée / non possédée. */
+  onToggleOwned: (printing: GridPrinting) => void;
   /** Affiché à la place de la grille quand l'onglet n'a aucune Version. */
   emptyState?: ReactElement;
 };
@@ -67,11 +76,13 @@ export function PrintingBrowser({
   entries,
   sorts,
   defaultSort,
-  showOwnershipFilter = true,
+  defaultFilters = DEFAULT_CATALOG_FILTERS,
+  lockedCriteria = NO_LOCKED_CRITERIA,
+  onToggleOwned,
   emptyState,
 }: Readonly<Props>) {
   const db = useDatabase();
-  const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_CATALOG_FILTERS);
+  const [filters, setFilters] = useState<CatalogFilters>(defaultFilters);
   const [sort, setSort] = useState<CatalogSort>(defaultSort);
   const [page, setPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -83,14 +94,13 @@ export function PrintingBrowser({
     void refresh().finally(() => setRefreshing(false));
   };
 
-  const toggleOwned = useToggleOwned();
   const [displayCurrency] = useSetting('displayCurrency');
   // Une fourchette de prix est exprimée dans la Devise d'affichage : elle n'a
   // plus de sens dans une autre devise, on la retire.
   const [rangeCurrency, setRangeCurrency] = useState(displayCurrency);
   if (rangeCurrency !== displayCurrency) {
     setRangeCurrency(displayCurrency);
-    setFilters((current) => ({ ...current, priceRange: DEFAULT_CATALOG_FILTERS.priceRange }));
+    setFilters((current) => ({ ...current, priceRange: defaultFilters.priceRange }));
   }
   const options = useReactiveQuery(
     (): FilterOptions => {
@@ -137,7 +147,7 @@ export function PrintingBrowser({
     setSort(next);
     setPage(1);
   };
-  const activeCount = activeFilters(filters).length;
+  const activeCount = activeFilters(filters, lockedCriteria).length;
 
   if (entries.length === 0 && emptyState) {
     return (
@@ -155,9 +165,9 @@ export function PrintingBrowser({
         page={currentPage}
         pageCount={pages}
         onPageChange={setPage}
-        onClearFilters={() => changeFilters(DEFAULT_CATALOG_FILTERS)}
+        onClearFilters={() => changeFilters(defaultFilters)}
         onOpenPrinting={(code) => router.push(printingHref(tab, code))}
-        onToggleOwned={toggleOwned}
+        onToggleOwned={onToggleOwned}
         onRefresh={onRefresh}
         refreshing={refreshing}
         header={
@@ -206,6 +216,7 @@ export function PrintingBrowser({
               filters={filters}
               options={options}
               displayCurrency={displayCurrency}
+              lockedCriteria={lockedCriteria}
               onChange={changeFilters}
             />
           </View>
@@ -217,7 +228,8 @@ export function PrintingBrowser({
         options={options}
         resultCount={results.length}
         displayCurrency={displayCurrency}
-        showOwnership={showOwnershipFilter}
+        defaultFilters={defaultFilters}
+        lockedCriteria={lockedCriteria}
         onChange={changeFilters}
         onClose={() => setSheetOpen(false)}
       />

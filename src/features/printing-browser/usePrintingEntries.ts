@@ -15,6 +15,7 @@ import {
   type ReferenceMetricValuesByDay,
 } from '@/domain/catalogEntry';
 import { addDays, toIsoDate } from '@/domain/dates';
+import type { PrintingCode } from '@/domain/printingCode';
 import { useClock } from '@/ui/ClockContext';
 
 /**
@@ -22,7 +23,10 @@ import { useClock } from '@/ui/ClockContext';
  * de prix, relues quand la base change. `owned` contient aussi les Versions
  * inconnues (possédées mais absentes du Catalogue).
  */
-export function usePrintingEntries(): { entries: CatalogEntry[]; owned: Map<string, number> } {
+export function usePrintingEntries(): {
+  entries: CatalogEntry[];
+  owned: Map<PrintingCode, number>;
+} {
   const db = useDatabase();
   const catalog = useReactiveQuery(() => readCatalogEntries(db), [db], CATALOG_ENTRY_TABLES);
   const owned = useReactiveQuery(() => readOwnedQuantities(db), [db], COLLECTION_TABLES);

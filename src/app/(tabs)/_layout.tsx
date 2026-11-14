@@ -7,6 +7,9 @@ import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
 import { colors } from '@/ui/theme';
 import { ToastProvider } from '@/ui/Toast';
 
+/** Hauteur de la barre d'onglets (hors zone sûre), que le toast laisse libre. */
+const TAB_BAR_HEIGHT = 56;
+
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 type TabIconProps = { color: ColorValue; size: number };
@@ -23,7 +26,7 @@ function tabIcon(name: IconName) {
 export default function TabsLayout() {
   return (
     <StalePricesFrame>
-      <ToastProvider>
+      <ToastProvider bottomOffset={TAB_BAR_HEIGHT}>
         <Tabs
           screenOptions={{
             headerShown: false,

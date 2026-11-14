@@ -10,7 +10,7 @@ import { collectionEntry } from './schema';
 export const COLLECTION_TABLES = ['collection_entry'];
 
 /** Quantités de la Collection, par Code de version. */
-export function readOwnedQuantities(db: AppDatabase): Map<string, number> {
+export function readOwnedQuantities(db: AppDatabase): Map<PrintingCode, number> {
   const rows = db.select().from(collectionEntry).all();
   return new Map(rows.map((row) => [row.printingCode, row.quantity]));
 }
