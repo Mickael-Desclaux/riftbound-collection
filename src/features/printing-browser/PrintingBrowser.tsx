@@ -63,6 +63,13 @@ type Props = {
   onToggleOwned: (printing: GridPrinting) => void;
   /** Affiché à la place de la grille quand l'onglet n'a aucune Version. */
   emptyState?: ReactElement;
+  /** Affiché en haut de l'en-tête, au-dessus de la recherche. */
+  banner?: ReactElement;
+  /**
+   * Filtres demandés de l'extérieur (un lien vers l'onglet). Chaque nouvel
+   * objet remplace les filtres en cours, une seule fois.
+   */
+  filtersRequest?: CatalogFilters | null;
 };
 
 /**
@@ -80,12 +87,20 @@ export function PrintingBrowser({
   lockedCriteria = NO_LOCKED_CRITERIA,
   onToggleOwned,
   emptyState,
+  banner,
+  filtersRequest = null,
 }: Readonly<Props>) {
   const db = useDatabase();
   const [filters, setFilters] = useState<CatalogFilters>(defaultFilters);
   const [sort, setSort] = useState<CatalogSort>(defaultSort);
   const [page, setPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [appliedRequest, setAppliedRequest] = useState<CatalogFilters | null>(null);
+  if (filtersRequest && filtersRequest !== appliedRequest) {
+    setAppliedRequest(filtersRequest);
+    setFilters(filtersRequest);
+    setPage(1);
+  }
   const { refresh } = useSync();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -172,6 +187,7 @@ export function PrintingBrowser({
         refreshing={refreshing}
         header={
           <View style={styles.header}>
+            {banner}
             <TextInput
               value={filters.search}
               onChangeText={(search) => changeFilters({ ...filters, search })}

@@ -1,4 +1,6 @@
 /** Formatage des nombres, des montants et libellés partagés par les écrans. */
+import type { CollectionValue } from '@/domain/collectionValue';
+import { completionPercent, type ExpansionCompletion } from '@/domain/completion';
 import type { IsoDate, IsoDateTime } from '@/domain/dates';
 import type { Currency } from '@/domain/price';
 
@@ -7,6 +9,16 @@ const formatInteger = new Intl.NumberFormat('fr-FR').format;
 /** « 1 version », « 1 725 versions ». */
 export function formatPrintingCount(count: number): string {
   return `${formatInteger(count)} ${count > 1 ? 'versions' : 'version'}`;
+}
+
+/** « 12 versions · 30 cartes · 2 sans prix » : l'en-tête de la Valeur de la collection. */
+export function formatCollectionCounts({
+  printingCount,
+  cardCount,
+  unpricedCount,
+}: Omit<CollectionValue, 'value'>): string {
+  const cards = `${formatInteger(cardCount)} ${cardCount > 1 ? 'cartes' : 'carte'}`;
+  return `${formatPrintingCount(printingCount)} · ${cards} · ${formatInteger(unpricedCount)} sans prix`;
 }
 
 /** Espace insécable : le montant et sa devise ne se séparent jamais. */
@@ -83,4 +95,10 @@ const formatDayMonth = new Intl.DateTimeFormat('fr-FR', {
 /** Une date du calendrier en abrégé : « 1 oct. ». */
 export function formatShortIsoDate(date: IsoDate): string {
   return formatDayMonth(new Date(`${date}T00:00:00Z`));
+}
+
+/** La Complétion d'une Extension : « 54 / 352 · 15 % ». */
+export function formatCompletion(completion: ExpansionCompletion): string {
+  const { owned, total } = completion;
+  return `${formatInteger(owned)} / ${formatInteger(total)} · ${completionPercent(completion)}${NBSP}%`;
 }

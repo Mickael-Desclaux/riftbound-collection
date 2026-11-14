@@ -13,27 +13,14 @@ import {
   periodRange,
 } from '@/domain/priceHistory';
 import type { PriceRecord } from '@/domain/priceRecords';
-import {
-  CHART_PRESET_PERIODS,
-  type ChartPeriod,
-  type ChartPresetPeriod,
-  type CustomChartPeriod,
-} from '@/domain/settings';
+import { CHART_PRESET_PERIODS, type ChartPeriod, type CustomChartPeriod } from '@/domain/settings';
 import { Chip } from '@/ui/controls';
 import { formatIsoDate, formatPercentChange, formatShortIsoDate } from '@/ui/format';
-import { FINISH_LABELS, PRICE_SOURCE_LABELS } from '@/ui/labels';
+import { CHART_PERIOD_LABELS, FINISH_LABELS, PRICE_SOURCE_LABELS } from '@/ui/labels';
 import { PriceLineChart } from '@/ui/PriceLineChart';
 import { colors } from '@/ui/theme';
 
 type History = Pick<PriceRecord, 'recordedAt' | 'value'>[];
-
-const PERIOD_LABELS: Record<ChartPresetPeriod, string> = {
-  '7d': '7 j',
-  '30d': '30 j',
-  '90d': '90 j',
-  '1y': '1 an',
-  all: 'Tout',
-};
 
 export type PriceHistorySectionProps = {
   /** La case de prix affichée : son historique, dans la devise d'origine. */
@@ -103,7 +90,7 @@ export function PriceHistorySection({
         {CHART_PRESET_PERIODS.map((preset) => (
           <Chip
             key={preset}
-            label={PERIOD_LABELS[preset]}
+            label={CHART_PERIOD_LABELS[preset]}
             selected={period === preset}
             onPress={() => onPeriodChange(preset)}
           />
