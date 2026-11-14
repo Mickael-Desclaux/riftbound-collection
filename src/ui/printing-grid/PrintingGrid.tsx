@@ -54,7 +54,7 @@ export function PrintingGrid({
   onRefresh,
   refreshing = false,
 }: Readonly<PrintingGridProps>) {
-  const list = useRef<FlatList<GridPrinting>>(null);
+  const list = useRef<FlatList<GridPrinting | typeof FILLER>>(null);
 
   useEffect(() => {
     list.current?.scrollToOffset({ offset: 0, animated: false });
@@ -66,7 +66,7 @@ export function PrintingGrid({
       <FlatList
         ref={list}
         testID="printing-grid"
-        data={items}
+        data={withFiller(items)}
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -77,20 +77,24 @@ export function PrintingGrid({
             />
           ) : undefined
         }
-        keyExtractor={(item) => item.printingCode}
+        keyExtractor={(item) => (item === FILLER ? 'filler' : item.printingCode)}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.content}
-        renderItem={({ item }) => (
-          <PrintingTile
-            printing={item}
-            displayCurrency={displayCurrency}
-            onPress={() => onOpenPrinting(item.printingCode)}
-            onToggleOwned={() => onToggleOwned(item)}
-            onToggleWishlisted={() => onToggleWishlisted(item)}
-            showWishlistChange={showWishlistChange}
-          />
-        )}
+        renderItem={({ item }) =>
+          item === FILLER ? (
+            <View testID="printing-grid-filler" style={styles.filler} />
+          ) : (
+            <PrintingTile
+              printing={item}
+              displayCurrency={displayCurrency}
+              onPress={() => onOpenPrinting(item.printingCode)}
+              onToggleOwned={() => onToggleOwned(item)}
+              onToggleWishlisted={() => onToggleWishlisted(item)}
+              showWishlistChange={showWishlistChange}
+            />
+          )
+        }
         ListEmptyComponent={<EmptyResult onClearFilters={onClearFilters} />}
         ListFooterComponent={
           <Pagination page={page} pageCount={pageCount} onPageChange={onPageChange} />
@@ -98,6 +102,17 @@ export function PrintingGrid({
       />
     </View>
   );
+}
+
+/** Case vide qui complète la dernière rangée. */
+const FILLER = Symbol('filler');
+
+/**
+ * Les cases, complétées d'une case vide si leur nombre est impair : sans elle,
+ * la dernière case prendrait toute la largeur de sa rangée.
+ */
+function withFiller(items: GridPrinting[]): (GridPrinting | typeof FILLER)[] {
+  return items.length % 2 === 1 ? [...items, FILLER] : items;
 }
 
 function EmptyResult({ onClearFilters }: { onClearFilters: () => void }) {
@@ -113,6 +128,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 12, gap: 12 },
   row: { gap: 12 },
+  /** Même place qu'une case (`flex: 1`, comme `PrintingTile`). */
+  filler: { flex: 1 },
   empty: { alignItems: 'center', gap: 12, paddingVertical: 48 },
   emptyText: { color: colors.muted, fontSize: 15 },
 });

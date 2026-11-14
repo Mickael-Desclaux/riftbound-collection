@@ -116,6 +116,14 @@ describe('PrintingGrid', () => {
     expect(screen.getByText('−12,5 % depuis l’ajout')).toBeTruthy();
   });
 
+  it('complète une rangée incomplète d’une case vide, pour que toutes les cases aient la même taille', async () => {
+    await setup({ items: [jinx] });
+    expect(screen.getByTestId('printing-grid-filler')).toBeTruthy();
+
+    await setup({ items: [jinx, ahri] });
+    expect(screen.queryByTestId('printing-grid-filler')).toBeNull();
+  });
+
   it('change de page depuis la pagination numérotée', async () => {
     const { onPageChange } = await setup({ page: 2, pageCount: 3 });
 
