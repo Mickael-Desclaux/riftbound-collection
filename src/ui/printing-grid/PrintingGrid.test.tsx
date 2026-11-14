@@ -10,6 +10,8 @@ const jinx: GridPrinting = {
   imageSmall: 'https://images.rifthunt.com/cards/small/ogn-030a.webp',
   imageNormal: null,
   price: 12.4,
+  ownedQuantity: 3,
+  inCatalog: true,
 };
 const ahri: GridPrinting = {
   printingCode: 'OGN-303s' as PrintingCode,
@@ -17,12 +19,15 @@ const ahri: GridPrinting = {
   imageSmall: 'https://images.rifthunt.com/cards/small/ogn-303s.webp',
   imageNormal: null,
   price: null,
+  ownedQuantity: 0,
+  inCatalog: true,
 };
 
 async function setup(props: Partial<PrintingGridProps> = {}) {
   const onPageChange = jest.fn();
   const onClearFilters = jest.fn();
   const onOpenPrinting = jest.fn();
+  const onToggleOwned = jest.fn();
   await render(
     <PrintingGrid
       items={[jinx, ahri]}
@@ -32,10 +37,11 @@ async function setup(props: Partial<PrintingGridProps> = {}) {
       onClearFilters={onClearFilters}
       displayCurrency="CAD"
       onOpenPrinting={onOpenPrinting}
+      onToggleOwned={onToggleOwned}
       {...props}
     />,
   );
-  return { onPageChange, onClearFilters, onOpenPrinting };
+  return { onPageChange, onClearFilters, onOpenPrinting, onToggleOwned };
 }
 
 describe('PrintingGrid', () => {
@@ -59,6 +65,27 @@ describe('PrintingGrid', () => {
     await fireEvent.press(screen.getByRole('button', { name: /^Jinx, Demolitionist, OGN-030a/ }));
 
     expect(onOpenPrinting).toHaveBeenCalledWith('OGN-030a');
+  });
+
+  it('affiche « ×n » sur les Versions possédées', async () => {
+    await setup();
+
+    expect(screen.getByText('×3')).toBeTruthy();
+    expect(screen.getByRole('checkbox', { name: 'Possédée : Jinx, Demolitionist' })).toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: 'Possédée : Ahri, Nine-Tailed Fox' }),
+    ).not.toBeChecked();
+  });
+
+  it('bascule la possession avec ✓, sans ouvrir la fiche', async () => {
+    const { onToggleOwned, onOpenPrinting } = await setup();
+
+    await fireEvent.press(
+      screen.getByRole('checkbox', { name: 'Possédée : Ahri, Nine-Tailed Fox' }),
+    );
+
+    expect(onToggleOwned).toHaveBeenCalledWith(ahri);
+    expect(onOpenPrinting).not.toHaveBeenCalled();
   });
 
   it('change de page depuis la pagination numérotée', async () => {

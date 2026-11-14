@@ -1,5 +1,5 @@
 import catalog from './__fixtures__/rifthunt-printings.json';
-import { printingCodeOf } from './printingCode';
+import { expansionCodeOf, printingCodeOf, type PrintingCode } from './printingCode';
 
 const realPrintings = catalog.printings.map((row) => ({
   row,
@@ -18,6 +18,13 @@ function groupBy<T>(items: T[], keyOf: (item: T) => string): Map<string, T[]> {
   }
   return groups;
 }
+
+describe('expansionCodeOf', () => {
+  it('donne le code d’Extension, premier segment du Code de version', () => {
+    expect(expansionCodeOf('OGN-030a' as PrintingCode)).toBe('OGN');
+    expect(expansionCodeOf('OPP-017-024-metal' as PrintingCode)).toBe('OPP');
+  });
+});
 
 describe('printingCodeOf', () => {
   it("assemble le code d'Extension et le numéro de la Version", () => {

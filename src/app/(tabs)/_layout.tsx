@@ -5,6 +5,10 @@ import type { ColorValue } from 'react-native';
 
 import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
 import { colors } from '@/ui/theme';
+import { ToastProvider } from '@/ui/Toast';
+
+/** Hauteur de la barre d'onglets (hors zone sûre), que le toast laisse libre. */
+const TAB_BAR_HEIGHT = 56;
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -22,31 +26,33 @@ function tabIcon(name: IconName) {
 export default function TabsLayout() {
   return (
     <StalePricesFrame>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colors.accent,
-          tabBarInactiveTintColor: colors.muted,
-          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
-        }}
-      >
-        <Tabs.Screen
-          name="catalog"
-          options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
-        />
-        <Tabs.Screen
-          name="collection"
-          options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
-        />
-        <Tabs.Screen
-          name="wishlist"
-          options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
-        />
-        <Tabs.Screen
-          name="settings"
-          options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
-        />
-      </Tabs>
+      <ToastProvider bottomOffset={TAB_BAR_HEIGHT}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: colors.accent,
+            tabBarInactiveTintColor: colors.muted,
+            tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
+          }}
+        >
+          <Tabs.Screen
+            name="catalog"
+            options={{ title: 'Catalogue', tabBarIcon: tabIcon('albums') }}
+          />
+          <Tabs.Screen
+            name="collection"
+            options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
+          />
+          <Tabs.Screen
+            name="wishlist"
+            options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{ title: 'Réglages', tabBarIcon: tabIcon('settings') }}
+          />
+        </Tabs>
+      </ToastProvider>
     </StalePricesFrame>
   );
 }

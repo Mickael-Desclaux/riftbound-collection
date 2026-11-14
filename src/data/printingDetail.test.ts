@@ -5,9 +5,9 @@ import {
   readPrintingDetail,
   readPrintingState,
   setInBinderSelection,
-  setOwnedQuantity,
   setWishlisted,
 } from './printingDetail';
+import { setOwnedQuantity } from './collection';
 import { savePrices } from './prices';
 import { catalogOf, expansionOf, printingOf } from './testing/catalogFactory';
 import { createTestDatabase } from './testing/createTestDatabase';

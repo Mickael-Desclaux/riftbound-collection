@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '@/domain/catalogFilters';
+import {
+  DEFAULT_CATALOG_FILTERS,
+  type CatalogFilters,
+  type LockedCriterion,
+} from '@/domain/catalogFilters';
 
 import { ActiveFilterChips } from './ActiveFilterChips';
 import { FilterSheet, type FilterOptions } from './FilterSheet';
@@ -16,7 +20,10 @@ const options: FilterOptions = {
   domains: ['fury', 'mind'],
 };
 
-async function setup(filters: Partial<CatalogFilters> = {}) {
+async function setup(
+  filters: Partial<CatalogFilters> = {},
+  locked: { defaultFilters?: CatalogFilters; lockedCriteria?: LockedCriterion[] } = {},
+) {
   const onChange = jest.fn();
   const onClose = jest.fn();
   await render(
@@ -26,6 +33,8 @@ async function setup(filters: Partial<CatalogFilters> = {}) {
       options={options}
       resultCount={12}
       displayCurrency="CAD"
+      defaultFilters={locked.defaultFilters ?? DEFAULT_CATALOG_FILTERS}
+      lockedCriteria={locked.lockedCriteria ?? []}
       onChange={onChange}
       onClose={onClose}
     />,
@@ -68,6 +77,19 @@ describe('FilterSheet', () => {
     expect(onChange).toHaveBeenCalledWith({ ...DEFAULT_CATALOG_FILTERS, search: 'jinx' });
   });
 
+  it('masque les critères fixés par l’onglet, et les garde en réinitialisant', async () => {
+    const collection = { ...DEFAULT_CATALOG_FILTERS, showPromo: true };
+    const { onChange } = await setup(
+      { showPromo: true, rarities: ['epic'] },
+      { defaultFilters: collection, lockedCriteria: ['promo', 'ownership'] },
+    );
+
+    expect(screen.queryByLabelText('Afficher les extensions promo')).toBeNull();
+    expect(screen.queryByText('Manquantes')).toBeNull();
+    await fireEvent.press(screen.getByText('Réinitialiser'));
+    expect(onChange).toHaveBeenCalledWith(collection);
+  });
+
   it('range les raretés dans l’ordre du jeu, les inconnues à la fin', async () => {
     const onChange = jest.fn();
     await render(
@@ -80,6 +102,8 @@ describe('FilterSheet', () => {
         }}
         resultCount={1}
         displayCurrency="CAD"
+        defaultFilters={DEFAULT_CATALOG_FILTERS}
+        lockedCriteria={[]}
         onChange={onChange}
         onClose={jest.fn()}
       />,
@@ -140,6 +164,7 @@ describe('ActiveFilterChips', () => {
         filters={filters}
         options={options}
         displayCurrency="CAD"
+        lockedCriteria={[]}
         onChange={onChange}
       />,
     );
@@ -157,6 +182,7 @@ describe('ActiveFilterChips', () => {
         filters={filters}
         options={options}
         displayCurrency="CAD"
+        lockedCriteria={[]}
         onChange={jest.fn()}
       />,
     );

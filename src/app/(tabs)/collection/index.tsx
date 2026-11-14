@@ -1,10 +1,3 @@
-import { PlaceholderScreen } from '@/ui/PlaceholderScreen';
+import { CollectionScreen } from '@/features/collection/CollectionScreen';
 
-export default function CollectionScreen() {
-  return (
-    <PlaceholderScreen
-      title="Collection"
-      description="Les cartes que tu possèdes et leur valeur."
-    />
-  );
-}
+export default CollectionScreen;

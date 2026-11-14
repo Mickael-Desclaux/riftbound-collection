@@ -76,7 +76,19 @@ function matchesOwnership(entry: CatalogEntry, ownership: Ownership): boolean {
   return true;
 }
 
+/** Un critère qui porte sur la carte elle-même : une Version inconnue n'y répond jamais. */
+function hasCardCriterion(filters: CatalogFilters): boolean {
+  return (
+    filters.rarities.length > 0 ||
+    filters.variants.length > 0 ||
+    filters.types.length > 0 ||
+    filters.domains.length > 0 ||
+    hasPriceRange(filters.priceRange)
+  );
+}
+
 function matches(entry: CatalogEntry, filters: CatalogFilters, search: string): boolean {
+  if (!entry.inCatalog && hasCardCriterion(filters)) return false;
   return (
     (search === '' ||
       normalized(entry.name).includes(search) ||
@@ -98,6 +110,9 @@ export function filterCatalog(entries: CatalogEntry[], filters: CatalogFilters):
   return entries.filter((entry) => matches(entry, filters, search));
 }
 
+/** Un critère que l'onglet fixe lui-même : ni réglable, ni affiché comme filtre actif. */
+export type LockedCriterion = 'ownership' | 'promo';
+
 /** Un filtre actif, affiché comme une puce retirable sous l'en-tête. */
 export type ActiveFilter =
   | { criterion: 'expansion' | 'rarity' | 'type' | 'domain'; value: string }
@@ -106,9 +121,15 @@ export type ActiveFilter =
   | { criterion: 'ownership'; value: Exclude<Ownership, 'all'> }
   | { criterion: 'price'; value: PriceRange };
 
-/** Les filtres actifs, critère par critère (la recherche a son propre champ). */
-export function activeFilters(filters: CatalogFilters): ActiveFilter[] {
-  return [
+/**
+ * Les filtres actifs, critère par critère (la recherche a son propre champ),
+ * hors critères fixés par l'onglet (`locked`).
+ */
+export function activeFilters(
+  filters: CatalogFilters,
+  locked: readonly LockedCriterion[] = [],
+): ActiveFilter[] {
+  const all: ActiveFilter[] = [
     ...filters.expansionCodes.map((value) => ({ criterion: 'expansion' as const, value })),
     ...(filters.showPromo ? [{ criterion: 'promo' as const, value: 'shown' as const }] : []),
     ...filters.rarities.map((value) => ({ criterion: 'rarity' as const, value })),
@@ -122,6 +143,7 @@ export function activeFilters(filters: CatalogFilters): ActiveFilter[] {
       ? [{ criterion: 'price' as const, value: filters.priceRange }]
       : []),
   ];
+  return all.filter((filter) => !(locked as readonly string[]).includes(filter.criterion));
 }
 
 const without = <T>(values: T[], value: T) => values.filter((v) => v !== value);

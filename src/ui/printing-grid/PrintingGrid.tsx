@@ -22,6 +22,8 @@ export type PrintingGridProps = {
   onClearFilters: () => void;
   /** Toucher une case ouvre la fiche de sa Version. */
   onOpenPrinting: (printingCode: PrintingCode) => void;
+  /** ✓ d'une case : bascule possédée / non possédée. */
+  onToggleOwned: (printing: GridPrinting) => void;
   /** Affiché au-dessus de la grille (recherche, puces, compteur…). */
   header?: ReactElement;
   /** Tirer-pour-rafraîchir : force la mise à jour des données (spec § 5). */
@@ -41,6 +43,7 @@ export function PrintingGrid({
   onPageChange,
   onClearFilters,
   onOpenPrinting,
+  onToggleOwned,
   header,
   onRefresh,
   refreshing = false,
@@ -77,6 +80,7 @@ export function PrintingGrid({
             printing={item}
             displayCurrency={displayCurrency}
             onPress={() => onOpenPrinting(item.printingCode)}
+            onToggleOwned={() => onToggleOwned(item)}
           />
         )}
         ListEmptyComponent={<EmptyResult onClearFilters={onClearFilters} />}

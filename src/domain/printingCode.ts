@@ -56,6 +56,11 @@ function waveOf({ riftboundId, expansionCode }: PrintingCodeInput): string | und
   return match[3];
 }
 
+/** Le code d'Extension d'une Version : premier segment de son Code de version (`OGN`). */
+export function expansionCodeOf(printingCode: PrintingCode): string {
+  return printingCode.split('-', 1)[0] ?? '';
+}
+
 export function printingCodeOf(printing: PrintingCodeInput): PrintingCode {
   const expansion = printing.expansionCode.toUpperCase();
   const parts = [expansion, printing.collectorNumber];

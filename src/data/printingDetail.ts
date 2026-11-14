@@ -153,25 +153,6 @@ export function readPrintingState(db: AppDatabase, printingCode: PrintingCode): 
   };
 }
 
-/** Règle la quantité dans la Collection ; à 0, la Version en est retirée. */
-export function setOwnedQuantity(
-  db: AppDatabase,
-  printingCode: PrintingCode,
-  quantity: number,
-): void {
-  if (!Number.isInteger(quantity) || quantity < 0) {
-    throw new Error(`Quantité refusée pour ${printingCode} : ${quantity}`);
-  }
-  if (quantity === 0) {
-    db.delete(collectionEntry).where(eq(collectionEntry.printingCode, printingCode)).run();
-    return;
-  }
-  db.insert(collectionEntry)
-    .values({ printingCode, quantity })
-    .onConflictDoUpdate({ target: collectionEntry.printingCode, set: { quantity } })
-    .run();
-}
-
 /**
  * Ajoute la Version à la Liste de souhaits à la date `addedAt`, ou l'en retire
  * (`null`). Déjà en souhait, elle garde sa date d'ajout d'origine.

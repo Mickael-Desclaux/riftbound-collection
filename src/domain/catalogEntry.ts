@@ -20,6 +20,8 @@ export type CatalogEntry = {
   variant: PrintingVariant;
   type: string;
   domains: string[];
+  /** Faux pour une Version inconnue : possédée, mais absente du Catalogue. */
+  inCatalog: boolean;
   /** Quantité dans la Collection (0 si non possédée). */
   ownedQuantity: number;
   /** Finitions dans lesquelles la Version existe. */
@@ -36,7 +38,7 @@ export type CatalogEntry = {
 /** Les Versions, avec la quantité possédée de chacune (0 si absente de la Collection). */
 export function withOwnedQuantities(
   entries: CatalogEntry[],
-  owned: Map<string, number>,
+  owned: Map<PrintingCode, number>,
 ): CatalogEntry[] {
   return entries.map((entry) => ({ ...entry, ownedQuantity: owned.get(entry.printingCode) ?? 0 }));
 }

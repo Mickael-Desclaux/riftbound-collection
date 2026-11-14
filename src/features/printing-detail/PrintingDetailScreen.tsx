@@ -2,6 +2,7 @@ import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { setOwnedQuantity } from '@/data/collection';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { readExchangeRates } from '@/data/exchangeRates';
 import { readPrintingHistory } from '@/data/prices';
@@ -11,7 +12,6 @@ import {
   readPrintingDetail,
   readPrintingState,
   setInBinderSelection,
-  setOwnedQuantity,
   setWishlisted,
 } from '@/data/printingDetail';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
