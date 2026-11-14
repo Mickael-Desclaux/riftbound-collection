@@ -14,8 +14,12 @@ import { collectionEntry } from './schema';
 import { memorySafetyBackups } from './testing/memorySafetyBackups';
 import { setWishlisted } from './wishlist';
 
+/** Entrée dans la Collection, pour les tests. */
+const ENTERED = new Date('2026-11-01T10:00:00.000Z');
+
 const JINX = 'OGN-030a' as PrintingCode;
 const now = () => new Date('2026-11-14T10:00:00.000Z');
+const NOW_ISO = now().toISOString();
 
 /** Les migrations de l'app, suivies d'une nouvelle migration `sql`. */
 function withNewMigration(sql: string): Migrations {
@@ -41,7 +45,7 @@ function emptyDatabase(): AppDatabase {
 async function installedDatabase(): Promise<AppDatabase> {
   const db = emptyDatabase();
   await migrateSafely(db, migrations, { safetyBackups: memorySafetyBackups().store, now });
-  setOwnedQuantity(db, JINX, 3);
+  setOwnedQuantity(db, JINX, 3, ENTERED);
   return db;
 }
 
@@ -75,8 +79,49 @@ describe('migrateSafely', () => {
       now,
     });
 
-    const result = readBackup(files.get('migration') ?? '');
-    expect(result.ok && result.backup.collection).toEqual([{ printingCode: JINX, quantity: 3 }]);
+    const result = readBackup(files.get('migration') ?? '', NOW_ISO);
+    expect(result.ok && result.backup.collection).toEqual([
+      expect.objectContaining({ printingCode: JINX, quantity: 3, addedAt: ENTERED.toISOString() }),
+    ]);
+  });
+
+  it('migration 0004 : les Versions déjà possédées entrent dans la Collection le jour de la migration', async () => {
+    const db = emptyDatabase();
+    const before0004 = {
+      journal: { entries: migrations.journal.entries.filter(({ idx }) => idx < 4) },
+      migrations: migrations.migrations,
+    };
+    await migrateSafely(db, before0004, { safetyBackups: memorySafetyBackups().store, now });
+    db.run(sql.raw("INSERT INTO `collection_entry` VALUES ('OGN-030a', 3);"));
+    const { store, files } = memorySafetyBackups();
+
+    await migrateSafely(db, migrations, { safetyBackups: store, now });
+
+    // La Sauvegarde de sécurité, lue sur l'ancien schéma, reste une Sauvegarde valide.
+    const result = readBackup(files.get('migration') ?? '', NOW_ISO);
+    expect(result.ok && result.backup.collection).toEqual([
+      expect.objectContaining({ printingCode: JINX, quantity: 3, addedAt: now().toISOString() }),
+    ]);
+    expect(db.select().from(collectionEntry).all()).toEqual([
+      {
+        printingCode: JINX,
+        quantity: 3,
+        addedAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+        lastAlertPrice: null,
+        lastAlertSource: null,
+        lastAlertAt: null,
+      },
+    ]);
+    expect(() =>
+      db
+        .insert(collectionEntry)
+        .values({
+          printingCode: 'OGN-031' as PrintingCode,
+          quantity: 0,
+          addedAt: now().toISOString(),
+        })
+        .run(),
+    ).toThrow(/CHECK constraint failed/);
   });
 
   it('lit la Sauvegarde de sécurité sur l’ancien schéma, sans les colonnes que la migration ajoute', async () => {
@@ -93,7 +138,7 @@ describe('migrateSafely', () => {
       { safetyBackups: store, now },
     );
 
-    const result = readBackup(files.get('migration') ?? '');
+    const result = readBackup(files.get('migration') ?? '', NOW_ISO);
     expect(result.ok && result.backup.wishlist).toEqual([
       expect.objectContaining({ printingCode: JINX, lastAlertAt: null }),
     ]);

@@ -29,6 +29,17 @@ import type { PrintingCode } from '../domain/printingCode';
 /** Le Code de version porte le même nom de colonne dans toutes les tables. */
 const printingCodeColumn = () => text('printing_code').$type<PrintingCode>();
 
+/**
+ * Dernière Alerte de prix : prix dans la devise d'origine de sa source, et la
+ * source elle-même, pour ne jamais comparer des euros à des dollars après un
+ * changement de Source de prix. Mêmes colonnes pour les souhaits et la Collection.
+ */
+const lastAlertColumns = () => ({
+  lastAlertPrice: real('last_alert_price'),
+  lastAlertSource: text('last_alert_source').$type<PriceSource>(),
+  lastAlertAt: text('last_alert_at').$type<IsoDateTime>(),
+});
+
 /** Ce qui désigne un prix : une Version, une Source de prix et une Finition. */
 const priceKeyColumns = () => ({
   printingCode: printingCodeColumn().notNull(),
@@ -175,6 +186,9 @@ export const collectionEntry = sqliteTable(
   {
     printingCode: printingCodeColumn().primaryKey(),
     quantity: integer('quantity').notNull(),
+    /** Entrée dans la Collection (passage de 0 à au moins 1 exemplaire), point de départ des Alertes de prix. */
+    addedAt: text('added_at').$type<IsoDateTime>().notNull(),
+    ...lastAlertColumns(),
   },
   (t) => [check('collection_entry_quantity_positive', sql`${t.quantity} > 0`)],
 );
@@ -182,14 +196,7 @@ export const collectionEntry = sqliteTable(
 export const wishlistEntry = sqliteTable('wishlist_entry', {
   printingCode: printingCodeColumn().primaryKey(),
   addedAt: text('added_at').$type<IsoDateTime>().notNull(),
-  /**
-   * Dernière Alerte de prix : prix dans la devise d'origine de sa source, et la
-   * source elle-même, pour ne jamais comparer des euros à des dollars après un
-   * changement de Source de prix.
-   */
-  lastAlertPrice: real('last_alert_price'),
-  lastAlertSource: text('last_alert_source').$type<PriceSource>(),
-  lastAlertAt: text('last_alert_at').$type<IsoDateTime>(),
+  ...lastAlertColumns(),
 });
 
 /** Une Version de la Sélection du classeur. */

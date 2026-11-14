@@ -13,6 +13,9 @@ import {
 } from './prices';
 import { createTestDatabase } from './testing/createTestDatabase';
 
+/** Entrée dans la Collection, pour les tests. */
+const ENTERED = new Date('2026-11-01T10:00:00.000Z');
+
 const price = (code: string, overrides: Partial<CurrentPrice> = {}): CurrentPrice => ({
   printingCode: code as PrintingCode,
   source: 'tcgplayer',
@@ -189,7 +192,7 @@ describe('readCollectionPriceHistory', () => {
       [],
       [record('OGN-001', '2026-11-01T00:00:00.000Z', 7, { source: 'cardmarket' })],
     );
-    setOwnedQuantity(db, 'OGN-001' as PrintingCode, 2);
+    setOwnedQuantity(db, 'OGN-001' as PrintingCode, 2, ENTERED);
 
     const history = readCollectionPriceHistory(db, 'tcgplayer');
 

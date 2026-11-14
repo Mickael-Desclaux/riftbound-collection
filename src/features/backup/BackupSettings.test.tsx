@@ -9,7 +9,16 @@ import { BACKUP_READ_ERRORS, BackupSettings, type BackupActions } from './Backup
 const BACKUP: Backup = createBackup(
   {
     settings: {},
-    collection: [{ printingCode: 'OGN-030a' as PrintingCode, quantity: 2 }],
+    collection: [
+      {
+        printingCode: 'OGN-030a' as PrintingCode,
+        quantity: 2,
+        addedAt: '2026-11-02T08:00:00.000Z',
+        lastAlertPrice: null,
+        lastAlertSource: null,
+        lastAlertAt: null,
+      },
+    ],
     wishlist: [],
     binderSelection: [],
     priceHistory: [],

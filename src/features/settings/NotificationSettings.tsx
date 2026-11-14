@@ -11,9 +11,14 @@ type Props = {
   onNewExpansionsChange: (enabled: boolean) => void;
   priceAlerts: boolean;
   onPriceAlertsChange: (enabled: boolean) => void;
-  /** Seuil de baisse, en %, qui déclenche une Alerte de prix. */
+  /** Seuil de baisse, en %, qui déclenche une Alerte de prix d'un souhait. */
   priceAlertThreshold: number;
   onPriceAlertThresholdChange: (threshold: number) => void;
+  priceRiseAlerts: boolean;
+  onPriceRiseAlertsChange: (enabled: boolean) => void;
+  /** Seuil de hausse, en %, qui déclenche une Alerte de prix d'une Version de la Collection. */
+  priceRiseAlertThreshold: number;
+  onPriceRiseAlertThresholdChange: (threshold: number) => void;
   /** Android bloque les notifications de l'app : seul le message dans l'app reste. */
   blockedByAndroid: boolean;
   onOpenAndroidSettings: () => void;
@@ -47,9 +52,16 @@ function parseThreshold(text: string): number | null {
 
 /** Le seuil en %, enregistré à la fin de la saisie ; une saisie invalide reprend la valeur enregistrée. */
 function ThresholdInput({
+  label,
+  accessibilityLabel,
   value,
   onChange,
-}: Readonly<{ value: number; onChange: (threshold: number) => void }>) {
+}: Readonly<{
+  label: string;
+  accessibilityLabel: string;
+  value: number;
+  onChange: (threshold: number) => void;
+}>) {
   const styles = useThemedStyles(makeStyles);
   const [draft, setDraft] = useState<string | null>(null);
   const commit = () => {
@@ -59,10 +71,10 @@ function ThresholdInput({
   };
   return (
     <View style={styles.row}>
-      <Text style={styles.label}>Baisse d’au moins</Text>
+      <Text style={styles.label}>{label}</Text>
       <View style={styles.threshold}>
         <TextInput
-          accessibilityLabel="Seuil des alertes de prix, en %"
+          accessibilityLabel={accessibilityLabel}
           style={styles.input}
           keyboardType="decimal-pad"
           value={draft ?? formatEditableNumber(value)}
@@ -85,6 +97,10 @@ export function NotificationSettings({
   onPriceAlertsChange,
   priceAlertThreshold,
   onPriceAlertThresholdChange,
+  priceRiseAlerts,
+  onPriceRiseAlertsChange,
+  priceRiseAlertThreshold,
+  onPriceRiseAlertThresholdChange,
   blockedByAndroid,
   onOpenAndroidSettings,
 }: Readonly<Props>) {
@@ -103,7 +119,25 @@ export function NotificationSettings({
         onValueChange={onPriceAlertsChange}
       />
       {priceAlerts && (
-        <ThresholdInput value={priceAlertThreshold} onChange={onPriceAlertThresholdChange} />
+        <ThresholdInput
+          label="Baisse d’au moins"
+          accessibilityLabel="Seuil des alertes de prix des souhaits, en %"
+          value={priceAlertThreshold}
+          onChange={onPriceAlertThresholdChange}
+        />
+      )}
+      <Toggle
+        label="Hausses de prix de la collection"
+        value={priceRiseAlerts}
+        onValueChange={onPriceRiseAlertsChange}
+      />
+      {priceRiseAlerts && (
+        <ThresholdInput
+          label="Hausse d’au moins"
+          accessibilityLabel="Seuil des hausses de prix de la collection, en %"
+          value={priceRiseAlertThreshold}
+          onChange={onPriceRiseAlertThresholdChange}
+        />
       )}
       {blockedByAndroid && (
         <>

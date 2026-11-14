@@ -1,11 +1,19 @@
 import type { IsoDateTime } from '@/domain/dates';
 import type { PrintingCode } from '@/domain/printingCode';
 
-import { readOwnedQuantities, restoreOwnedQuantity, setOwnedQuantity } from './collection';
+import {
+  readCollectionEntry,
+  readOwnedQuantities,
+  restoreCollectionEntry,
+  setOwnedQuantity,
+} from './collection';
 import { readWishlistPriceHistory, savePrices } from './prices';
 import { wishlistEntry } from './schema';
 import { createTestDatabase } from './testing/createTestDatabase';
 import { readWishlist, restoreWishlistEntry, setWishlisted } from './wishlist';
+
+/** Entrée dans la Collection, pour les tests. */
+const ENTERED = new Date('2026-11-01T10:00:00.000Z');
 
 const JINX = 'OGN-030a' as PrintingCode;
 const AHRI = 'SFD-001' as PrintingCode;
@@ -45,7 +53,7 @@ describe('retrait automatique des souhaits', () => {
       })
       .run();
 
-    const removed = setOwnedQuantity(db, JINX, 1);
+    const removed = setOwnedQuantity(db, JINX, 1, ENTERED);
 
     expect(readWishlist(db)).toEqual(new Map());
     expect(readOwnedQuantities(db).get(JINX)).toBe(1);
@@ -64,21 +72,22 @@ describe('retrait automatique des souhaits', () => {
 
   it('laisse en souhait une Version déjà possédée dont la quantité change', async () => {
     const { db } = await createTestDatabase();
-    setOwnedQuantity(db, JINX, 1);
+    setOwnedQuantity(db, JINX, 1, ENTERED);
     setWishlisted(db, JINX, ADDED);
 
-    expect(setOwnedQuantity(db, JINX, 2)).toBeNull();
-    expect(setOwnedQuantity(db, JINX, 0)).toBeNull();
+    expect(setOwnedQuantity(db, JINX, 2, ENTERED)).toBeNull();
+    expect(setOwnedQuantity(db, JINX, 0, ENTERED)).toBeNull();
     expect(readWishlist(db).get(JINX)).toBe(ADDED);
   });
 
   it('laisse en souhait une Version dont on annule le retrait de la Collection', async () => {
     const { db } = await createTestDatabase();
-    setOwnedQuantity(db, JINX, 3);
+    setOwnedQuantity(db, JINX, 3, ENTERED);
     setWishlisted(db, JINX, ADDED);
-    setOwnedQuantity(db, JINX, 0);
+    const entry = readCollectionEntry(db, JINX);
+    setOwnedQuantity(db, JINX, 0, ENTERED);
 
-    restoreOwnedQuantity(db, JINX, 3);
+    restoreCollectionEntry(db, entry!);
 
     expect(readOwnedQuantities(db).get(JINX)).toBe(3);
     expect(readWishlist(db).get(JINX)).toBe(ADDED);
@@ -87,7 +96,7 @@ describe('retrait automatique des souhaits', () => {
   it('ne rend rien pour une Version qui n’était pas en souhait', async () => {
     const { db } = await createTestDatabase();
 
-    expect(setOwnedQuantity(db, JINX, 1)).toBeNull();
+    expect(setOwnedQuantity(db, JINX, 1, ENTERED)).toBeNull();
   });
 });
 

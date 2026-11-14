@@ -14,6 +14,7 @@ import { priceAlertsText, priceAlertsTitle } from './priceAlertsText';
 
 const NEW_EXPANSIONS_CHANNEL = 'new-expansions';
 const PRICE_ALERTS_CHANNEL = 'price-alerts';
+const PRICE_RISE_ALERTS_CHANNEL = 'price-rise-alerts';
 
 /**
  * Une notification n'est envoyée app ouverte que si aucun écran ne peut
@@ -48,6 +49,10 @@ async function setUpChannels(): Promise<void> {
     name: 'Alertes de prix des souhaits',
     importance: AndroidImportance.DEFAULT,
   });
+  await Notifications.setNotificationChannelAsync(PRICE_RISE_ALERTS_CHANNEL, {
+    name: 'Hausses de prix de la collection',
+    importance: AndroidImportance.DEFAULT,
+  });
 }
 
 /**
@@ -80,11 +85,20 @@ export async function notifyNewExpansions(expansions: readonly NewExpansion[]): 
   });
 }
 
-/** Signale des Alertes de prix par une seule notification, qui ouvre l'onglet Souhaits. */
+/** Signale les baisses des souhaits par une seule notification, qui ouvre l'onglet Souhaits. */
 export async function notifyPriceAlerts(alerts: readonly PriceAlert[]): Promise<boolean> {
   return notify(PRICE_ALERTS_CHANNEL, {
-    title: priceAlertsTitle(alerts),
-    body: priceAlertsText(alerts),
+    title: priceAlertsTitle('drop', alerts),
+    body: priceAlertsText('drop', alerts),
     data: { kind: 'priceAlerts' },
+  });
+}
+
+/** Signale les hausses de la Collection par une seule notification, qui ouvre l'onglet Collection. */
+export async function notifyPriceRiseAlerts(alerts: readonly PriceAlert[]): Promise<boolean> {
+  return notify(PRICE_RISE_ALERTS_CHANNEL, {
+    title: priceAlertsTitle('rise', alerts),
+    body: priceAlertsText('rise', alerts),
+    data: { kind: 'priceRiseAlerts' },
   });
 }

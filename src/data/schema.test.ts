@@ -79,11 +79,18 @@ describe('séparation des Données précieuses (ADR 0001)', () => {
     const { db } = await setup();
 
     db.insert(collectionEntry)
-      .values({ printingCode: code('OGN-999'), quantity: 2 })
+      .values({ printingCode: code('OGN-999'), quantity: 2, addedAt: '2026-11-01T10:00:00.000Z' })
       .run();
 
     expect(db.select().from(collectionEntry).all()).toEqual([
-      { printingCode: 'OGN-999', quantity: 2 },
+      {
+        printingCode: 'OGN-999',
+        quantity: 2,
+        addedAt: '2026-11-01T10:00:00.000Z',
+        lastAlertPrice: null,
+        lastAlertSource: null,
+        lastAlertAt: null,
+      },
     ]);
   });
 
@@ -93,7 +100,11 @@ describe('séparation des Données précieuses (ADR 0001)', () => {
     expect(() =>
       db
         .insert(collectionEntry)
-        .values({ printingCode: code('OGN-030a'), quantity: 0 })
+        .values({
+          printingCode: code('OGN-030a'),
+          quantity: 0,
+          addedAt: '2026-11-01T10:00:00.000Z',
+        })
         .run(),
     ).toThrow(/CHECK constraint failed/);
   });
@@ -141,7 +152,7 @@ describe('Catalogue', () => {
     insertOrigins(db);
     db.insert(printing).values(jinx).run();
     db.insert(collectionEntry)
-      .values({ printingCode: code('OGN-030a'), quantity: 1 })
+      .values({ printingCode: code('OGN-030a'), quantity: 1, addedAt: '2026-11-01T10:00:00.000Z' })
       .run();
 
     db.delete(expansion).run();

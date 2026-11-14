@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { restoreOwnedQuantity } from '@/data/collection';
+import { readCollectionEntry, restoreCollectionEntry } from '@/data/collection';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { toggleOwned } from '@/domain/collection';
 import type { GridPrinting } from '@/ui/printing-grid/gridPrinting';
@@ -15,6 +15,7 @@ export type OwnedToggleTarget = Pick<GridPrinting, 'printingCode' | 'ownedQuanti
  * ✓ d'une case de grille (spec § 2.1) : bascule possédée ×1 / non possédée.
  * Une Version possédée en plusieurs exemplaires revient à 0, avec le toast
  * « Retirée de la collection (×n) · Annuler », comme une Version inconnue.
+ * « Annuler » rend la ligne entière : date d'entrée et dernière Alerte de prix.
  */
 export function useToggleOwned(): (printing: OwnedToggleTarget) => void {
   const db = useDatabase();
@@ -23,12 +24,13 @@ export function useToggleOwned(): (printing: OwnedToggleTarget) => void {
   return useCallback(
     ({ printingCode, ownedQuantity, inCatalog }) => {
       const { quantity, undoQuantity } = toggleOwned(ownedQuantity, inCatalog);
+      const removed = undoQuantity === null ? null : readCollectionEntry(db, printingCode);
       setOwnedQuantity(printingCode, quantity);
-      if (undoQuantity === null) return;
+      if (removed === null) return;
       showToast({
         message: `Retirée de la collection (×${undoQuantity})`,
         actionLabel: 'Annuler',
-        onAction: () => restoreOwnedQuantity(db, printingCode, undoQuantity),
+        onAction: () => restoreCollectionEntry(db, removed),
       });
     },
     [db, setOwnedQuantity, showToast],
