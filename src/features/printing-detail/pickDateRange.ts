@@ -1,6 +1,7 @@
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 import type { IsoDate } from '@/domain/dates';
+import type { CustomChartPeriod } from '@/domain/settings';
 
 /** Le jour choisi dans le calendrier, tel que l'utilisateur le voit (heure locale). */
 function calendarDay(date: Date): IsoDate {
@@ -24,7 +25,7 @@ function pickDate(value: Date, bounds: { minimumDate?: Date; maximumDate: Date }
  * une fois pour la fin (jamais avant le début, jamais après aujourd'hui).
  * `null` si l'utilisateur renonce.
  */
-export async function pickDateRange(now: Date): Promise<{ from: IsoDate; to: IsoDate } | null> {
+export async function pickDateRange(now: Date): Promise<CustomChartPeriod | null> {
   const monthAgo = new Date(now);
   monthAgo.setMonth(now.getMonth() - 1);
   const from = await pickDate(monthAgo, { maximumDate: now });

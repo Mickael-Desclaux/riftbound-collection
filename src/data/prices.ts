@@ -5,9 +5,9 @@ import { addDays, toIsoDate, type IsoDate, type IsoDateTime } from '@/domain/dat
 
 import type { Finish, PriceSource } from '@/domain/price';
 import type { FinishPrices } from '@/domain/priceDisplay';
-import type { HistoryRecord } from '@/domain/priceHistory';
 import {
   priceKey,
+  printingFinishKey,
   type CurrentPrice,
   type LastRecord,
   type PriceRecord,
@@ -140,7 +140,7 @@ export function printingsByCardmarketId(db: AppDatabase): Map<number, PrintingFi
 
 /** Les Relevés de prix d'une Version, par Source de prix et Finition. */
 export type PrintingHistory = Partial<
-  Record<PriceSource, Partial<Record<Finish, HistoryRecord[]>>>
+  Record<PriceSource, Partial<Record<Finish, Pick<PriceRecord, 'recordedAt' | 'value'>[]>>>
 >;
 
 /** Tout l'historique d'une Version, chaque série du plus ancien au plus récent relevé. */
@@ -165,10 +165,11 @@ export function readPrintingHistory(db: AppDatabase, printingCode: PrintingCode)
 }
 
 /**
- * La valeur de chaque Version × Finition (`printingCode|finish`) à la fin du
- * jour `day` (UTC) : celle de son dernier relevé avant le jour suivant.
+ * La valeur de l'Indicateur de référence de chaque Version × Finition
+ * (`printingFinishKey`) à la fin du jour `day` (UTC) : celle de son dernier
+ * relevé avant le jour suivant.
  */
-export function referenceValuesOn(
+export function referenceMetricValuesOn(
   db: AppDatabase,
   source: PriceSource,
   day: IsoDate,
@@ -190,5 +191,5 @@ export function referenceValuesOn(
     )
     .groupBy(priceRecord.printingCode, priceRecord.finish)
     .all();
-  return new Map(rows.map((row) => [`${row.printingCode}|${row.finish}`, row.value]));
+  return new Map(rows.map((row) => [printingFinishKey(row), row.value]));
 }

@@ -8,7 +8,7 @@ import type { ExchangeRate } from '@/domain/exchangeRates';
 import type { PrintingHistory } from '@/data/prices';
 import type { IsoDate } from '@/domain/dates';
 import { SOURCE_CURRENCY, type Currency, type PriceSource } from '@/domain/price';
-import type { ChartPeriod } from '@/domain/settings';
+import type { ChartPeriod, CustomChartPeriod } from '@/domain/settings';
 import {
   defaultCell,
   priceCells,
@@ -45,7 +45,7 @@ type Props = {
   /** Période du graphique, retenue d'une fiche à l'autre (réglage). */
   chartPeriod: ChartPeriod;
   onChartPeriodChange: (period: ChartPeriod) => void;
-  pickDates: () => Promise<{ from: IsoDate; to: IsoDate } | null>;
+  pickDates: () => Promise<CustomChartPeriod | null>;
   onBack: () => void;
   onOpenPrinting: (printingCode: PrintingCode) => void;
   onOpenUrl: (url: string) => void;

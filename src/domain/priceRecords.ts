@@ -30,11 +30,16 @@ export type PriceRecord = {
 };
 
 /** Le dernier relevé enregistré pour une Version × Source × Finition. */
-export type LastRecord = { value: number; recordedAt: IsoDateTime };
+export type LastRecord = Pick<PriceRecord, 'value' | 'recordedAt'>;
 
 /** Clé d'une Version × Source × Finition, pour retrouver son dernier relevé. */
 export function priceKey(price: Pick<CurrentPrice, 'printingCode' | 'source' | 'finish'>): string {
   return `${price.printingCode}|${price.source}|${price.finish}`;
+}
+
+/** Clé d'une Version × Finition, pour une Source de prix déjà choisie. */
+export function printingFinishKey(price: Pick<CurrentPrice, 'printingCode' | 'finish'>): string {
+  return `${price.printingCode}|${price.finish}`;
 }
 
 /** Les relevés à ajouter à l'historique pour ces prix du jour. */

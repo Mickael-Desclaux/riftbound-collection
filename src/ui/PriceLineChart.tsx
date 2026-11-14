@@ -7,47 +7,58 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 
-import type { DailyPoint } from '@/domain/priceHistory';
+import type { ChartDay } from '@/domain/priceHistory';
 import type { Currency } from '@/domain/price';
 
 import { formatIsoDate, formatPrice } from './format';
 import { colors } from './theme';
 
 export type PriceLineChartProps = {
-  /** Prix de la case choisie, dans la Devise d'affichage. */
-  points: DailyPoint[];
-  /** Autre Source de prix, en pointillés, à partir de `compareStartIndex`. */
-  comparePoints?: DailyPoint[];
-  compareStartIndex?: number;
+  /** Un élément par jour, dans la Devise d'affichage. */
+  days: ChartDay[];
+  /** Trace aussi l'autre Source de prix, en pointillés. */
+  compare: boolean;
   displayCurrency: Currency;
 };
 
 const HEIGHT = 180;
 const Y_AXIS_WIDTH = 52;
 
-export function PriceLineChart({
-  points,
-  comparePoints,
-  compareStartIndex = 0,
-  displayCurrency,
-}: Readonly<PriceLineChartProps>) {
+type ChartItem = { value: number; date: string; price: number | null };
+
+/**
+ * Une série telle que la bibliothèque la veut : une valeur à chaque jour.
+ * Les jours qui précèdent sa première valeur sont masqués par `startIndex`.
+ */
+function toChartSeries(days: ChartDay[], valueOf: (day: ChartDay) => number | null) {
+  const startIndex = Math.max(
+    0,
+    days.findIndex((day) => valueOf(day) !== null),
+  );
+  const first = valueOf(days[startIndex] as ChartDay) ?? 0;
+  const data: ChartItem[] = days.map((day) => ({
+    value: valueOf(day) ?? first,
+    date: day.date,
+    price: valueOf(day),
+  }));
+  return { data, startIndex };
+}
+
+export function PriceLineChart({ days, compare, displayCurrency }: Readonly<PriceLineChartProps>) {
   const [width, setWidth] = useState(0);
-  const data = points.map((p) => ({ value: p.value, date: p.date }));
-  // La bibliothèque aligne les séries par rang : la comparaison commence plus loin.
-  const data2 = comparePoints && [
-    ...Array.from({ length: compareStartIndex }, () => ({ value: comparePoints[0]?.value ?? 0 })),
-    ...comparePoints.map((p) => ({ value: p.value, date: p.date })),
-  ];
-  const values = [...points, ...(comparePoints ?? [])].map((p) => p.value);
+  const shown = toChartSeries(days, (day) => day.value);
+  const other = compare ? toChartSeries(days, (day) => day.compareValue) : undefined;
+  const values = days.flatMap((day) => [day.value ?? 0, compare ? (day.compareValue ?? 0) : 0]);
   const max = Math.max(...values, 0);
 
   return (
     <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {width > 0 && (
         <LineChart
-          data={data}
-          data2={data2}
-          startIndex2={data2 ? compareStartIndex : undefined}
+          data={shown.data}
+          startIndex1={shown.startIndex}
+          data2={other?.data}
+          startIndex2={other?.startIndex}
           stepChart
           adjustToWidth
           width={width - Y_AXIS_WIDTH - 8}
@@ -73,13 +84,13 @@ export function PriceLineChart({
             radius: 4,
             pointerLabelWidth: 120,
             autoAdjustPointerLabelPosition: true,
-            pointerLabelComponent: (items: { value: number; date?: string }[]) => (
+            pointerLabelComponent: (items: ChartItem[]) => (
               <View style={styles.pointer}>
                 {items[0]?.date && (
                   <Text style={styles.pointerDate}>{formatIsoDate(items[0].date)}</Text>
                 )}
                 <Text style={styles.pointerPrice}>
-                  {formatPrice(items[0]?.value ?? null, displayCurrency)}
+                  {formatPrice(items[0]?.price ?? null, displayCurrency)}
                 </Text>
               </View>
             ),

@@ -14,13 +14,13 @@ import {
 import { useDatabase } from '@/data/DatabaseProvider';
 import { useReactiveQuery } from '@/data/useReactiveQuery';
 import { readExchangeRates } from '@/data/exchangeRates';
-import { readCurrentPrices, referenceValuesOn } from '@/data/prices';
+import { readCurrentPrices, referenceMetricValuesOn } from '@/data/prices';
 import { useSetting } from '@/data/useSetting';
 import {
   withOwnedQuantities,
   withPriceChanges,
   withPrices,
-  type ValuesByDay,
+  type ReferenceMetricValuesByDay,
 } from '@/domain/catalogEntry';
 import { addDays, toIsoDate } from '@/domain/dates';
 import {
@@ -94,12 +94,12 @@ export function CatalogScreen() {
   const rates = useReactiveQuery(() => readExchangeRates(db), [db], ['exchange_rate']);
   const now = useClock();
   const values = useReactiveQuery(
-    (): ValuesByDay => {
+    (): ReferenceMetricValuesByDay => {
       const today = toIsoDate(now());
       return {
-        today: referenceValuesOn(db, priceSource, today),
-        daysAgo7: referenceValuesOn(db, priceSource, addDays(today, -7)),
-        daysAgo30: referenceValuesOn(db, priceSource, addDays(today, -30)),
+        today: referenceMetricValuesOn(db, priceSource, today),
+        daysAgo7: referenceMetricValuesOn(db, priceSource, addDays(today, -7)),
+        daysAgo30: referenceMetricValuesOn(db, priceSource, addDays(today, -30)),
       };
     },
     [db, priceSource, now],

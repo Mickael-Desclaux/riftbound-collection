@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import type { ExchangeRate } from '@/domain/exchangeRates';
-import type { HistoryRecord } from '@/domain/priceHistory';
+import type { PriceRecord } from '@/domain/priceRecords';
 import type { PriceLineChartProps } from '@/ui/PriceLineChart';
 
 import { PriceHistorySection, type PriceHistorySectionProps } from './PriceHistorySection';
@@ -25,12 +25,14 @@ const rates: ExchangeRate[] = [
     source: 'frankfurter',
   },
 ];
+type History = Pick<PriceRecord, 'recordedAt' | 'value'>[];
+
 /** Jinx sur TCGplayer : 2,80 $ US depuis le 3 novembre, 3,08 $ US depuis le 8. */
-const tcgplayer: HistoryRecord[] = [
+const tcgplayer: History = [
   { recordedAt: '2026-11-03T17:00:00.000Z', value: 2.8 },
   { recordedAt: '2026-11-08T17:00:00.000Z', value: 3.08 },
 ];
-const cardmarket: HistoryRecord[] = [{ recordedAt: '2026-11-06T01:45:56.000Z', value: 3.5 }];
+const cardmarket: History = [{ recordedAt: '2026-11-06T01:45:56.000Z', value: 3.5 }];
 
 async function setup(props: Partial<PriceHistorySectionProps> = {}) {
   const handlers = {
@@ -63,8 +65,8 @@ describe('PriceHistorySection', () => {
   it('trace un point par jour depuis le premier relevé, converti au taux de sa date', async () => {
     await setup();
 
-    const points = mockChart.props?.points ?? [];
-    expect(points.map((p) => p.date)).toEqual([
+    const days = mockChart.props?.days ?? [];
+    expect(days.map((day) => day.date)).toEqual([
       '2026-11-04',
       '2026-11-05',
       '2026-11-06',
@@ -74,8 +76,9 @@ describe('PriceHistorySection', () => {
       '2026-11-10',
       '2026-11-11',
     ]);
-    expect(points[0]?.value).toBeCloseTo(2.52, 6);
-    expect(mockChart.props?.comparePoints).toBeUndefined();
+    expect(days[0]?.value).toBeCloseTo(2.52, 6);
+    expect(mockChart.props?.compare).toBe(false);
+    expect(days.every((day) => day.compareValue === null)).toBe(true);
   });
 
   it('donne la variation sur la période, en devise d’origine', async () => {
@@ -119,13 +122,27 @@ describe('PriceHistorySection', () => {
   it('compare avec l’autre source, en pointillés, à partir de son premier relevé', async () => {
     const { onCompareChange } = await setup({ compare: true });
 
-    expect(mockChart.props?.comparePoints?.map((p) => p.date)[0]).toBe('2026-11-06');
-    expect(mockChart.props?.compareStartIndex).toBe(2);
+    const days = mockChart.props?.days ?? [];
+    expect(mockChart.props?.compare).toBe(true);
+    expect(days.find((day) => day.compareValue !== null)?.date).toBe('2026-11-06');
     await fireEvent(
       screen.getByRole('switch', { name: 'Comparer avec Cardmarket' }),
       'valueChange',
       false,
     );
     expect(onCompareChange).toHaveBeenCalledWith(false);
+  });
+
+  it('aligne par date une autre source dont l’historique est plus ancien', async () => {
+    await setup({
+      history: [{ recordedAt: '2026-11-09T17:00:00.000Z', value: 3 }],
+      otherHistory: [{ recordedAt: '2026-11-06T01:45:56.000Z', value: 3.5 }],
+      compare: true,
+    });
+
+    const days = mockChart.props?.days ?? [];
+    expect(days.map((day) => day.date)[0]).toBe('2026-11-06');
+    expect(days.at(-1)?.date).toBe(TODAY);
+    expect(days.find((day) => day.value !== null)?.date).toBe('2026-11-09');
   });
 });

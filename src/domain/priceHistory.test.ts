@@ -1,17 +1,18 @@
 import type { ExchangeRate } from './exchangeRates';
 import {
+  alignSeries,
   convertSeries,
   dailySeries,
   firstRecordDay,
   isHistoryBuilding,
   percentChange,
   periodRange,
-  priceChange,
-  type HistoryRecord,
+  type DailyPoint,
 } from './priceHistory';
+import type { PriceRecord } from './priceRecords';
 
 /** Relevés réels de Jinx (OGN-030a, TCGplayer foil), un peu espacés. */
-const records: HistoryRecord[] = [
+const records: Pick<PriceRecord, 'recordedAt' | 'value'>[] = [
   { recordedAt: '2026-11-03T17:00:00.000Z', value: 2.8 },
   { recordedAt: '2026-11-05T17:00:00.000Z', value: 2.95 },
   { recordedAt: '2026-11-05T23:00:00.000Z', value: 3.1 },
@@ -132,15 +133,35 @@ describe('firstRecordDay', () => {
   });
 });
 
-describe('priceChange', () => {
-  it('compare la valeur du jour à celle d’il y a N jours, en %', () => {
-    // 11-01 : rien ; 11-03 : 2,80 ; 11-10 : 2,90 → +3,57 % sur 7 jours.
-    expect(priceChange(records, '2026-11-10', 7)).toBeCloseTo(3.5714, 3);
+describe('alignSeries', () => {
+  const series = (dates: string[], value: number): DailyPoint[] =>
+    dates.map((date) => ({ date, value }));
+
+  it('aligne l’autre source sur les dates de la case affichée', () => {
+    const shown = series(['2026-11-04', '2026-11-05', '2026-11-06'], 3);
+    const other = series(['2026-11-05', '2026-11-06'], 4);
+
+    expect(alignSeries(shown, other)).toEqual([
+      { date: '2026-11-04', value: 3, compareValue: null },
+      { date: '2026-11-05', value: 3, compareValue: 4 },
+      { date: '2026-11-06', value: 3, compareValue: 4 },
+    ]);
   });
 
-  it('ne donne rien sans relevé au début de la période : pas assez d’historique', () => {
-    expect(priceChange(records, '2026-11-09', 7)).toBeNull();
-    expect(priceChange([], '2026-11-09', 7)).toBeNull();
+  it('commence plus tôt quand l’autre source a un historique plus ancien', () => {
+    const shown = series(['2026-11-06'], 3);
+    const other = series(['2026-11-05', '2026-11-06'], 4);
+
+    expect(alignSeries(shown, other)).toEqual([
+      { date: '2026-11-05', value: null, compareValue: 4 },
+      { date: '2026-11-06', value: 3, compareValue: 4 },
+    ]);
+  });
+
+  it('sans comparaison, reprend la case affichée', () => {
+    expect(alignSeries(series(['2026-11-06'], 3), undefined)).toEqual([
+      { date: '2026-11-06', value: 3, compareValue: null },
+    ]);
   });
 });
 

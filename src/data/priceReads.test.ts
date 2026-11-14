@@ -6,7 +6,7 @@ import {
   latestPublishedAt,
   readCurrentPrices,
   readPrintingHistory,
-  referenceValuesOn,
+  referenceMetricValuesOn,
   savePrices,
 } from './prices';
 import { createTestDatabase } from './testing/createTestDatabase';
@@ -135,11 +135,11 @@ describe('readPrintingHistory', () => {
   });
 });
 
-describe('referenceValuesOn', () => {
+describe('referenceMetricValuesOn', () => {
   it('donne la valeur de chaque Version × Finition à la fin d’un jour (UTC)', async () => {
     const db = await historyDatabase();
 
-    const values = referenceValuesOn(db, 'tcgplayer', '2026-11-05');
+    const values = referenceMetricValuesOn(db, 'tcgplayer', '2026-11-05');
 
     expect(values).toEqual(
       new Map([
@@ -152,7 +152,7 @@ describe('referenceValuesOn', () => {
   it('ignore les Versions dont l’historique commence plus tard', async () => {
     const db = await historyDatabase();
 
-    expect(referenceValuesOn(db, 'tcgplayer', '2026-11-03')).toEqual(
+    expect(referenceMetricValuesOn(db, 'tcgplayer', '2026-11-03')).toEqual(
       new Map([['OGN-030a|foil', 2.8]]),
     );
   });

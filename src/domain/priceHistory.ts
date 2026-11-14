@@ -3,20 +3,21 @@
  * de prix. Un Relevé de prix n'existe que lorsque la valeur change ; entre deux
  * relevés, la valeur est prolongée. Un relevé compte pour son jour UTC.
  */
-import { addDays, toIsoDate, type DateRange, type IsoDate, type IsoDateTime } from './dates';
+import { addDays, toIsoDate, type DateRange, type IsoDate } from './dates';
 import { rateOnOrBefore, type ExchangeRate } from './exchangeRates';
 import type { Currency } from './price';
+import type { PriceRecord } from './priceRecords';
 import type { ChartPeriod, ChartPresetPeriod } from './settings';
 
-/** Un Relevé de prix d'une Version × Source × Finition, dans la devise d'origine. */
-export type HistoryRecord = { recordedAt: IsoDateTime; value: number };
+/** Ce qui compte d'un Relevé de prix pour son historique (devise d'origine). */
+type RecordedValue = Pick<PriceRecord, 'recordedAt' | 'value'>;
 
 /** La valeur d'un jour. */
 export type DailyPoint = { date: IsoDate; value: number };
 
 /** Le dernier relevé de chaque jour, par ordre chronologique. */
-function lastOfEachDay(records: readonly HistoryRecord[]): DailyPoint[] {
-  const byDay = new Map<IsoDate, HistoryRecord>();
+function lastOfEachDay(records: readonly RecordedValue[]): DailyPoint[] {
+  const byDay = new Map<IsoDate, RecordedValue>();
   for (const record of records) {
     const day = toIsoDate(new Date(record.recordedAt));
     const known = byDay.get(day);
@@ -31,7 +32,7 @@ function lastOfEachDay(records: readonly HistoryRecord[]): DailyPoint[] {
  * Une valeur par jour de `range`, prolongée entre deux relevés. Les jours qui
  * précèdent le premier relevé n'ont pas de valeur.
  */
-export function dailySeries(records: readonly HistoryRecord[], range: DateRange): DailyPoint[] {
+export function dailySeries(records: readonly RecordedValue[], range: DateRange): DailyPoint[] {
   const days = lastOfEachDay(records);
   const series: DailyPoint[] = [];
   let next = 0;
@@ -91,7 +92,7 @@ export function isHistoryBuilding(range: DateRange, firstDay: IsoDate | undefine
 }
 
 /** Le jour (UTC) du premier relevé. */
-export function firstRecordDay(records: readonly HistoryRecord[]): IsoDate | undefined {
+export function firstRecordDay(records: readonly RecordedValue[]): IsoDate | undefined {
   return lastOfEachDay(records)[0]?.date;
 }
 
@@ -101,19 +102,24 @@ export function percentChange(from: number | null, to: number | null): number | 
   return ((to - from) / from) * 100;
 }
 
-/** La valeur d'un jour : celle du dernier relevé à une date ≤ ce jour. */
-function valueOn(records: readonly HistoryRecord[], date: IsoDate): number | null {
-  return dailySeries(records, { start: date, end: date })[0]?.value ?? null;
-}
+/** Un jour du graphique : la case affichée et l'autre source (`null` : pas de valeur ce jour-là). */
+export type ChartDay = { date: IsoDate; value: number | null; compareValue: number | null };
 
 /**
- * Variation de prix sur `days` jours (spec § 3), dans la devise d'origine :
- * `null` si l'historique ne remonte pas jusqu'au début de la période.
+ * Les deux séries alignées jour par jour, du premier jour où l'une d'elles a
+ * une valeur jusqu'au dernier : « Comparer avec… » se lit à la même date.
  */
-export function priceChange(
-  records: readonly HistoryRecord[],
-  today: IsoDate,
-  days: number,
-): number | null {
-  return percentChange(valueOn(records, addDays(today, -days)), valueOn(records, today));
+export function alignSeries(
+  points: readonly DailyPoint[],
+  comparePoints: readonly DailyPoint[] | undefined,
+): ChartDay[] {
+  const values = new Map(points.map((p) => [p.date, p.value]));
+  const compareValues = new Map((comparePoints ?? []).map((p) => [p.date, p.value]));
+  return [...new Set([...values.keys(), ...compareValues.keys()])]
+    .sort((a, b) => a.localeCompare(b))
+    .map((date) => ({
+      date,
+      value: values.get(date) ?? null,
+      compareValue: compareValues.get(date) ?? null,
+    }));
 }

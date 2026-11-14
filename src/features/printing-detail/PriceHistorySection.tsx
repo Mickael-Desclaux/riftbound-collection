@@ -4,20 +4,28 @@ import type { IsoDate } from '@/domain/dates';
 import type { ExchangeRate } from '@/domain/exchangeRates';
 import type { Currency, Finish, PriceSource } from '@/domain/price';
 import {
+  alignSeries,
   convertSeries,
   dailySeries,
   firstRecordDay,
   isHistoryBuilding,
   percentChange,
   periodRange,
-  type HistoryRecord,
 } from '@/domain/priceHistory';
-import { CHART_PRESET_PERIODS, type ChartPeriod, type ChartPresetPeriod } from '@/domain/settings';
+import type { PriceRecord } from '@/domain/priceRecords';
+import {
+  CHART_PRESET_PERIODS,
+  type ChartPeriod,
+  type ChartPresetPeriod,
+  type CustomChartPeriod,
+} from '@/domain/settings';
 import { Chip } from '@/ui/controls';
 import { formatIsoDate, formatPercentChange, formatShortIsoDate } from '@/ui/format';
 import { FINISH_LABELS, PRICE_SOURCE_LABELS } from '@/ui/labels';
 import { PriceLineChart } from '@/ui/PriceLineChart';
 import { colors } from '@/ui/theme';
+
+type History = Pick<PriceRecord, 'recordedAt' | 'value'>[];
 
 const PERIOD_LABELS: Record<ChartPresetPeriod, string> = {
   '7d': '7 j',
@@ -31,11 +39,11 @@ export type PriceHistorySectionProps = {
   /** La case de prix affichée : son historique, dans la devise d'origine. */
   source: PriceSource;
   finish: Finish;
-  history: HistoryRecord[] | undefined;
+  history: History | undefined;
   currency: Currency;
   /** L'autre Source de prix, même Finition, pour « Comparer avec… ». */
   otherSource: PriceSource;
-  otherHistory: HistoryRecord[] | undefined;
+  otherHistory: History | undefined;
   otherCurrency: Currency;
   displayCurrency: Currency;
   rates: readonly ExchangeRate[];
@@ -45,7 +53,7 @@ export type PriceHistorySectionProps = {
   compare: boolean;
   onCompareChange: (compare: boolean) => void;
   /** Ouvre le choix des dates ; `null` si l'utilisateur renonce. */
-  pickDates: () => Promise<{ from: IsoDate; to: IsoDate } | null>;
+  pickDates: () => Promise<CustomChartPeriod | null>;
 };
 
 /**
@@ -72,20 +80,16 @@ export function PriceHistorySection({
 }: Readonly<PriceHistorySectionProps>) {
   const firstDay = history && firstRecordDay(history);
   const range = periodRange(period, today, firstDay);
-  const original = history ? dailySeries(history, range) : [];
-  const points = convertSeries(original, currency, displayCurrency, rates);
-  const change = percentChange(original[0]?.value ?? null, original.at(-1)?.value ?? null);
-
+  const inSourceCurrency = history ? dailySeries(history, range) : [];
+  const points = convertSeries(inSourceCurrency, currency, displayCurrency, rates);
+  const change = percentChange(
+    inSourceCurrency[0]?.value ?? null,
+    inSourceCurrency.at(-1)?.value ?? null,
+  );
   const otherPoints =
     compare && otherHistory
       ? convertSeries(dailySeries(otherHistory, range), otherCurrency, displayCurrency, rates)
       : undefined;
-  const compareStartIndex = otherPoints?.[0]
-    ? Math.max(
-        0,
-        points.findIndex((p) => p.date === otherPoints[0]?.date),
-      )
-    : 0;
 
   const chooseDates = () => {
     void pickDates().then((dates) => {
@@ -125,9 +129,8 @@ export function PriceHistorySection({
             <Text style={styles.change}>{formatPercentChange(change)} sur la période</Text>
           )}
           <PriceLineChart
-            points={points}
-            comparePoints={otherPoints}
-            compareStartIndex={compareStartIndex}
+            days={alignSeries(points, otherPoints)}
+            compare={otherPoints !== undefined}
             displayCurrency={displayCurrency}
           />
           {firstDay && isHistoryBuilding(range, firstDay) && (

@@ -3,6 +3,7 @@ import { latestRatePerPair, type ExchangeRate } from './exchangeRates';
 import type { Currency, Finish } from './price';
 import { referenceFinish, referencePrice, type FinishPrices } from './priceDisplay';
 import { percentChange } from './priceHistory';
+import { printingFinishKey } from './priceRecords';
 import type { PrintingCode } from './printingCode';
 
 /** Une Version telle que les grilles la filtrent, la trient et l'affichent. */
@@ -60,17 +61,25 @@ export function withPrices(
 
 /**
  * Valeur de l'Indicateur de référence de chaque Version × Finition
- * (`printingCode|finish`) aujourd'hui, il y a 7 jours et il y a 30 jours, pour
+ * (`printingFinishKey`) aujourd'hui, il y a 7 jours et il y a 30 jours, pour
  * la Source de prix choisie et en devise d'origine.
  */
-export type ValuesByDay = Record<'today' | 'daysAgo7' | 'daysAgo30', Map<string, number>>;
+export type ReferenceMetricValuesByDay = Record<
+  'today' | 'daysAgo7' | 'daysAgo30',
+  Map<string, number>
+>;
 
 /** Les Versions, avec la Variation de prix 7 j / 30 j de leur Finition de référence (spec § 3). */
-export function withPriceChanges(entries: CatalogEntry[], values: ValuesByDay): CatalogEntry[] {
+export function withPriceChanges(
+  entries: CatalogEntry[],
+  values: ReferenceMetricValuesByDay,
+): CatalogEntry[] {
   return entries.map((entry) => {
     const finish = referenceFinish(entry.finishes);
     const valueOf = (map: Map<string, number>) =>
-      finish ? (map.get(`${entry.printingCode}|${finish}`) ?? null) : null;
+      finish
+        ? (map.get(printingFinishKey({ printingCode: entry.printingCode, finish })) ?? null)
+        : null;
     const today = valueOf(values.today);
     return {
       ...entry,
