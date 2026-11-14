@@ -7,7 +7,7 @@
  */
 import { storedExpansions } from '@/data/catalog';
 import { forgetAllLastModified } from '@/data/sourceState';
-import { newExpansions, type Expansion } from '@/domain/catalog';
+import { newExpansions, type NewExpansion } from '@/domain/catalog';
 
 import { syncCardmarketLinks } from './cardmarketLinks';
 import { syncCatalog, type SyncDeps } from './catalog';
@@ -28,9 +28,6 @@ export type SyncMode = 'auto' | 'refresh' | 'resync' | 'rebuild';
 
 /** Les synchronisations lancées depuis les Réglages. */
 export type ResyncMode = Extract<SyncMode, 'resync' | 'rebuild'>;
-
-/** Une Extension apparue pendant la synchronisation (spec § 5). */
-export type NewExpansion = Pick<Expansion, 'code' | 'name' | 'isPromo'>;
 
 export type SyncReport = {
   failures: { step: SyncStep; error: unknown }[];

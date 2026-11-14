@@ -1,4 +1,4 @@
-import type { NewExpansion } from '@/sync/syncAll';
+import type { NewExpansion } from '@/domain/catalog';
 
 import { createNewExpansionAnnouncer } from './newExpansionAnnouncer';
 

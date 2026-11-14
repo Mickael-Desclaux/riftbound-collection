@@ -6,7 +6,7 @@ import migrations from '@/data/migrations/migrations';
 import { localIsoDate } from '@/domain/dates';
 import { fileSystemSafetyBackups, shareBackupFile } from '@/features/backup/backupFiles';
 
-import { appDatabase } from './appSync';
+import { appDatabase, syncsIdle } from './appSync';
 import { MigrationFailedScreen } from './MigrationFailedScreen';
 
 type State =
@@ -28,7 +28,8 @@ export function AppDatabaseProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let current = true;
     const now = () => new Date();
-    migrateSafely(db, migrations, { safetyBackups: fileSystemSafetyBackups, now })
+    syncsIdle()
+      .then(() => migrateSafely(db, migrations, { safetyBackups: fileSystemSafetyBackups, now }))
       .then(() => {
         if (current) setState({ step: 'ready' });
       })

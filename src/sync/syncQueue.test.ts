@@ -21,7 +21,7 @@ function controllableSync() {
 describe('serializeSyncs', () => {
   it('une vérification ordinaire rejoint la synchronisation en cours', async () => {
     const { sync, started, finishCurrent } = controllableSync();
-    const synchronize = serializeSyncs(sync);
+    const { synchronize } = serializeSyncs(sync);
 
     const first = synchronize('auto');
     const joined = synchronize('auto');
@@ -33,7 +33,7 @@ describe('serializeSyncs', () => {
 
   it('une mise à jour demandée pendant une synchronisation est lancée après elle', async () => {
     const { sync, started, finishCurrent } = controllableSync();
-    const synchronize = serializeSyncs(sync);
+    const { synchronize } = serializeSyncs(sync);
 
     void synchronize('auto');
     const refresh = synchronize('refresh');
@@ -47,12 +47,29 @@ describe('serializeSyncs', () => {
 
   it('relance après une synchronisation qui a échoué', async () => {
     let calls = 0;
-    const synchronize = serializeSyncs(() => {
+    const { synchronize } = serializeSyncs(() => {
       calls += 1;
       return calls === 1 ? Promise.reject(new Error('panne')) : Promise.resolve(EMPTY_SYNC_REPORT);
     });
 
     await expect(synchronize('auto')).rejects.toThrow('panne');
     await expect(synchronize('auto')).resolves.toEqual(EMPTY_SYNC_REPORT);
+  });
+
+  it('attend la fin de la synchronisation en cours', async () => {
+    const { sync, finishCurrent } = controllableSync();
+    const queue = serializeSyncs(sync);
+    let idle = false;
+
+    void queue.synchronize('auto');
+    const waiting = queue.idle().then(() => {
+      idle = true;
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(idle).toBe(false);
+    await finishCurrent();
+    await waiting;
+
+    expect(idle).toBe(true);
   });
 });

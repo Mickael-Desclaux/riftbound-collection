@@ -30,18 +30,24 @@ export function appDatabase(): AppDatabase {
 }
 
 /** Toutes les sources (`syncAll`), une synchronisation à la fois, puis l'annonce des nouvelles Extensions. */
-export const synchronizeApp: (mode: SyncMode) => Promise<SyncReport> = serializeSyncs(
-  async (mode) => {
-    const report = await syncAll(appSyncDeps(), { mode });
-    try {
-      await newExpansionAnnouncer.announce(report.newExpansions, {
-        enabled: getSetting(appDatabase(), 'newExpansionNotifications'),
-        appIsActive: AppState.currentState === 'active',
-      });
-    } catch (error) {
-      // Une annonce manquée ne fait pas échouer la synchronisation, déjà enregistrée.
-      console.warn('Annonce des nouvelles extensions impossible', error);
-    }
-    return report;
-  },
-);
+const queue = serializeSyncs(async (mode: SyncMode): Promise<SyncReport> => {
+  const report = await syncAll(appSyncDeps(), { mode });
+  try {
+    await newExpansionAnnouncer.announce(report.newExpansions, {
+      enabled: getSetting(appDatabase(), 'newExpansionNotifications'),
+      appIsActive: AppState.currentState === 'active',
+    });
+  } catch (error) {
+    // Une annonce manquée ne fait pas échouer la synchronisation, déjà enregistrée.
+    console.warn('Annonce des nouvelles extensions impossible', error);
+  }
+  return report;
+});
+
+export const synchronizeApp = queue.synchronize;
+
+/**
+ * Se résout quand aucune synchronisation ne tourne : les migrations attendent
+ * ainsi celle que la tâche en arrière-plan a pu lancer avant l'ouverture de l'app.
+ */
+export const syncsIdle = queue.idle;

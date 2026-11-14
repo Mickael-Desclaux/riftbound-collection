@@ -19,6 +19,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -44,7 +45,17 @@ export function CatalogRequestProvider({
   children: ReactNode;
 }>) {
   const [request, setRequest] = useState<CatalogFilters | null>(null);
-  const value = useMemo(() => ({ request, setRequest, showCatalogTab }), [request, showCatalogTab]);
+  // La mise en page des onglets en donne une nouvelle à chaque rendu : on garde
+  // la dernière, derrière une fonction stable, pour ne pas tout re-rendre.
+  const latestShowCatalogTab = useRef(showCatalogTab);
+  useEffect(() => {
+    latestShowCatalogTab.current = showCatalogTab;
+  });
+  const stableShowCatalogTab = useCallback(() => latestShowCatalogTab.current(), []);
+  const value = useMemo(
+    () => ({ request, setRequest, showCatalogTab: stableShowCatalogTab }),
+    [request, stableShowCatalogTab],
+  );
   return <CatalogRequestContext value={value}>{children}</CatalogRequestContext>;
 }
 

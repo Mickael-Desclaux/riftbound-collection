@@ -1,4 +1,4 @@
-import type { NewExpansion } from '@/sync/syncAll';
+import type { NewExpansion } from '@/domain/catalog';
 
 /** « A », « A et B », « A, B et C ». */
 function namesOf(expansions: readonly NewExpansion[]): string {

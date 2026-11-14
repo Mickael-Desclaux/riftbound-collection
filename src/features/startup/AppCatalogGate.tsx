@@ -5,7 +5,11 @@ import { Alert, AppState } from 'react-native';
 import { hasCatalog } from '@/data/catalog';
 import { useDatabase } from '@/data/DatabaseProvider';
 import { fileSystemImageStore } from '@/features/binder/binderFiles';
-import { requestNotificationPermission } from '@/features/notifications/notifications';
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  showNotificationsInForeground,
+} from '@/features/notifications/notifications';
 import { downloadBinderImages } from '@/sync/binderImages';
 import { syncCatalog, type OnProgress } from '@/sync/catalog';
 import { EMPTY_SYNC_REPORT, type ResyncMode, type SyncMode, type SyncReport } from '@/sync/syncAll';
@@ -36,9 +40,12 @@ function subscribeToOnline(listener: () => void): () => void {
 
 /**
  * Une phrase d'explication, puis la question d'Android (spec § 5 : une seule
- * permission, demandée à la fin de la première synchronisation).
+ * permission, demandée à la fin de la première synchronisation). Tant
+ * qu'Android la dit « pas encore demandée », elle l'est au démarrage : une app
+ * installée avant les notifications la pose ainsi une fois aussi.
  */
-function askForNotifications(): void {
+async function askForNotifications(): Promise<void> {
+  if ((await getNotificationPermission()) !== 'undetermined') return;
   const request = () => {
     requestNotificationPermission().catch((error: unknown) =>
       console.warn('Permission des notifications impossible à demander', error),
@@ -55,8 +62,9 @@ function askForNotifications(): void {
 /**
  * Branche `CatalogGate` sur l'app, avec les dépendances créées par `appSync`.
  *
- * - Catalogue absent : premier téléchargement, piloté par `CatalogGate`, puis
- *   la permission des notifications.
+ * - Catalogue absent : premier téléchargement, piloté par `CatalogGate`.
+ * - Une fois le Catalogue là : la permission des notifications, si elle n'a
+ *   pas encore été demandée.
  * - Catalogue présent : toutes les sources (`syncAll`) sont vérifiées à
  *   l'ouverture, à chaque retour dans l'app et au tirer-pour-rafraîchir, et
  *   environ deux fois par jour en arrière-plan. Les échecs sont notés dans
@@ -79,12 +87,16 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
 
   const startSyncing = useCallback(() => {
     void synchronize('auto');
+    askForNotifications().catch((error: unknown) =>
+      console.warn('Permission des notifications impossible à lire', error),
+    );
     registerBackgroundSync().catch((error: unknown) =>
       console.warn('Synchronisation en arrière-plan impossible à inscrire', error),
     );
   }, [synchronize]);
 
   useEffect(() => {
+    showNotificationsInForeground();
     if (catalogReady.current) startSyncing();
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') void synchronize('auto');
@@ -109,7 +121,6 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
     async (onProgress: OnProgress) => {
       await syncCatalog(deps, { onProgress });
       catalogReady.current = true;
-      askForNotifications();
       // Les prix suivent en arrière-plan : seul le Catalogue est bloquant (spec § 6).
       startSyncing();
     },

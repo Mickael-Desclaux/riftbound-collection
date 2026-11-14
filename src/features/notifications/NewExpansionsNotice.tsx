@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { NewExpansion } from '@/sync/syncAll';
+import type { NewExpansion } from '@/domain/catalog';
 import { colors } from '@/ui/theme';
 
 import { newExpansionsText } from './newExpansionsText';

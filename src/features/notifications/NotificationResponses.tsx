@@ -24,7 +24,9 @@ export function NotificationResponses() {
   useEffect(() => {
     const launchedBy = Notifications.getLastNotificationResponse();
     if (launchedBy) open(launchedBy);
-    const subscription = Notifications.addNotificationResponseReceivedListener(open);
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) =>
+      open(response),
+    );
     return () => subscription.remove();
   }, []);
 

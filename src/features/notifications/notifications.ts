@@ -3,14 +3,38 @@
  * l'app (spec § 5), un canal par sorte de notification, réglable dans Android.
  */
 import * as Notifications from 'expo-notifications';
-import { AndroidImportance } from 'expo-notifications';
+import { AndroidImportance, PermissionStatus } from 'expo-notifications';
 
-import type { NewExpansion } from '@/sync/syncAll';
+import type { NewExpansion } from '@/domain/catalog';
 
 import type { NotificationData } from './notificationData';
 import { newExpansionsText, newExpansionsTitle } from './newExpansionsText';
 
 const NEW_EXPANSIONS_CHANNEL = 'new-expansions';
+
+/**
+ * Une notification n'est envoyée app ouverte que si aucun écran ne peut
+ * afficher le message (app pas encore prête) : elle doit alors s'afficher.
+ */
+export function showNotificationsInForeground(): void {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+}
+
+/** `undetermined` : pas encore demandée ; `denied` : refusée, à rétablir dans Android. */
+export type NotificationPermission = 'granted' | 'undetermined' | 'denied';
+
+export async function getNotificationPermission(): Promise<NotificationPermission> {
+  const { granted, status } = await Notifications.getPermissionsAsync();
+  if (granted) return 'granted';
+  return status === PermissionStatus.UNDETERMINED ? 'undetermined' : 'denied';
+}
 
 async function setUpChannels(): Promise<void> {
   await Notifications.setNotificationChannelAsync(NEW_EXPANSIONS_CHANNEL, {

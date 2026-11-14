@@ -2,7 +2,7 @@
  * Où annoncer une nouvelle Extension (spec § 5) : un message dans l'app si
  * elle est ouverte, une notification Android sinon (détection en arrière-plan).
  */
-import type { NewExpansion } from '@/sync/syncAll';
+import type { NewExpansion } from '@/domain/catalog';
 
 import { notifyNewExpansions } from './notifications';
 

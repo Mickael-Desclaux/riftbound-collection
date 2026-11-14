@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { expansionFilters } from '@/domain/catalogFilters';
 import { useOpenCatalog } from '@/features/catalog/catalogRequest';
-import type { NewExpansion } from '@/sync/syncAll';
+import type { NewExpansion } from '@/domain/catalog';
 
 import { newExpansionAnnouncer } from './newExpansionAnnouncer';
 import { NewExpansionsNotice } from './NewExpansionsNotice';
