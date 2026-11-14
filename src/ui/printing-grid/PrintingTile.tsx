@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Currency } from '@/domain/price';
 import { formatPercentChange, formatPrice } from '@/ui/format';
-import { colors } from '@/ui/theme';
+import { darkPalette, type Palette, useThemedStyles } from '@/ui/theme';
 
 import { CARD_ASPECT_RATIO, gridImageUri, type GridPrinting } from './gridPrinting';
 
@@ -32,6 +32,7 @@ export function PrintingTile({
   onToggleWishlisted: () => void;
   showWishlistChange: boolean;
 }>) {
+  const styles = useThemedStyles(makeStyles);
   const uri = gridImageUri(printing);
   const price = formatPrice(printing.price, displayCurrency);
   const owned = printing.ownedQuantity > 0;
@@ -103,6 +104,7 @@ export function PrintingTile({
  * automatique un peu plus tard, et un toucher relance tout de suite (spec § 6).
  */
 function PrintingImage({ printing, uri }: { printing: GridPrinting; uri: string | null }) {
+  const styles = useThemedStyles(makeStyles);
   const [failures, setFailures] = useState(0);
   const [failed, setFailed] = useState(false);
 
@@ -147,56 +149,58 @@ function PrintingImage({ printing, uri }: { printing: GridPrinting; uri: string 
   );
 }
 
-const styles = StyleSheet.create({
-  tile: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 6 },
-  unknown: { borderWidth: 1, borderColor: colors.muted, opacity: 0.7 },
-  badge: {
-    position: 'absolute',
-    left: 6,
-    bottom: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    backgroundColor: colors.accent,
-  },
-  badgeLabel: { color: colors.background, fontSize: 12, fontWeight: '700' },
-  corner: {
-    position: 'absolute',
-    top: 6,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: '#000a',
-  },
-  heart: { left: 6 },
-  heartOn: { color: colors.accent },
-  check: { right: 6 },
-  checkOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  cornerMark: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  checkMarkOn: { color: colors.background },
-  image: {
-    width: '100%',
-    aspectRatio: CARD_ASPECT_RATIO,
-    borderRadius: 8,
-    backgroundColor: colors.line,
-  },
-  frame: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.background,
-  },
-  frameName: { color: colors.text, fontSize: 13, fontWeight: '600', textAlign: 'center' },
-  frameHint: { color: colors.muted, fontSize: 11, textAlign: 'center' },
-  name: { color: colors.text, fontSize: 13, fontWeight: '600', marginTop: 6 },
-  code: { color: colors.muted, fontSize: 12 },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
-  price: { color: colors.accent, fontSize: 12, fontWeight: '600' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    tile: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 6 },
+    unknown: { borderWidth: 1, borderColor: colors.muted, opacity: 0.7 },
+    badge: {
+      position: 'absolute',
+      left: 6,
+      bottom: 6,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 10,
+      backgroundColor: colors.accent,
+    },
+    badgeLabel: { color: colors.onAccent, fontSize: 12, fontWeight: '700' },
+    corner: {
+      position: 'absolute',
+      top: 6,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: '#000a',
+    },
+    heart: { left: 6 },
+    // Les coins sont posés sur l'image, sous un voile noir : couleurs du thème sombre dans les deux thèmes.
+    heartOn: { color: darkPalette.accent },
+    check: { right: 6 },
+    checkOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+    cornerMark: { color: darkPalette.text, fontSize: 16, fontWeight: '700' },
+    checkMarkOn: { color: colors.onAccent },
+    image: {
+      width: '100%',
+      aspectRatio: CARD_ASPECT_RATIO,
+      borderRadius: 8,
+      backgroundColor: colors.line,
+    },
+    frame: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      padding: 8,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.background,
+    },
+    frameName: { color: colors.text, fontSize: 13, fontWeight: '600', textAlign: 'center' },
+    frameHint: { color: colors.muted, fontSize: 11, textAlign: 'center' },
+    name: { color: colors.text, fontSize: 13, fontWeight: '600', marginTop: 6 },
+    code: { color: colors.muted, fontSize: 12 },
+    footer: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
+    price: { color: colors.accent, fontSize: 12, fontWeight: '600' },
+  });

@@ -13,7 +13,7 @@ import type { ResyncMode, SyncReport } from '@/sync/syncAll';
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
 import { formatDateTime } from '@/ui/format';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
 import { SOURCE_LABELS, SYNC_STEP_LABELS } from './sourceLabels';
 
@@ -33,6 +33,7 @@ const HEALTH_LABELS: Record<SourceHealth, string> = {
 };
 
 export function SourceSettings({ states, resynchronize }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   const [status, setStatus] = useState<Status | null>(null);
   const busy = useRef(false);
 
@@ -86,6 +87,8 @@ export function SourceSettings({ states, resynchronize }: Readonly<Props>) {
 }
 
 function StatusMessage({ status }: Readonly<{ status: Status }>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   if (status.tone === 'running') {
     return (
       <View accessibilityLiveRegion="polite" style={styles.running}>
@@ -118,6 +121,7 @@ function SourceRow({
   source,
   state,
 }: Readonly<{ source: SourceId; state: SourceState | undefined }>) {
+  const styles = useThemedStyles(makeStyles);
   const health = sourceHealth(state);
   return (
     <View style={styles.row}>
@@ -143,15 +147,16 @@ function SourceRow({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 10, marginTop: 10 },
-  title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 16 },
-  running: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  status: { gap: 6 },
-  row: { gap: 2, paddingVertical: 6 },
-  rowHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  label: { color: colors.text, fontSize: 14, fontWeight: '600', flexShrink: 1 },
-  text: { color: colors.text, fontSize: 14 },
-  muted: { color: colors.muted, fontSize: 13 },
-  error: { color: colors.accent, fontSize: 13 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    container: { gap: 10, marginTop: 10 },
+    title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 16 },
+    running: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    status: { gap: 6 },
+    row: { gap: 2, paddingVertical: 6 },
+    rowHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+    label: { color: colors.text, fontSize: 14, fontWeight: '600', flexShrink: 1 },
+    text: { color: colors.text, fontSize: 14 },
+    muted: { color: colors.muted, fontSize: 13 },
+    error: { color: colors.accent, fontSize: 13 },
+  });

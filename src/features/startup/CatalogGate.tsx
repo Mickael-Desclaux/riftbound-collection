@@ -5,7 +5,7 @@ import { SourceError, type OnProgress } from '@/sync/catalog';
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
 import { MessageScreen, MessageText } from '@/ui/MessageScreen';
-import { colors } from '@/ui/theme';
+import { usePalette } from '@/ui/theme';
 
 export type CatalogGateProps = {
   /** Le Catalogue est-il déjà enregistré sur l'appareil ? */
@@ -36,6 +36,7 @@ export function CatalogGate({
   subscribeToOnline,
   children,
 }: CatalogGateProps) {
+  const colors = usePalette();
   const [state, setState] = useState<State>(
     hasCatalog ? { step: 'ready' } : { step: 'downloading', received: 0, total: null },
   );

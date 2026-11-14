@@ -4,7 +4,7 @@ import { StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { isValidSetting } from '@/domain/settings';
 import { Button, controlStyles } from '@/ui/controls';
 import { formatEditableNumber } from '@/ui/format';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
 type Props = {
   newExpansions: boolean;
@@ -24,6 +24,8 @@ function Toggle({
   value,
   onValueChange,
 }: Readonly<{ label: string; value: boolean; onValueChange: (value: boolean) => void }>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
@@ -48,6 +50,7 @@ function ThresholdInput({
   value,
   onChange,
 }: Readonly<{ value: number; onChange: (threshold: number) => void }>) {
+  const styles = useThemedStyles(makeStyles);
   const [draft, setDraft] = useState<string | null>(null);
   const commit = () => {
     const parsed = draft === null ? null : parseThreshold(draft);
@@ -85,6 +88,7 @@ export function NotificationSettings({
   blockedByAndroid,
   onOpenAndroidSettings,
 }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Notifications</Text>
@@ -114,20 +118,21 @@ export function NotificationSettings({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 10 },
-  title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { color: colors.text, fontSize: 14 },
-  hint: { color: colors.muted, fontSize: 13 },
-  threshold: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  input: {
-    ...controlStyles.idle,
-    color: colors.text,
-    borderRadius: 8,
-    minWidth: 56,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    textAlign: 'right',
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    container: { gap: 10 },
+    title: { color: colors.text, fontSize: 15, fontWeight: '600', marginTop: 8 },
+    row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    label: { color: colors.text, fontSize: 14 },
+    hint: { color: colors.muted, fontSize: 13 },
+    threshold: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    input: {
+      ...controlStyles(colors).idle,
+      color: colors.text,
+      borderRadius: 8,
+      minWidth: 56,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      textAlign: 'right',
+    },
+  });

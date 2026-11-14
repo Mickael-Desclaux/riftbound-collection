@@ -36,7 +36,7 @@ import {
   VARIANTS,
 } from '@/ui/labels';
 import { CARD_ASPECT_RATIO, gridImageUri } from '@/ui/printing-grid/gridPrinting';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import { PriceHistorySection } from './PriceHistorySection';
 
@@ -90,6 +90,7 @@ export function PrintingDetailView({
   onWishlistChange,
   onBinderSelectionChange,
 }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   const cells = priceCells(detail.finishes, detail.prices, displayCurrency, rates);
   const [selected, setSelected] = useState(() => defaultCell(detail.finishes, priceSource));
   const shown = cells.find((cell) => sameCell(selected, cell));
@@ -263,6 +264,7 @@ function PriceCellButton({
   selected: boolean;
   onPress: () => void;
 }>) {
+  const styles = useThemedStyles(makeStyles);
   const label = `${PRICE_SOURCE_LABELS[cell.source]} ${FINISH_LABELS[cell.finish]}`;
   const original = formatPrice(cell.original, cell.currency);
   const converted = formatPrice(cell.converted, displayCurrency);
@@ -296,6 +298,7 @@ function WishlistNote({
   records: readonly RecordedValue[] | undefined;
   today: IsoDate;
 }>) {
+  const styles = useThemedStyles(makeStyles);
   const change = records ? wishlistPriceChange(records, wishlistedAt, today) : null;
   return (
     <View style={styles.wishlistNote}>
@@ -308,6 +311,7 @@ function WishlistNote({
 }
 
 function PriceDates({ cell }: Readonly<{ cell: PriceCell }>) {
+  const styles = useThemedStyles(makeStyles);
   if (cell.publishedAt === null)
     return <Text style={styles.note}>Pas de prix pour cette case.</Text>;
   return (
@@ -326,6 +330,7 @@ function ActionBar({
 }: Readonly<
   Pick<Props, 'state' | 'onQuantityChange' | 'onWishlistChange' | 'onBinderSelectionChange'>
 >) {
+  const styles = useThemedStyles(makeStyles);
   const wished = state.wishlistedAt !== null;
   return (
     <View style={styles.actions}>
@@ -354,9 +359,9 @@ function ActionBar({
         accessibilityRole="button"
         accessibilityLabel={state.inBinderSelection ? 'Dans le classeur' : 'Ajouter au classeur'}
         onPress={() => onBinderSelectionChange(!state.inBinderSelection)}
-        style={[styles.binder, state.inBinderSelection && controlStyles.selected]}
+        style={[styles.binder, state.inBinderSelection && styles.binderSelected]}
       >
-        <Text style={[styles.binderLabel, state.inBinderSelection && controlStyles.selectedLabel]}>
+        <Text style={[styles.binderLabel, state.inBinderSelection && styles.binderSelectedLabel]}>
           {state.inBinderSelection ? 'Dans le classeur' : '+ Classeur'}
         </Text>
       </Pressable>
@@ -370,6 +375,7 @@ function IconButton({
   disabled = false,
   onPress,
 }: Readonly<{ label: string; icon: string; disabled?: boolean; onPress: () => void }>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -386,6 +392,7 @@ function IconButton({
 }
 
 function Section({ title, children }: Readonly<{ title: string; children: React.ReactNode }>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -395,6 +402,7 @@ function Section({ title, children }: Readonly<{ title: string; children: React.
 }
 
 function DetailRow({ label, value }: Readonly<{ label: string; value: string }>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.detail}>
       <Text style={styles.muted}>{label}</Text>
@@ -403,90 +411,93 @@ function DetailRow({ label, value }: Readonly<{ label: string; value: string }>)
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  content: { padding: 16, gap: 20, paddingBottom: 32 },
-  imageBox: {
-    width: '80%',
-    alignSelf: 'center',
-    aspectRatio: CARD_ASPECT_RATIO,
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  image: { width: '100%', height: '100%', backgroundColor: colors.line },
-  frame: { alignItems: 'center', justifyContent: 'center', padding: 16 },
-  frameText: { color: colors.text, fontSize: 16, textAlign: 'center' },
-  heading: { gap: 4 },
-  name: { color: colors.text, fontSize: 22, fontWeight: '700' },
-  muted: { color: colors.muted, fontSize: 13 },
-  bigPrice: { color: colors.accent, fontSize: 30, fontWeight: '700', marginTop: 6 },
-  wishlistNote: { ...controlStyles.idle, borderRadius: 10, padding: 12 },
-  wishlistNoteText: { color: colors.text, fontSize: 14 },
-  section: { gap: 8 },
-  sectionTitle: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  cells: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  cell: {
-    ...controlStyles.idle,
-    flexBasis: '47%',
-    flexGrow: 1,
-    borderRadius: 10,
-    padding: 10,
-    gap: 2,
-  },
-  cellSelected: { borderColor: colors.accent },
-  cellLabel: { color: colors.muted, fontSize: 12 },
-  cellPrice: { color: colors.text, fontSize: 17, fontWeight: '600' },
-  note: { color: colors.muted, fontSize: 12 },
-  others: { flexDirection: 'row', gap: 10 },
-  other: { width: 96, gap: 4 },
-  otherImage: {
-    width: 96,
-    aspectRatio: CARD_ASPECT_RATIO,
-    borderRadius: 8,
-    backgroundColor: colors.line,
-  },
-  detail: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  detailValue: { color: colors.text, fontSize: 14, flexShrink: 1, textAlign: 'right' },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
-  },
-  quantity: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  quantityValue: { color: colors.text, fontSize: 17, minWidth: 24, textAlign: 'center' },
-  iconButton: {
-    ...controlStyles.idle,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabled: { opacity: 0.4 },
-  icon: { color: colors.text, fontSize: 18 },
-  binder: {
-    ...controlStyles.idle,
-    flex: 1,
-    borderRadius: 20,
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  binderLabel: { color: colors.text, fontSize: 14 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.background },
+    topBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    content: { padding: 16, gap: 20, paddingBottom: 32 },
+    imageBox: {
+      width: '80%',
+      alignSelf: 'center',
+      aspectRatio: CARD_ASPECT_RATIO,
+      borderRadius: 14,
+      overflow: 'hidden',
+    },
+    image: { width: '100%', height: '100%', backgroundColor: colors.line },
+    frame: { alignItems: 'center', justifyContent: 'center', padding: 16 },
+    frameText: { color: colors.text, fontSize: 16, textAlign: 'center' },
+    heading: { gap: 4 },
+    name: { color: colors.text, fontSize: 22, fontWeight: '700' },
+    muted: { color: colors.muted, fontSize: 13 },
+    bigPrice: { color: colors.accent, fontSize: 30, fontWeight: '700', marginTop: 6 },
+    wishlistNote: { ...controlStyles(colors).idle, borderRadius: 10, padding: 12 },
+    wishlistNoteText: { color: colors.text, fontSize: 14 },
+    section: { gap: 8 },
+    sectionTitle: {
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    cells: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    cell: {
+      ...controlStyles(colors).idle,
+      flexBasis: '47%',
+      flexGrow: 1,
+      borderRadius: 10,
+      padding: 10,
+      gap: 2,
+    },
+    cellSelected: { borderColor: colors.accent },
+    cellLabel: { color: colors.muted, fontSize: 12 },
+    cellPrice: { color: colors.text, fontSize: 17, fontWeight: '600' },
+    note: { color: colors.muted, fontSize: 12 },
+    others: { flexDirection: 'row', gap: 10 },
+    other: { width: 96, gap: 4 },
+    otherImage: {
+      width: 96,
+      aspectRatio: CARD_ASPECT_RATIO,
+      borderRadius: 8,
+      backgroundColor: colors.line,
+    },
+    detail: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+    detailValue: { color: colors.text, fontSize: 14, flexShrink: 1, textAlign: 'right' },
+    actions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderTopWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.surface,
+    },
+    quantity: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    quantityValue: { color: colors.text, fontSize: 17, minWidth: 24, textAlign: 'center' },
+    iconButton: {
+      ...controlStyles(colors).idle,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    disabled: { opacity: 0.4 },
+    icon: { color: colors.text, fontSize: 18 },
+    binder: {
+      ...controlStyles(colors).idle,
+      flex: 1,
+      borderRadius: 20,
+      alignItems: 'center',
+      paddingVertical: 10,
+    },
+    binderLabel: { color: colors.text, fontSize: 14 },
+    binderSelected: controlStyles(colors).selected,
+    binderSelectedLabel: controlStyles(colors).selectedLabel,
+  });

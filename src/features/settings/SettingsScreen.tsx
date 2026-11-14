@@ -9,16 +9,19 @@ import { BackupSettings } from '@/features/backup/BackupSettings';
 import { useBackupActions } from '@/features/backup/useBackupActions';
 import { useNotificationPermission } from '@/features/notifications/useNotificationPermission';
 import { useSync } from '@/ui/SyncContext';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import { NotificationSettings } from './NotificationSettings';
 import { PriceSettings } from './PriceSettings';
 import { SourceSettings } from './SourceSettings';
+import { ThemeSettings } from './ThemeSettings';
 
-/** Onglet Réglages : les prix, les notifications, les Sauvegardes et l'état des sources. */
+/** Onglet Réglages : les prix, le thème, les notifications, les Sauvegardes et l'état des sources. */
 export function SettingsScreen() {
+  const styles = useThemedStyles(makeStyles);
   const [displayCurrency, setDisplayCurrency] = useSetting('displayCurrency');
   const [priceSource, setPriceSource] = useSetting('priceSource');
+  const [theme, setTheme] = useSetting('theme');
   const [newExpansions, setNewExpansions] = useSetting('newExpansionNotifications');
   const [priceAlerts, setPriceAlerts] = useSetting('priceAlertNotifications');
   const [priceAlertThreshold, setPriceAlertThreshold] = useSetting('priceAlertThreshold');
@@ -37,6 +40,7 @@ export function SettingsScreen() {
           onDisplayCurrencyChange={setDisplayCurrency}
           onPriceSourceChange={setPriceSource}
         />
+        <ThemeSettings theme={theme} onThemeChange={setTheme} />
         <NotificationSettings
           newExpansions={newExpansions}
           onNewExpansionsChange={setNewExpansions}
@@ -54,8 +58,9 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 16, gap: 8 },
-  heading: { color: colors.text, fontSize: 22, fontWeight: '700' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.background },
+    content: { padding: 16, gap: 8 },
+    heading: { color: colors.text, fontSize: 22, fontWeight: '700' },
+  });

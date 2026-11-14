@@ -1,19 +1,28 @@
-import { DarkTheme } from 'expo-router';
+import { DarkTheme, DefaultTheme } from 'expo-router';
+import { useMemo } from 'react';
+import { useColorScheme } from 'react-native';
 
-import { colors } from './theme';
+import { usePalette } from './theme';
 
 /**
- * Thème de la navigation : sans lui, les piles peignent un fond blanc (thème
- * clair de React Navigation) pendant leurs fondus, d'où des flashs blancs.
+ * Thème de la navigation, aux couleurs du thème actif : sans lui, les piles
+ * peignent le fond de React Navigation pendant leurs fondus, d'où des flashs.
  */
-export const navigationTheme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    primary: colors.accent,
-    background: colors.background,
-    card: colors.surface,
-    text: colors.text,
-    border: colors.line,
-  },
-};
+export function useNavigationTheme() {
+  const dark = useColorScheme() !== 'light';
+  const colors = usePalette();
+  return useMemo(() => {
+    const base = dark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: colors.accent,
+        background: colors.background,
+        card: colors.surface,
+        text: colors.text,
+        border: colors.line,
+      },
+    };
+  }, [dark, colors]);
+}

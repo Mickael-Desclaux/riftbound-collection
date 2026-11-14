@@ -18,7 +18,7 @@ import { Chip } from '@/ui/controls';
 import { formatIsoDate, formatPercentChange, formatShortIsoDate } from '@/ui/format';
 import { CHART_PERIOD_LABELS, FINISH_LABELS, PRICE_SOURCE_LABELS } from '@/ui/labels';
 import { PriceLineChart } from '@/ui/PriceLineChart';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
 type History = Pick<PriceRecord, 'recordedAt' | 'value'>[];
 
@@ -65,6 +65,8 @@ export function PriceHistorySection({
   onCompareChange,
   pickDates,
 }: Readonly<PriceHistorySectionProps>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const firstDay = history && firstRecordDay(history);
   const range = periodRange(period, today, firstDay);
   const inSourceCurrency = history ? dailySeries(history, range) : [];
@@ -143,11 +145,12 @@ export function PriceHistorySection({
   );
 }
 
-const styles = StyleSheet.create({
-  section: { gap: 10 },
-  periods: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  change: { color: colors.text, fontSize: 14, fontWeight: '600' },
-  note: { color: colors.muted, fontSize: 12 },
-  compare: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  compareLabel: { color: colors.text, fontSize: 14 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    section: { gap: 10 },
+    periods: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    change: { color: colors.text, fontSize: 14, fontWeight: '600' },
+    note: { color: colors.muted, fontSize: 12 },
+    compare: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    compareLabel: { color: colors.text, fontSize: 14 },
+  });

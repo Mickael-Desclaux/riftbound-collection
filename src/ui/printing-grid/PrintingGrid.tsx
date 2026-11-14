@@ -4,7 +4,7 @@ import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import type { Currency } from '@/domain/price';
 import type { PrintingCode } from '@/domain/printingCode';
 import { Button } from '@/ui/controls';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
 import type { GridPrinting } from './gridPrinting';
 import { Pagination } from './Pagination';
@@ -54,6 +54,8 @@ export function PrintingGrid({
   onRefresh,
   refreshing = false,
 }: Readonly<PrintingGridProps>) {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const list = useRef<FlatList<GridPrinting | typeof FILLER>>(null);
 
   useEffect(() => {
@@ -116,6 +118,7 @@ function withFiller(items: GridPrinting[]): (GridPrinting | typeof FILLER)[] {
 }
 
 function EmptyResult({ onClearFilters }: { onClearFilters: () => void }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.empty}>
       <Text style={styles.emptyText}>Aucune version ne correspond.</Text>
@@ -124,12 +127,13 @@ function EmptyResult({ onClearFilters }: { onClearFilters: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 12, gap: 12 },
-  row: { gap: 12 },
-  /** Même place qu'une case (`flex: 1`, comme `PrintingTile`). */
-  filler: { flex: 1 },
-  empty: { alignItems: 'center', gap: 12, paddingVertical: 48 },
-  emptyText: { color: colors.muted, fontSize: 15 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { padding: 12, gap: 12 },
+    row: { gap: 12 },
+    /** Même place qu'une case (`flex: 1`, comme `PrintingTile`). */
+    filler: { flex: 1 },
+    empty: { alignItems: 'center', gap: 12, paddingVertical: 48 },
+    emptyText: { color: colors.muted, fontSize: 15 },
+  });

@@ -32,7 +32,7 @@ import {
 } from '@/ui/format';
 import { CHART_PERIOD_LABELS } from '@/ui/labels';
 import { PriceLineChart } from '@/ui/PriceLineChart';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 export type CollectionHeaderProps = {
   /** Les Versions de la Collection, Versions inconnues comprises, avec leur prix. */
@@ -69,6 +69,7 @@ export function CollectionHeader({
   today,
   onOpenCompletion,
 }: Readonly<CollectionHeaderProps>) {
+  const styles = useThemedStyles(makeStyles);
   const [chartOpen, setChartOpen] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
   const summary = collectionValue(owned);
@@ -160,6 +161,7 @@ function ValueChart({
   rates,
   today,
 }: Readonly<ValueChartProps>) {
+  const styles = useThemedStyles(makeStyles);
   const [period, setPeriod] = useState<ChartPresetPeriod>('30d');
   const firstDay = useMemo(
     () => firstOwnedRecordDay(ownedPrintings, history),
@@ -210,20 +212,26 @@ function ValueChart({
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: 6 },
-  value: { gap: 2 },
-  valueLine: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
-  amount: { color: colors.text, fontSize: 22, fontWeight: '700' },
-  change: { flex: 1, color: colors.muted, fontSize: 13 },
-  chevron: { color: colors.muted, fontSize: 14 },
-  counts: { color: colors.muted, fontSize: 13 },
-  chart: { gap: 8 },
-  periods: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  note: { color: colors.muted, fontSize: 12 },
-  sectionTitle: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
-  sectionLabel: { color: colors.text, fontSize: 14, fontWeight: '600' },
-  completion: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, paddingVertical: 6 },
-  completionName: { flex: 1, color: colors.text, fontSize: 14 },
-  completionValue: { color: colors.muted, fontSize: 14 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    header: { gap: 6 },
+    value: { gap: 2 },
+    valueLine: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+    amount: { color: colors.text, fontSize: 22, fontWeight: '700' },
+    change: { flex: 1, color: colors.muted, fontSize: 13 },
+    chevron: { color: colors.muted, fontSize: 14 },
+    counts: { color: colors.muted, fontSize: 13 },
+    chart: { gap: 8 },
+    periods: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    note: { color: colors.muted, fontSize: 12 },
+    sectionTitle: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
+    sectionLabel: { color: colors.text, fontSize: 14, fontWeight: '600' },
+    completion: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 8,
+      paddingVertical: 6,
+    },
+    completionName: { flex: 1, color: colors.text, fontSize: 14 },
+    completionValue: { color: colors.muted, fontSize: 14 },
+  });

@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { IsoDateTime } from '@/domain/dates';
 import { arePricesStale } from '@/domain/priceDisplay';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 const formatDay = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' }).format;
 
@@ -18,6 +18,7 @@ type Props = {
  * Il porte sa propre marge du haut, et rien quand les prix sont à jour.
  */
 export function StalePricesNotice({ latestPublishedAt, now, onRefresh }: Readonly<Props>) {
+  const styles = useThemedStyles(makeStyles);
   if (!latestPublishedAt || !arePricesStale(latestPublishedAt, now)) return null;
   return (
     <SafeAreaView edges={['top']} style={styles.banner}>
@@ -33,15 +34,16 @@ export function StalePricesNotice({ latestPublishedAt, now, onRefresh }: Readonl
   );
 }
 
-const styles = StyleSheet.create({
-  banner: { backgroundColor: colors.surface, borderBottomWidth: 1, borderColor: colors.accent },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  text: { flex: 1, color: colors.text, fontSize: 13 },
-  action: { color: colors.accent, fontSize: 13, fontWeight: '700' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    banner: { backgroundColor: colors.surface, borderBottomWidth: 1, borderColor: colors.accent },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    text: { flex: 1, color: colors.text, fontSize: 13 },
+    action: { color: colors.accent, fontSize: 13, fontWeight: '700' },
+  });

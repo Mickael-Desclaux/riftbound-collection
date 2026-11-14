@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import { StalePricesBanner } from './StalePricesBanner';
 
@@ -12,6 +12,7 @@ import { StalePricesBanner } from './StalePricesBanner';
  * propre position, donc les écrans dessous n'en ont plus.
  */
 export function StalePricesFrame({ children }: Readonly<{ children: ReactNode }>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.frame}>
       <StalePricesBanner />
@@ -20,7 +21,8 @@ export function StalePricesFrame({ children }: Readonly<{ children: ReactNode }>
   );
 }
 
-const styles = StyleSheet.create({
-  frame: { flex: 1, backgroundColor: colors.background },
-  content: { flex: 1 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    frame: { flex: 1, backgroundColor: colors.background },
+    content: { flex: 1 },
+  });

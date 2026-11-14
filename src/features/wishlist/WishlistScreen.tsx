@@ -11,7 +11,7 @@ import { PrintingBrowser } from '@/features/printing-browser/PrintingBrowser';
 import { usePrintingEntries } from '@/features/printing-browser/usePrintingEntries';
 import { Button } from '@/ui/controls';
 import { formatWishlistCost } from '@/ui/format';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import { useToggleWishlisted } from './useToggleWishlisted';
 
@@ -24,6 +24,7 @@ const WISHLIST_FILTERS: CatalogFilters = { ...DEFAULT_CATALOG_FILTERS, showPromo
  * plus forte baisse. Les Versions inconnues suivent, en fin de liste.
  */
 export function WishlistScreen() {
+  const styles = useThemedStyles(makeStyles);
   const openCatalog = useOpenCatalog();
   const { entries, owned, wishlist } = usePrintingEntries();
   const wished = useMemo(
@@ -62,9 +63,10 @@ export function WishlistScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  summary: { color: colors.text, fontSize: 15, fontWeight: '600' },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
-  title: { color: colors.text, fontSize: 17, fontWeight: '600' },
-  hint: { color: colors.muted, fontSize: 14, textAlign: 'center' },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    summary: { color: colors.text, fontSize: 15, fontWeight: '600' },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
+    title: { color: colors.text, fontSize: 17, fontWeight: '600' },
+    hint: { color: colors.muted, fontSize: 14, textAlign: 'center' },
+  });

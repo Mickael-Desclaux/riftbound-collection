@@ -2,12 +2,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { paginationItems } from '@/domain/pagination';
 import { controlStyles } from '@/ui/controls';
-import { colors } from '@/ui/theme';
+import { type Palette, useThemedStyles } from '@/ui/theme';
 
 type Props = { page: number; pageCount: number; onPageChange: (page: number) => void };
 
 /** Pagination numérotée : ‹ 1 … 4 5 6 … 72 ›. */
 export function Pagination({ page, pageCount, onPageChange }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <PageButton
@@ -48,6 +49,7 @@ function PageButton(props: {
   disabled?: boolean;
   current?: boolean;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -62,26 +64,27 @@ function PageButton(props: {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-    padding: 16,
-  },
-  button: {
-    ...controlStyles.idle,
-    minWidth: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  current: controlStyles.selected,
-  disabled: { opacity: 0.35 },
-  label: { color: colors.text, fontSize: 15 },
-  currentLabel: controlStyles.selectedLabel,
-  gap: { color: colors.muted, paddingHorizontal: 4 },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 4,
+      padding: 16,
+    },
+    button: {
+      ...controlStyles(colors).idle,
+      minWidth: 36,
+      height: 36,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 8,
+    },
+    current: controlStyles(colors).selected,
+    disabled: { opacity: 0.35 },
+    label: { color: colors.text, fontSize: 15 },
+    currentLabel: controlStyles(colors).selectedLabel,
+    gap: { color: colors.muted, paddingHorizontal: 4 },
+  });

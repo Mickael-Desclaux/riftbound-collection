@@ -8,7 +8,7 @@ import { NewExpansionsFrame } from '@/features/notifications/NewExpansionsFrame'
 import { NotificationResponses } from '@/features/notifications/NotificationResponses';
 import { usePriceAlertBadge } from '@/features/notifications/usePriceAlertBadge';
 import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
-import { colors } from '@/ui/theme';
+import { usePalette } from '@/ui/theme';
 import { ToastProvider } from '@/ui/Toast';
 
 /** Hauteur de la barre d'onglets (hors zone sûre), que le toast laisse libre. */
@@ -28,6 +28,7 @@ function tabIcon(name: IconName) {
 }
 
 export default function TabsLayout() {
+  const colors = usePalette();
   const priceAlertBadge = usePriceAlertBadge();
   return (
     <StalePricesFrame>
@@ -66,7 +67,7 @@ export default function TabsLayout() {
                 priceAlertBadge.count > 0 && !navigation.isFocused()
                   ? priceAlertBadge.count
                   : undefined,
-              tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.background },
+              tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.onAccent },
             })}
             listeners={{ focus: priceAlertBadge.clear, blur: priceAlertBadge.clear }}
           />
