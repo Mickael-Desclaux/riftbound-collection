@@ -6,11 +6,14 @@ import * as Notifications from 'expo-notifications';
 import { AndroidImportance, PermissionStatus } from 'expo-notifications';
 
 import type { NewExpansion } from '@/domain/catalog';
+import type { PriceAlert } from '@/domain/priceAlert';
 
 import type { NotificationData } from './notificationData';
 import { newExpansionsText, newExpansionsTitle } from './newExpansionsText';
+import { priceAlertsText, priceAlertsTitle } from './priceAlertsText';
 
 const NEW_EXPANSIONS_CHANNEL = 'new-expansions';
+const PRICE_ALERTS_CHANNEL = 'price-alerts';
 
 /**
  * Une notification n'est envoyée app ouverte que si aucun écran ne peut
@@ -41,6 +44,10 @@ async function setUpChannels(): Promise<void> {
     name: 'Nouvelles extensions',
     importance: AndroidImportance.DEFAULT,
   });
+  await Notifications.setNotificationChannelAsync(PRICE_ALERTS_CHANNEL, {
+    name: 'Alertes de prix des souhaits',
+    importance: AndroidImportance.DEFAULT,
+  });
 }
 
 /**
@@ -52,18 +59,32 @@ export async function requestNotificationPermission(): Promise<void> {
   await Notifications.requestPermissionsAsync();
 }
 
-/** Signale de nouvelles Extensions par une notification ; rien sans la permission. */
-export async function notifyNewExpansions(expansions: readonly NewExpansion[]): Promise<void> {
+/** Envoie une notification sur `channelId` ; dit si elle est partie (pas sans la permission). */
+async function notify(
+  channelId: string,
+  content: { title: string; body: string; data: NotificationData },
+): Promise<boolean> {
   const { granted } = await Notifications.getPermissionsAsync();
-  if (!granted) return;
+  if (!granted) return false;
   await setUpChannels();
-  const data: NotificationData = { kind: 'newExpansions', expansions: [...expansions] };
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: newExpansionsTitle(expansions),
-      body: newExpansionsText(expansions),
-      data,
-    },
-    trigger: { channelId: NEW_EXPANSIONS_CHANNEL },
+  await Notifications.scheduleNotificationAsync({ content, trigger: { channelId } });
+  return true;
+}
+
+/** Signale de nouvelles Extensions par une notification. */
+export async function notifyNewExpansions(expansions: readonly NewExpansion[]): Promise<boolean> {
+  return notify(NEW_EXPANSIONS_CHANNEL, {
+    title: newExpansionsTitle(expansions),
+    body: newExpansionsText(expansions),
+    data: { kind: 'newExpansions', expansions: [...expansions] },
+  });
+}
+
+/** Signale des Alertes de prix par une seule notification, qui ouvre l'onglet Souhaits. */
+export async function notifyPriceAlerts(alerts: readonly PriceAlert[]): Promise<boolean> {
+  return notify(PRICE_ALERTS_CHANNEL, {
+    title: priceAlertsTitle(alerts),
+    body: priceAlertsText(alerts),
+    data: { kind: 'priceAlerts' },
   });
 }

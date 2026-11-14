@@ -20,6 +20,8 @@ export function SettingsScreen() {
   const [displayCurrency, setDisplayCurrency] = useSetting('displayCurrency');
   const [priceSource, setPriceSource] = useSetting('priceSource');
   const [newExpansions, setNewExpansions] = useSetting('newExpansionNotifications');
+  const [priceAlerts, setPriceAlerts] = useSetting('priceAlertNotifications');
+  const [priceAlertThreshold, setPriceAlertThreshold] = useSetting('priceAlertThreshold');
   const notificationPermission = useNotificationPermission();
   const backupActions = useBackupActions();
   const db = useDatabase();
@@ -38,6 +40,10 @@ export function SettingsScreen() {
         <NotificationSettings
           newExpansions={newExpansions}
           onNewExpansionsChange={setNewExpansions}
+          priceAlerts={priceAlerts}
+          onPriceAlertsChange={setPriceAlerts}
+          priceAlertThreshold={priceAlertThreshold}
+          onPriceAlertThresholdChange={setPriceAlertThreshold}
           blockedByAndroid={notificationPermission === 'denied'}
           onOpenAndroidSettings={() => void Linking.openSettings()}
         />

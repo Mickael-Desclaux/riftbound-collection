@@ -6,6 +6,7 @@ import type { ColorValue } from 'react-native';
 import { CatalogRequestProvider } from '@/features/catalog/catalogRequest';
 import { NewExpansionsFrame } from '@/features/notifications/NewExpansionsFrame';
 import { NotificationResponses } from '@/features/notifications/NotificationResponses';
+import { usePriceAlertBadge } from '@/features/notifications/usePriceAlertBadge';
 import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
 import { colors } from '@/ui/theme';
 import { ToastProvider } from '@/ui/Toast';
@@ -27,15 +28,16 @@ function tabIcon(name: IconName) {
 }
 
 export default function TabsLayout() {
+  const priceAlertBadge = usePriceAlertBadge();
   return (
     <StalePricesFrame>
       <ToastProvider bottomOffset={TAB_BAR_HEIGHT}>
         <Tabs
           // La mise en page reçoit le navigateur des onglets : le bandeau et
-          // les notifications touchées peuvent ainsi ouvrir le Catalogue.
+          // les notifications touchées peuvent ainsi ouvrir le Catalogue ou les Souhaits.
           layout={({ children, navigation }) => (
             <CatalogRequestProvider showCatalogTab={() => navigation.navigate('catalog')}>
-              <NotificationResponses />
+              <NotificationResponses showWishlistTab={() => navigation.navigate('wishlist')} />
               <NewExpansionsFrame>{children}</NewExpansionsFrame>
             </CatalogRequestProvider>
           )}
@@ -56,7 +58,17 @@ export default function TabsLayout() {
           />
           <Tabs.Screen
             name="wishlist"
-            options={{ title: 'Souhaits', tabBarIcon: tabIcon('heart') }}
+            // La pastille des Alertes de prix s'efface dès qu'on a vu l'onglet.
+            options={({ navigation }) => ({
+              title: 'Souhaits',
+              tabBarIcon: tabIcon('heart'),
+              tabBarBadge:
+                priceAlertBadge.count > 0 && !navigation.isFocused()
+                  ? priceAlertBadge.count
+                  : undefined,
+              tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.background },
+            })}
+            listeners={{ focus: priceAlertBadge.clear, blur: priceAlertBadge.clear }}
           />
           <Tabs.Screen
             name="settings"

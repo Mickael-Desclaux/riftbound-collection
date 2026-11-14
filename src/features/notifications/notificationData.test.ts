@@ -10,6 +10,10 @@ describe('parseNotificationData', () => {
     expect(parseNotificationData(data)).toEqual(data);
   });
 
+  it('reconnaît une notification d’Alertes de prix', () => {
+    expect(parseNotificationData({ kind: 'priceAlerts' })).toEqual({ kind: 'priceAlerts' });
+  });
+
   it('ignore une forme inconnue', () => {
     expect(parseNotificationData({ kind: 'autre' })).toBeNull();
     expect(parseNotificationData({ kind: 'newExpansions', expansions: [] })).toBeNull();
