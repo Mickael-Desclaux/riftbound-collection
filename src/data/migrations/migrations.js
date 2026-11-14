@@ -4,13 +4,15 @@ import journal from './meta/_journal.json';
 import m0000 from './0000_init.sql';
 import m0001 from './0001_source_state.sql';
 import m0002 from './0002_source_last_modified.sql';
+import m0003 from './0003_source_error_details.sql';
 
   export default {
     journal,
     migrations: {
       m0000,
 m0001,
-m0002
+m0002,
+m0003
     }
   }
   

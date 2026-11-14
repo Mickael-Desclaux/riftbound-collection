@@ -2,6 +2,9 @@
 import type { AppDatabase } from '@/data/database';
 import type { SourceId } from '@/data/schema';
 import { recordSourceFailure, recordSourceSuccess, type SourceState } from '@/data/sourceState';
+import { SourceError } from '@/sources/http';
+
+export { hasPendingError } from '@/domain/sourceStatus';
 
 export const HOUR = 60 * 60 * 1000;
 
@@ -10,12 +13,6 @@ export function isOlderThan(state: SourceState | undefined, maxAge: number, at: 
   if (!state?.lastSuccessAt) return true;
   const age = at.getTime() - Date.parse(state.lastSuccessAt);
   return age < 0 || age >= maxAge;
-}
-
-/** La dernière tentative a échoué : on réessaie sans attendre. */
-export function hasPendingError(state: SourceState | undefined): boolean {
-  if (!state?.lastErrorAt) return false;
-  return !state.lastSuccessAt || Date.parse(state.lastErrorAt) >= Date.parse(state.lastSuccessAt);
 }
 
 /** Exécute une étape et note son échec dans `source_state` (sa réussite reste à noter). */
@@ -29,7 +26,8 @@ export async function failuresRecorded<T>(
     return await step();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    recordSourceFailure(db, source, at.toISOString(), message);
+    const details = error instanceof SourceError ? error.details : undefined;
+    recordSourceFailure(db, source, at.toISOString(), message, details);
     throw error;
   }
 }

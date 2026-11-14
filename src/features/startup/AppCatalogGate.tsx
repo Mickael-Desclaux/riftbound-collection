@@ -7,7 +7,7 @@ import { useDatabase } from '@/data/DatabaseProvider';
 import { fileSystemImageStore } from '@/features/binder/binderFiles';
 import { downloadBinderImages } from '@/sync/binderImages';
 import { syncCatalog, type OnProgress, type SyncDeps } from '@/sync/catalog';
-import { syncAll } from '@/sync/syncAll';
+import { syncAll, type SyncMode, type SyncReport } from '@/sync/syncAll';
 import { ClockContext } from '@/ui/ClockContext';
 import { SyncContext } from '@/ui/SyncContext';
 
@@ -53,37 +53,36 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
   const catalogReady = useRef(hadCatalogAtStart);
 
   // Une seule synchronisation à la fois. Une vérification ordinaire demandée
-  // pendant qu'elle tourne la rejoint ; un tirer-pour-rafraîchir attend sa fin
-  // puis relance une mise à jour forcée.
-  // Les échecs sont déjà notés dans source_state (écran « État des sources », #40).
-  const running = useRef<Promise<void> | null>(null);
+  // pendant qu'elle tourne la rejoint ; une mise à jour demandée par
+  // l'utilisateur (tirer-pour-rafraîchir, Réglages) attend sa fin puis est lancée.
+  // Les échecs sont notés dans source_state (Réglages → « État des sources »).
+  const running = useRef<Promise<SyncReport> | null>(null);
   const synchronize = useCallback(
-    function synchronize(refresh: boolean): Promise<void> {
-      if (!catalogReady.current) return Promise.resolve();
+    function synchronize(mode: SyncMode): Promise<SyncReport> {
+      if (!catalogReady.current) return Promise.resolve({ failures: [] });
       if (running.current) {
-        return refresh ? running.current.then(() => synchronize(true)) : running.current;
+        return mode === 'auto' ? running.current : running.current.then(() => synchronize(mode));
       }
-      running.current = syncAll(deps, { refresh })
-        .then(() => undefined)
-        .finally(() => {
-          running.current = null;
-        });
+      running.current = syncAll(deps, { mode }).finally(() => {
+        running.current = null;
+      });
       return running.current;
     },
     [deps],
   );
 
   useEffect(() => {
-    void synchronize(false);
+    void synchronize('auto');
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') void synchronize(false);
+      if (state === 'active') void synchronize('auto');
     });
     return () => subscription.remove();
   }, [synchronize]);
 
   const sync = useMemo(
     () => ({
-      refresh: () => synchronize(true),
+      refresh: () => synchronize('refresh').then(() => undefined),
+      resynchronize: (mode: 'resync' | 'rebuild') => synchronize(mode),
       downloadBinderImages: (
         urls: readonly string[],
         onProgress: (done: number, total: number) => void,
@@ -98,7 +97,7 @@ export function AppCatalogGate({ children }: { children: ReactNode }) {
       await syncCatalog(deps, { onProgress });
       catalogReady.current = true;
       // Les prix suivent en arrière-plan : seul le Catalogue est bloquant (spec § 6).
-      void synchronize(false);
+      void synchronize('auto');
     },
     [deps, synchronize],
   );

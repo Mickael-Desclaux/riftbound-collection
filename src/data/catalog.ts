@@ -6,7 +6,7 @@ import type { CardmarketLinks, Catalog, Expansion } from '@/domain/catalog';
 
 import type { AppDatabase } from './database';
 import { chunks } from './chunks';
-import { card, expansion, printing } from './schema';
+import { card, currentPrice, expansion, printing } from './schema';
 
 type Transaction = Parameters<Parameters<AppDatabase['transaction']>[0]>[0];
 
@@ -44,9 +44,20 @@ function deleteMissing(tx: Transaction, table: SQLiteTable, key: SQLiteColumn, k
  *
  * Les Versions disparues sont supprimées en premier : une Version dont le Code de
  * version change garde son `rifthunt_printing_id`, qui doit être libéré d'abord.
+ *
+ * `rebuild` (« Reconstruire le catalogue ») efface d'abord tout le Catalogue et
+ * les prix du jour, correspondance OpenRift comprise : il ne reste que ce qui
+ * vient d'être téléchargé. Les Données précieuses ne sont pas touchées.
  */
-export function replaceCatalog(db: AppDatabase, catalog: Catalog): void {
+export function replaceCatalog(
+  db: AppDatabase,
+  catalog: Catalog,
+  { rebuild = false }: { rebuild?: boolean } = {},
+): void {
   db.transaction((tx) => {
+    if (rebuild) {
+      for (const table of [currentPrice, printing, card, expansion]) tx.delete(table).run();
+    }
     const printingCodes = catalog.printings.map((p) => p.printingCode);
     deleteMissing(tx, printing, printing.printingCode, printingCodes);
 

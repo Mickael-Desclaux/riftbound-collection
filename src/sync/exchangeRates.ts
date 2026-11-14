@@ -31,15 +31,15 @@ const RATE_SOURCES: RateSource[] = [
   { id: 'bank-of-canada', fetchRates: fetchBankOfCanadaRates },
 ];
 
-export async function syncExchangeRates({
-  db,
-  fetch,
-  now,
-}: SyncDeps): Promise<ExchangeRateSyncOutcome> {
+export async function syncExchangeRates(
+  { db, fetch, now }: SyncDeps,
+  /** `refresh` : vérifie les taux même s'ils l'ont déjà été aujourd'hui. */
+  { refresh = false }: { refresh?: boolean } = {},
+): Promise<ExchangeRateSyncOutcome> {
   const at = now();
   const today = toIsoDate(at);
   const state = getSourceState(db, 'exchange-rates');
-  if (!hasPendingError(state) && succeededOn(state, today)) return 'skipped';
+  if (!refresh && !hasPendingError(state) && succeededOn(state, today)) return 'skipped';
 
   return recorded(db, 'exchange-rates', at, async () => {
     const earliest = earliestPriceRecordDate(db);

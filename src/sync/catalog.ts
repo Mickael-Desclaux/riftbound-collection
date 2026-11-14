@@ -34,18 +34,24 @@ export async function syncCatalog(
   options: {
     /** Retélécharge tout le Catalogue, même si rien n'a changé. */
     redownload?: boolean;
+    /**
+     * « Reconstruire le catalogue » : retélécharge tout le Catalogue et
+     * remplace celui de l'appareil, prix du jour compris (`replaceCatalog`).
+     */
+    rebuild?: boolean;
     /** L'utilisateur demande une mise à jour (tirer-pour-rafraîchir) : `/sets` est vérifié tout de suite. */
     refresh?: boolean;
     onProgress?: OnProgress;
   } = {},
 ): Promise<CatalogSyncOutcome> {
   const at = now();
+  const redownload = options.redownload || options.rebuild;
   const hasCatalog = catalogIsStored(db);
   const catalogState = getSourceState(db, 'rifthunt-catalog');
   const catalogRetry = hasPendingError(catalogState);
 
   const mustCheck =
-    options.redownload ||
+    redownload ||
     options.refresh ||
     !hasCatalog ||
     catalogRetry ||
@@ -55,7 +61,7 @@ export async function syncCatalog(
   const expansions = await recorded(db, 'rifthunt-sets', at, () => fetchExpansions(fetch));
 
   const mustDownload =
-    options.redownload ||
+    redownload ||
     !hasCatalog ||
     catalogRetry ||
     expansionsChanged(storedExpansions(db), expansions) ||
@@ -74,10 +80,11 @@ export async function syncCatalog(
         `Le catalogue RiftHunt cite une Extension absente de /sets : ${unknown.join(', ')}.`,
       );
     }
-    replaceCatalog(db, { expansions, cards, printings });
+    replaceCatalog(db, { expansions, cards, printings }, { rebuild: options.rebuild });
     // De nouvelles Versions attendent peut-être leur prix : le prochain
     // téléchargement des prix sera complet, même si leur fichier n'a pas changé.
     forgetLastModified(db, 'rifthunt-prices');
+    if (options.rebuild) forgetLastModified(db, 'cardmarket-prices');
   });
   return 'refreshed';
 }

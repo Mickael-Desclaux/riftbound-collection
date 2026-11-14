@@ -5,29 +5,45 @@
  * indépendante (spec § 5) : une panne est notée dans `source_state` et
  * n'empêche pas les suivantes.
  */
+import { forgetAllLastModified } from '@/data/sourceState';
+
 import { syncCardmarketLinks } from './cardmarketLinks';
 import { syncCatalog, type SyncDeps } from './catalog';
 import { syncExchangeRates } from './exchangeRates';
 import { syncCardmarketPrices, syncTcgplayerPrices } from './prices';
 
-type Step =
+export type SyncStep =
   'catalog' | 'cardmarketLinks' | 'tcgplayerPrices' | 'cardmarketPrices' | 'exchangeRates';
 
-export type SyncReport = { failures: { source: Step; error: unknown }[] };
+/**
+ * - `auto` : à l'ouverture et au retour dans l'app, chaque source selon sa fréquence ;
+ * - `refresh` : tirer-pour-rafraîchir, toutes les sources sans attendre ;
+ * - `resync` : « Tout resynchroniser », tout est retéléchargé, même un fichier inchangé ;
+ * - `rebuild` : « Reconstruire le catalogue », comme `resync`, et le Catalogue
+ *   de l'appareil est d'abord effacé (prix du jour et correspondance compris).
+ */
+export type SyncMode = 'auto' | 'refresh' | 'resync' | 'rebuild';
+
+export type SyncReport = { failures: { source: SyncStep; error: unknown }[] };
 
 export async function syncAll(
   deps: SyncDeps,
-  /** `refresh` : tirer-pour-rafraîchir, qui force la mise à jour. */
-  { refresh = false }: { refresh?: boolean } = {},
+  { mode = 'auto' }: { mode?: SyncMode } = {},
 ): Promise<SyncReport> {
-  const steps: { source: Step; run: () => Promise<unknown> }[] = [
-    { source: 'catalog', run: () => syncCatalog(deps, { refresh }) },
+  const refresh = mode !== 'auto';
+  const full = mode === 'resync' || mode === 'rebuild';
+  if (full) forgetAllLastModified(deps.db);
+  const steps: { source: SyncStep; run: () => Promise<unknown> }[] = [
+    {
+      source: 'catalog',
+      run: () => syncCatalog(deps, { refresh, redownload: full, rebuild: mode === 'rebuild' }),
+    },
     // Après le Catalogue : la correspondance relie ses Versions à Cardmarket.
     { source: 'cardmarketLinks', run: () => syncCardmarketLinks(deps) },
     { source: 'tcgplayerPrices', run: () => syncTcgplayerPrices(deps, { refresh }) },
     { source: 'cardmarketPrices', run: () => syncCardmarketPrices(deps, { refresh }) },
     // Après les prix : l'historique à couvrir part du plus ancien Relevé de prix.
-    { source: 'exchangeRates', run: () => syncExchangeRates(deps) },
+    { source: 'exchangeRates', run: () => syncExchangeRates(deps, { refresh: full }) },
   ];
   const failures: SyncReport['failures'] = [];
   // L'une après l'autre, volontairement : chaque étape s'appuie sur la précédente.

@@ -146,3 +146,19 @@ const formatTwoDigitDayMonth = new Intl.DateTimeFormat('fr-FR', {
 export function formatNumericDayMonth(at: IsoDateTime): string {
   return formatTwoDigitDayMonth(new Date(at));
 }
+
+const formatLocalDay = new Intl.DateTimeFormat('fr-FR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+}).format;
+const formatLocalTime = new Intl.DateTimeFormat('fr-FR', {
+  hour: '2-digit',
+  minute: '2-digit',
+}).format;
+
+/** « 14/11/2026 à 10:32 », à l'heure de l'appareil. */
+export function formatDateTime(at: IsoDateTime): string {
+  const date = new Date(at);
+  return `${formatLocalDay(date)} à ${formatLocalTime(date)}`;
+}

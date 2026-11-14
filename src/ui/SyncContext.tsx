@@ -1,8 +1,15 @@
 import { createContext, useContext } from 'react';
 
+import type { SyncReport } from '@/sync/syncAll';
+
 type SyncControls = {
   /** Tirer-pour-rafraîchir : met à jour toutes les sources sans attendre. */
   refresh: () => Promise<void>;
+  /**
+   * « Tout resynchroniser » (`resync`) ou « Reconstruire le catalogue »
+   * (`rebuild`) : rend les étapes qui ont échoué.
+   */
+  resynchronize: (mode: 'resync' | 'rebuild') => Promise<SyncReport>;
   /**
    * Télécharge les grandes images du classeur absentes du téléphone, en
    * annonçant la progression ; rend les adresses des images indisponibles.
@@ -15,6 +22,7 @@ type SyncControls = {
 
 export const SyncContext = createContext<SyncControls>({
   refresh: async () => {},
+  resynchronize: async () => ({ failures: [] }),
   downloadBinderImages: async (urls) => new Set(urls),
 });
 
