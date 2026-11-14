@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 
 import { SourceError, type OnProgress } from '@/sync/catalog';
 import { Button } from '@/ui/controls';
 import { Details } from '@/ui/Details';
+import { MessageScreen, MessageText } from '@/ui/MessageScreen';
 import { colors } from '@/ui/theme';
 
 export type CatalogGateProps = {
@@ -67,32 +68,32 @@ export function CatalogGate({
       return children;
     case 'downloading':
       return (
-        <Screen title="Téléchargement du catalogue">
+        <MessageScreen title="Téléchargement du catalogue">
           <ActivityIndicator color={colors.accent} />
-          <Text style={styles.text}>
+          <MessageText>
             {state.total === null
               ? 'Connexion à RiftHunt…'
               : `${formatCount(state.received)} / ${formatCount(state.total)} versions`}
-          </Text>
-        </Screen>
+          </MessageText>
+        </MessageScreen>
       );
     case 'offline':
       return (
-        <Screen title="Connexion nécessaire">
-          <Text style={styles.text}>
+        <MessageScreen title="Connexion nécessaire">
+          <MessageText>
             Le catalogue doit être téléchargé une première fois (environ 6 Mo). Le téléchargement
             reprendra tout seul dès que le réseau sera revenu.
-          </Text>
+          </MessageText>
           <Button label="Réessayer" onPress={start} variant="primary" />
-        </Screen>
+        </MessageScreen>
       );
     case 'failed':
       return (
-        <Screen title="Le catalogue n’a pas pu être téléchargé">
-          <Text style={styles.text}>{state.message}</Text>
+        <MessageScreen title="Le catalogue n’a pas pu être téléchargé">
+          <MessageText>{state.message}</MessageText>
           <Button label="Réessayer" onPress={start} variant="primary" />
           <Details text={state.details} />
-        </Screen>
+        </MessageScreen>
       );
   }
 }
@@ -104,25 +105,3 @@ function failureState(error: unknown): State {
   }
   return { step: 'failed', message: 'Une erreur inattendue est survenue.', details: String(error) };
 }
-
-function Screen({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <View style={styles.screen}>
-      <Text style={styles.title}>{title}</Text>
-      {children}
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    padding: 24,
-    backgroundColor: colors.background,
-  },
-  title: { color: colors.text, fontSize: 22, fontWeight: '700', textAlign: 'center' },
-  text: { color: colors.muted, fontSize: 15, textAlign: 'center' },
-});

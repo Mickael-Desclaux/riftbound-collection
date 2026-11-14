@@ -1,14 +1,7 @@
 import { createBackup, readBackup, serializeBackup, type PreciousData } from '@/domain/backup';
 import type { PrintingCode } from '@/domain/printingCode';
 
-import {
-  readPreciousData,
-  replacePreciousData,
-  restoreBackup,
-  undoLastRestore,
-  type SafetyBackupKind,
-  type SafetyBackupStore,
-} from './backup';
+import { readPreciousData, replacePreciousData, restoreBackup, undoLastRestore } from './backup';
 import { replaceCatalog } from './catalog';
 import { setOwnedQuantity } from './collection';
 import type { AppDatabase } from './database';
@@ -18,6 +11,7 @@ import { printing } from './schema';
 import { setSetting } from './settings';
 import { catalogOf, expansionOf, printingOf } from './testing/catalogFactory';
 import { createTestDatabase } from './testing/createTestDatabase';
+import { memorySafetyBackups } from './testing/memorySafetyBackups';
 import { setWishlisted } from './wishlist';
 
 const JINX = 'OGN-030a' as PrintingCode;
@@ -51,22 +45,6 @@ async function filledDatabase(): Promise<AppDatabase> {
     [record('2026-11-01T00:00:00.000Z', 1.5), record('2026-11-03T00:00:00.000Z', 1.75)],
   );
   return db;
-}
-
-function memorySafetyBackups(options: { failWrites?: boolean } = {}) {
-  const files = new Map<SafetyBackupKind, string>();
-  const store: SafetyBackupStore = {
-    read: async (kind) => files.get(kind) ?? null,
-    has: async (kind) => files.has(kind),
-    write: async (kind, text) => {
-      if (options.failWrites) throw new Error('disque plein');
-      files.set(kind, text);
-    },
-    remove: async (kind) => {
-      files.delete(kind);
-    },
-  };
-  return { store, files };
 }
 
 const OTHER_DATA: PreciousData = {

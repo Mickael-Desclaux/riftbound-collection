@@ -1,5 +1,5 @@
 /** Écriture du Catalogue (Données de référence). Ne touche jamais aux Données précieuses. */
-import { count, eq, getTableColumns, inArray, sql, type SQL } from 'drizzle-orm';
+import { count, eq, getTableColumns, inArray, isNotNull, sql, type SQL } from 'drizzle-orm';
 import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
 
 import type { CardmarketLinks, Catalog, Expansion } from '@/domain/catalog';
@@ -44,9 +44,23 @@ function deleteMissing(tx: Transaction, table: SQLiteTable, key: SQLiteColumn, k
  *
  * Les Versions disparues sont supprimées en premier : une Version dont le Code de
  * version change garde son `rifthunt_printing_id`, qui doit être libéré d'abord.
+ *
+ * `rebuild` (« Reconstruire le catalogue ») efface d'abord tout le Catalogue :
+ * il ne reste que ce qui vient d'être téléchargé. Seule la correspondance
+ * OpenRift est remise, jusqu'à ce qu'OpenRift la remplace (spec § 5 : si
+ * OpenRift est indisponible, on garde la dernière connue). Les prix du jour et
+ * les Données précieuses ne sont pas touchés.
  */
-export function replaceCatalog(db: AppDatabase, catalog: Catalog): void {
+export function replaceCatalog(
+  db: AppDatabase,
+  catalog: Catalog,
+  { rebuild = false }: { rebuild?: boolean } = {},
+): void {
   db.transaction((tx) => {
+    const links = rebuild ? readLinks(tx) : [];
+    if (rebuild) {
+      for (const table of [printing, card, expansion]) tx.delete(table).run();
+    }
     const printingCodes = catalog.printings.map((p) => p.printingCode);
     deleteMissing(tx, printing, printing.printingCode, printingCodes);
 
@@ -97,7 +111,25 @@ export function replaceCatalog(db: AppDatabase, catalog: Catalog): void {
       expansion.code,
       catalog.expansions.map((e) => e.code),
     );
+    for (const { printingCode, cardmarketProductId } of links) {
+      tx.update(printing)
+        .set({ cardmarketProductId })
+        .where(eq(printing.printingCode, printingCode))
+        .run();
+    }
   });
+}
+
+/** Les Versions reliées à un produit Cardmarket. */
+function readLinks(tx: Transaction) {
+  return tx
+    .select({
+      printingCode: printing.printingCode,
+      cardmarketProductId: printing.cardmarketProductId,
+    })
+    .from(printing)
+    .where(isNotNull(printing.cardmarketProductId))
+    .all();
 }
 
 /** Le Catalogue a-t-il déjà été téléchargé sur cet appareil ? */

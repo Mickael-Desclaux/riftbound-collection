@@ -12,9 +12,10 @@ import type { ExchangeRate, ExchangeRateSource } from '@/domain/exchangeRates';
 import { fetchBankOfCanadaRates } from '@/sources/bank-of-canada/bankOfCanada';
 import { fetchFrankfurterRates } from '@/sources/frankfurter/frankfurter';
 import { SourceError, type Fetch } from '@/sources/http';
+import { hasPendingError } from '@/domain/sourceStatus';
 
 import type { SyncDeps } from './catalog';
-import { hasPendingError, recorded } from './schedule';
+import { recorded } from './schedule';
 
 /** `skipped` : déjà fait aujourd'hui ; `refreshed` : taux enregistrés. */
 export type ExchangeRateSyncOutcome = 'skipped' | 'refreshed';
@@ -31,15 +32,15 @@ const RATE_SOURCES: RateSource[] = [
   { id: 'bank-of-canada', fetchRates: fetchBankOfCanadaRates },
 ];
 
-export async function syncExchangeRates({
-  db,
-  fetch,
-  now,
-}: SyncDeps): Promise<ExchangeRateSyncOutcome> {
+export async function syncExchangeRates(
+  { db, fetch, now }: SyncDeps,
+  /** `refresh` : vérifie les taux même s'ils l'ont déjà été aujourd'hui. */
+  { refresh = false }: { refresh?: boolean } = {},
+): Promise<ExchangeRateSyncOutcome> {
   const at = now();
   const today = toIsoDate(at);
   const state = getSourceState(db, 'exchange-rates');
-  if (!hasPendingError(state) && succeededOn(state, today)) return 'skipped';
+  if (!refresh && !hasPendingError(state) && succeededOn(state, today)) return 'skipped';
 
   return recorded(db, 'exchange-rates', at, async () => {
     const earliest = earliestPriceRecordDate(db);

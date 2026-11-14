@@ -143,6 +143,8 @@ export const sourceState = sqliteTable('source_state', {
   lastSuccessAt: text('last_success_at').$type<IsoDateTime>(),
   lastErrorAt: text('last_error_at').$type<IsoDateTime>(),
   lastErrorMessage: text('last_error_message'),
+  /** Diagnostic de la dernière erreur, pour le repli « Détails ». */
+  lastErrorDetails: text('last_error_details'),
   /** En-tête `Last-Modified` de la dernière réponse, pour ne pas retélécharger un fichier inchangé. */
   lastModified: text('last_modified'),
 });

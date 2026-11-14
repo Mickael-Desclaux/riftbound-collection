@@ -32,14 +32,26 @@ export function recordSourceFailure(
   source: SourceId,
   at: IsoDateTime,
   message: string,
+  details?: string,
 ): void {
+  const set = { lastErrorAt: at, lastErrorMessage: message, lastErrorDetails: details ?? null };
   db.insert(sourceState)
-    .values({ source, lastErrorAt: at, lastErrorMessage: message })
-    .onConflictDoUpdate({
-      target: sourceState.source,
-      set: { lastErrorAt: at, lastErrorMessage: message },
-    })
+    .values({ source, ...set })
+    .onConflictDoUpdate({ target: sourceState.source, set })
     .run();
+}
+
+/** L'état de toutes les sources déjà contactées. */
+export function readSourceStates(db: AppDatabase): SourceState[] {
+  return db.select().from(sourceState).all();
+}
+
+/**
+ * Oublie `Last-Modified` de toutes les sources : les prochains téléchargements
+ * seront complets (« Tout resynchroniser »).
+ */
+export function forgetAllLastModified(db: AppDatabase): void {
+  db.update(sourceState).set({ lastModified: null }).run();
 }
 
 /** Oublie `Last-Modified` : le prochain téléchargement de cette source sera complet. */
