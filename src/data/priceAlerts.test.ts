@@ -3,9 +3,10 @@ import type { PriceRecord } from '@/domain/priceRecords';
 import type { PrintingCode } from '@/domain/printingCode';
 
 import { replaceCatalog } from './catalog';
+import { setOwnedQuantity } from './collection';
 import { findPriceAlerts, recordPriceAlerts } from './priceAlerts';
 import { savePrices } from './prices';
-import { wishlistEntry } from './schema';
+import { collectionEntry, wishlistEntry } from './schema';
 import { setSetting } from './settings';
 import { catalogOf, expansionOf, printingOf } from './testing/catalogFactory';
 import { createTestDatabase } from './testing/createTestDatabase';
@@ -61,18 +62,19 @@ describe('findPriceAlerts et recordPriceAlerts', () => {
       ],
     );
 
-    const alerts = findPriceAlerts(db, NOW);
+    const alerts = findPriceAlerts(db, 'drop', NOW);
     expect(alerts).toEqual([
       {
         printingCode: JINX,
         cardName: 'Jinx',
+        direction: 'drop',
         source: 'tcgplayer',
         price: 8,
         change: expect.closeTo(-20),
       },
     ]);
     // Pas encore annoncée, donc pas encore retenue.
-    expect(findPriceAlerts(db, NOW)).toHaveLength(1);
+    expect(findPriceAlerts(db, 'drop', NOW)).toHaveLength(1);
 
     recordPriceAlerts(db, alerts, NOW);
     expect(db.select().from(wishlistEntry).all()).toContainEqual({
@@ -84,7 +86,7 @@ describe('findPriceAlerts et recordPriceAlerts', () => {
     });
 
     // Rien de nouveau depuis : pas de seconde alerte.
-    expect(findPriceAlerts(db, NOW)).toEqual([]);
+    expect(findPriceAlerts(db, 'drop', NOW)).toEqual([]);
   });
 
   it('suit la Source de prix et le seuil choisis', async () => {
@@ -107,7 +109,7 @@ describe('findPriceAlerts et recordPriceAlerts', () => {
       ],
     );
 
-    expect(findPriceAlerts(db, NOW)).toEqual([]);
+    expect(findPriceAlerts(db, 'drop', NOW)).toEqual([]);
   });
 
   it('ignore les Versions inconnues, sans prix ni nom', async () => {
@@ -121,6 +123,75 @@ describe('findPriceAlerts et recordPriceAlerts', () => {
       [record(unknown, '2026-10-20', 10), record(unknown, '2026-11-10', 1)],
     );
 
-    expect(findPriceAlerts(db, NOW)).toEqual([]);
+    expect(findPriceAlerts(db, 'drop', NOW)).toEqual([]);
+  });
+});
+
+describe('findPriceAlerts et recordPriceAlerts, en hausse (Collection)', () => {
+  async function owning() {
+    const { db } = await createTestDatabase();
+    replaceCatalog(
+      db,
+      catalogOf(
+        [expansionOf('OGN')],
+        [printingOf('OGN', '030a', 'Jinx'), printingOf('OGN', '001', 'Ahri')],
+      ),
+    );
+    setOwnedQuantity(db, JINX, 2, new Date(ADDED));
+    setOwnedQuantity(db, AHRI, 1, new Date(ADDED));
+    // Un souhait, que les alertes de hausse ne doivent pas toucher.
+    setWishlisted(db, 'OGN-002' as PrintingCode, ADDED);
+    savePrices(
+      db,
+      'tcgplayer',
+      [],
+      [
+        record(JINX, '2026-10-20', 10),
+        record(JINX, '2026-11-10', 12),
+        record(AHRI, '2026-10-20', 10),
+        record(AHRI, '2026-11-10', 8),
+      ],
+    );
+    return db;
+  }
+
+  it('trouve les Versions de la Collection qui ont monté du seuil, puis retient l’alerte annoncée', async () => {
+    const db = await owning();
+
+    const alerts = findPriceAlerts(db, 'rise', NOW);
+    expect(alerts).toEqual([
+      {
+        printingCode: JINX,
+        cardName: 'Jinx',
+        direction: 'rise',
+        source: 'tcgplayer',
+        price: 12,
+        change: expect.closeTo(20),
+      },
+    ]);
+
+    recordPriceAlerts(db, alerts, NOW);
+    expect(db.select().from(collectionEntry).all()).toContainEqual({
+      printingCode: JINX,
+      quantity: 2,
+      addedAt: ADDED,
+      lastAlertPrice: 12,
+      lastAlertSource: 'tcgplayer',
+      lastAlertAt: NOW.toISOString(),
+    });
+    expect(findPriceAlerts(db, 'rise', NOW)).toEqual([]);
+    // Les souhaits n'en sont pas touchés.
+    expect(db.select().from(wishlistEntry).all()).toEqual([
+      expect.objectContaining({ lastAlertPrice: null }),
+    ]);
+  });
+
+  it('suit son propre seuil, pas celui des souhaits', async () => {
+    const db = await owning();
+    setSetting(db, 'priceAlertThreshold', 50);
+    setSetting(db, 'priceRiseAlertThreshold', 25);
+
+    expect(findPriceAlerts(db, 'rise', NOW)).toEqual([]);
+    expect(findPriceAlerts(db, 'drop', NOW)).toEqual([]);
   });
 });

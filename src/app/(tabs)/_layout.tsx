@@ -6,6 +6,7 @@ import type { ColorValue } from 'react-native';
 import { CatalogRequestProvider } from '@/features/catalog/catalogRequest';
 import { NewExpansionsFrame } from '@/features/notifications/NewExpansionsFrame';
 import { NotificationResponses } from '@/features/notifications/NotificationResponses';
+import { priceAlertAnnouncer, priceRiseAlertAnnouncer } from '@/features/notifications/announcer';
 import { usePriceAlertBadge } from '@/features/notifications/usePriceAlertBadge';
 import { StalePricesFrame } from '@/features/prices/StalePricesFrame';
 import { usePalette } from '@/ui/theme';
@@ -29,16 +30,20 @@ function tabIcon(name: IconName) {
 
 export default function TabsLayout() {
   const colors = usePalette();
-  const priceAlertBadge = usePriceAlertBadge();
+  const priceAlertBadge = usePriceAlertBadge(priceAlertAnnouncer);
+  const priceRiseAlertBadge = usePriceAlertBadge(priceRiseAlertAnnouncer);
   return (
     <StalePricesFrame>
       <ToastProvider bottomOffset={TAB_BAR_HEIGHT}>
         <Tabs
           // La mise en page reçoit le navigateur des onglets : le bandeau et
-          // les notifications touchées peuvent ainsi ouvrir le Catalogue ou les Souhaits.
+          // les notifications touchées peuvent ainsi ouvrir le Catalogue, la Collection ou les Souhaits.
           layout={({ children, navigation }) => (
             <CatalogRequestProvider showCatalogTab={() => navigation.navigate('catalog')}>
-              <NotificationResponses showWishlistTab={() => navigation.navigate('wishlist')} />
+              <NotificationResponses
+                showWishlistTab={() => navigation.navigate('wishlist')}
+                showCollectionTab={() => navigation.navigate('collection')}
+              />
               <NewExpansionsFrame>{children}</NewExpansionsFrame>
             </CatalogRequestProvider>
           )}
@@ -55,7 +60,17 @@ export default function TabsLayout() {
           />
           <Tabs.Screen
             name="collection"
-            options={{ title: 'Collection', tabBarIcon: tabIcon('checkmark-circle') }}
+            // La pastille des hausses de prix s'efface dès qu'on a vu l'onglet.
+            options={({ navigation }) => ({
+              title: 'Collection',
+              tabBarIcon: tabIcon('checkmark-circle'),
+              tabBarBadge:
+                priceRiseAlertBadge.count > 0 && !navigation.isFocused()
+                  ? priceRiseAlertBadge.count
+                  : undefined,
+              tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.onAccent },
+            })}
+            listeners={{ focus: priceRiseAlertBadge.clear, blur: priceRiseAlertBadge.clear }}
           />
           <Tabs.Screen
             name="wishlist"

@@ -105,7 +105,8 @@ Rassemblés à partir des tickets ci-dessus.
 - **Thème** : Système (par défaut) / Clair / Sombre ; le sombre reprend les couleurs des prototypes.
 - **Notifications** :
   - « Nouvelles extensions » (interrupteur) ;
-  - « Alertes de prix des souhaits » (interrupteur et seuil en %, 15 % par défaut).
+  - « Alertes de prix des souhaits » (interrupteur et seuil en %, 15 % par défaut) ;
+  - « Hausses de prix de la collection » (interrupteur et seuil en %, 15 % par défaut).
 - **Données** :
   - « Exporter une sauvegarde », « Restaurer une sauvegarde », « Annuler la dernière restauration » ;
   - « Reconstruire le catalogue » ;
@@ -129,8 +130,9 @@ Source : [Règles de prix](https://github.com/Mickael-Desclaux/riftbound-collect
 8. **Prix daté** : la fiche donne le détail (source, date du relevé, date du taux) ; un **bandeau global** apparaît si les prix ont plus de 48 h.
 9. **Liste de souhaits** : variation depuis la date d'ajout, lue dans l'historique pour la source affichée (premier relevé qui suit la date d'ajout s'il n'y en a pas ce jour-là).
 10. **Alerte de prix** :
-    - baisse d'au moins le seuil global depuis l'ajout, ou depuis le prix de la dernière alerte ;
-    - une seule notification groupée ; pastille sur l'onglet Souhaits si l'app est ouverte ;
+    - souhaits : baisse d'au moins le seuil des souhaits depuis l'ajout, ou depuis le prix de la dernière alerte ;
+    - Collection : hausse d'au moins le seuil de la collection depuis l'entrée de la Version dans la Collection (passage de 0 à au moins 1 exemplaire), ou depuis le prix de la dernière alerte ; une Version retirée puis remise repart de son nouveau jour d'entrée, sauf « Annuler » ;
+    - une seule notification groupée par sens, sur son propre canal ; pastille sur l'onglet Souhaits (baisses) ou Collection (hausses) si l'app est ouverte ; toucher la notification ouvre cet onglet ;
     - basée sur la Source de prix choisie, en devise d'origine.
 
 ## 4. Données
@@ -166,7 +168,7 @@ Les noms de tables suivent les noms de code du glossaire (code en anglais). Les 
 | Table              | Contenu                                                                                                                       |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | `price_record`     | Code de version × source × Finition × date → valeur de l'Indicateur de référence, **enregistrée seulement quand elle change** |
-| `collection_entry` | Code de version → quantité                                                                                                    |
+| `collection_entry` | Code de version → quantité, date d'entrée dans la Collection, prix et date de la dernière Alerte de prix                      |
 | `wishlist_entry`   | Code de version → date d'ajout, prix et date de la dernière Alerte de prix                                                    |
 | `binder_entry`     | Codes de version de la Sélection du classeur                                                                                  |
 | `setting`          | clé → valeur (devise, source, thème, période du graphique, notifications, seuil d'alerte…)                                    |
@@ -175,7 +177,7 @@ Les noms de tables suivent les noms de code du glossaire (code en anglais). Les 
 
 ### 4.3 Sauvegarde
 
-- **Contenu** : fichier `.json` avec en-tête `format` + `version` + date d'export ; réglages, Collection, Liste de souhaits (avec la dernière alerte) et Sélection du classeur, désignés par leur Code de version ; historique des Relevés de prix sous forme compacte (une série de points par Version × source × Finition). Le Catalogue n'en fait pas partie.
+- **Contenu** : fichier `.json` avec en-tête `format` + `version` + date d'export ; réglages, Collection et Liste de souhaits (avec leur dernière alerte) et Sélection du classeur, désignés par leur Code de version ; historique des Relevés de prix sous forme compacte (une série de points par Version × source × Finition). Le Catalogue n'en fait pas partie.
 - **Import** :
   - validation complète avant toute modification ;
   - Sauvegarde de sécurité automatique juste avant ;

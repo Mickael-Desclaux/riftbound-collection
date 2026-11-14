@@ -7,6 +7,9 @@ import { savePrices } from './prices';
 import { catalogOf, expansionOf, printingOf } from './testing/catalogFactory';
 import { createTestDatabase } from './testing/createTestDatabase';
 
+/** Entrée dans la Collection, pour les tests. */
+const ENTERED = new Date('2026-11-01T10:00:00.000Z');
+
 const JINX = 'OGN-030a' as PrintingCode;
 
 /** Jinx en deux Versions (OGN-030 et OGN-030a), et Ahri à part. */
@@ -90,10 +93,10 @@ describe('actions de la fiche', () => {
   it('règle la quantité possédée, et retire la Version de la Collection à 0', async () => {
     const db = await catalogDatabase();
 
-    setOwnedQuantity(db, JINX, 2);
+    setOwnedQuantity(db, JINX, 2, ENTERED);
     expect(readPrintingState(db, JINX).quantity).toBe(2);
 
-    setOwnedQuantity(db, JINX, 0);
+    setOwnedQuantity(db, JINX, 0, ENTERED);
     expect(readPrintingState(db, JINX).quantity).toBe(0);
   });
 

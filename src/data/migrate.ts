@@ -7,9 +7,9 @@
 import { getTableName, sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/expo-sqlite/migrator';
 
-import { createBackup, serializeBackup } from '@/domain/backup';
+import { serializeBackup } from '@/domain/backup';
 
-import { readPreciousData, type SafetyBackupStore } from './backup';
+import { exportBackup, type SafetyBackupStore } from './backup';
 import type { AppDatabase } from './database';
 import { preciousDataTables } from './schema';
 
@@ -52,7 +52,7 @@ export async function migrateSafely(
   const needsSafetyBackup = pendingMigrations(db, migrations).some(touchesPreciousData);
   if (needsSafetyBackup) {
     try {
-      const backup = createBackup(readPreciousData(db), now().toISOString());
+      const backup = exportBackup(db, now());
       await safetyBackups.write('migration', serializeBackup(backup));
     } catch (error) {
       throw new MigrationError('safety-backup', error);

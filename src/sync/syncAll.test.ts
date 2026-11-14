@@ -140,7 +140,9 @@ describe('syncAll', () => {
           publishedAt: '2026-11-01T00:00:00Z',
         })
         .run();
-      db.insert(collectionEntry).values({ printingCode: JINX, quantity: 2 }).run();
+      db.insert(collectionEntry)
+        .values({ printingCode: JINX, quantity: 2, addedAt: '2026-11-01T10:00:00.000Z' })
+        .run();
 
       const report = await syncAll(
         { db, fetch: fakeFetch(responses()).fetch, now: at('2026-11-10T11:00:00Z') },

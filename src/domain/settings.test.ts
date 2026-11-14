@@ -9,6 +9,8 @@ describe('parseSetting', () => {
     expect(parseSetting('newExpansionNotifications', undefined)).toBe(true);
     expect(parseSetting('priceAlertNotifications', undefined)).toBe(true);
     expect(parseSetting('priceAlertThreshold', undefined)).toBe(15);
+    expect(parseSetting('priceRiseAlertNotifications', undefined)).toBe(true);
+    expect(parseSetting('priceRiseAlertThreshold', undefined)).toBe(15);
   });
 
   it('relit une valeur enregistrée en JSON', () => {
@@ -19,6 +21,7 @@ describe('parseSetting', () => {
   it('retombe sur la valeur par défaut si la valeur n’est plus permise', () => {
     expect(parseSetting('theme', '"sepia"')).toBe('system');
     expect(parseSetting('priceAlertThreshold', '0')).toBe(15);
+    expect(parseSetting('priceRiseAlertThreshold', '150')).toBe(15);
   });
 
   it('ignore une valeur illisible', () => {

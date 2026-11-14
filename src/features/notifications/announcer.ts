@@ -6,7 +6,7 @@
 import type { NewExpansion } from '@/domain/catalog';
 import type { PriceAlert } from '@/domain/priceAlert';
 
-import { notifyNewExpansions, notifyPriceAlerts } from './notifications';
+import { notifyNewExpansions, notifyPriceAlerts, notifyPriceRiseAlerts } from './notifications';
 
 type Listener<T> = (items: T[]) => void;
 
@@ -45,3 +45,4 @@ export function createAnnouncer<T>(notify: (items: T[]) => Promise<boolean>) {
 /** Les annonceurs de l'app, partagés par l'app ouverte et la tâche en arrière-plan. */
 export const newExpansionAnnouncer = createAnnouncer<NewExpansion>(notifyNewExpansions);
 export const priceAlertAnnouncer = createAnnouncer<PriceAlert>(notifyPriceAlerts);
+export const priceRiseAlertAnnouncer = createAnnouncer<PriceAlert>(notifyPriceRiseAlerts);

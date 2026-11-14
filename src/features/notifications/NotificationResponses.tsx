@@ -8,12 +8,13 @@ import { parseNotificationData } from './notificationData';
 
 /**
  * Ouvre ce dont parle une notification touchée : la nouvelle Extension, dans
- * le Catalogue filtré, ou l'onglet Souhaits pour des Alertes de prix. Couvre
- * aussi l'app lancée par ce toucher.
+ * le Catalogue filtré, l'onglet Souhaits pour des baisses, l'onglet Collection
+ * pour des hausses. Couvre aussi l'app lancée par ce toucher.
  */
 export function NotificationResponses({
   showWishlistTab,
-}: Readonly<{ showWishlistTab: () => void }>) {
+  showCollectionTab,
+}: Readonly<{ showWishlistTab: () => void; showCollectionTab: () => void }>) {
   const openCatalog = useOpenCatalog();
 
   const open = useEffectEvent((response: Notifications.NotificationResponse) => {
@@ -23,6 +24,7 @@ export function NotificationResponses({
     const data = parseNotificationData(response.notification.request.content.data);
     if (data?.kind === 'newExpansions') openCatalog(expansionFilters(data.expansions));
     if (data?.kind === 'priceAlerts') showWishlistTab();
+    if (data?.kind === 'priceRiseAlerts') showCollectionTab();
   });
 
   useEffect(() => {

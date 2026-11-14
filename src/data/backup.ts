@@ -6,6 +6,7 @@
 import { getTableColumns, sql } from 'drizzle-orm';
 import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
 
+import type { IsoDateTime } from '@/domain/dates';
 import {
   createBackup,
   fromPriceSeries,
@@ -52,14 +53,17 @@ export type SafetyBackupStore = {
  * Elles sont lues colonne par colonne d'après ce que contient la base, pas
  * d'après le schéma du code : juste avant une migration, une table précieuse
  * n'a pas encore les colonnes que la migration va lui ajouter (elles sont
- * alors lues `null`).
+ * alors lues `null`). Une Version possédée sans date d'entrée (base d'avant
+ * la migration 0004) entre dans la Collection à `exportedAt`, comme le fait
+ * cette migration.
  */
-export function readPreciousData(db: AppDatabase): PreciousData {
+export function readPreciousData(db: AppDatabase, exportedAt: IsoDateTime): PreciousData {
   return {
     settings: readSettings(db),
-    collection: readRows(db, collectionEntry, [collectionEntry.printingCode]).map(
-      ({ printingCode, quantity }) => ({ printingCode, quantity }),
-    ),
+    collection: readRows(db, collectionEntry, [collectionEntry.printingCode]).map((entry) => ({
+      ...entry,
+      addedAt: entry.addedAt ?? exportedAt,
+    })),
     wishlist: readRows(db, wishlistEntry, [wishlistEntry.printingCode]),
     binderSelection: readRows(db, binderSelection, [binderSelection.printingCode]).map(
       (row) => row.printingCode,
@@ -68,6 +72,12 @@ export function readPreciousData(db: AppDatabase): PreciousData {
       readRows(db, priceRecord, [priceRecord.printingCode, priceRecord.source, priceRecord.finish]),
     ),
   };
+}
+
+/** Une Sauvegarde de toutes les Données précieuses, datée de `exportedAt`. */
+export function exportBackup(db: AppDatabase, exportedAt: Date): Backup {
+  const at = exportedAt.toISOString();
+  return createBackup(readPreciousData(db, at), at);
 }
 
 /** Les lignes d'une table, avec les seules colonnes présentes dans la base (les autres à `null`). */
@@ -145,7 +155,7 @@ export async function restoreBackup(
   { safetyBackups, now }: RestoreDependencies,
 ): Promise<void> {
   const previous = await safetyBackups.read('restore');
-  const current = createBackup(readPreciousData(db), now().toISOString());
+  const current = exportBackup(db, now());
   await safetyBackups.write('restore', serializeBackup(current));
   try {
     replacePreciousData(db, backup);

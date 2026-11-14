@@ -71,7 +71,7 @@ La part des Versions distinctes d'une Extension que l'utilisateur possède (ex. 
 _À éviter_ : progression, pourcentage de collection
 
 **Alerte de prix** :
-Une notification émise quand une Version de la Liste de souhaits a baissé d'au moins le seuil choisi depuis son ajout (ou depuis sa dernière alerte).
+Une notification émise quand une Version a changé d'au moins le seuil choisi depuis son ajout (ou depuis sa dernière alerte) : une **baisse** pour une Version de la Liste de souhaits, une **hausse** pour une Version de la Collection. Chaque sens a son propre réglage et son propre seuil.
 _À éviter_ : notification de prix, rappel
 
 ### Nature des données
@@ -134,7 +134,7 @@ Le code est écrit en anglais. Chaque terme du glossaire y porte un seul nom :
 | Version inconnue        | `inCatalog: false` sur une `CatalogEntry`                                           |
 | Valeur de la collection | `collectionValue`                                                                   |
 | Complétion              | `completion`                                                                        |
-| Alerte de prix          | `PriceAlert`                                                                        |
+| Alerte de prix          | `PriceAlert` (sens : `PriceAlertDirection`, `drop` ou `rise`)                       |
 | Liste de souhaits       | `Wishlist`                                                                          |
 | Sélection du classeur   | `BinderSelection`                                                                   |
 | Sauvegarde              | `Backup`                                                                            |

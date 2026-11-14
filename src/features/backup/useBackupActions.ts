@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 
-import { readPreciousData, restoreBackup, undoLastRestore } from '@/data/backup';
+import { exportBackup, restoreBackup, undoLastRestore } from '@/data/backup';
 import { useDatabase } from '@/data/DatabaseProvider';
-import { createBackup, readBackup, serializeBackup } from '@/domain/backup';
+import { readBackup, serializeBackup } from '@/domain/backup';
 import { localIsoDate } from '@/domain/dates';
 import { useClock } from '@/ui/ClockContext';
 
@@ -17,7 +17,7 @@ export function useBackupActions(): BackupActions {
     () => ({
       exportBackup: () => {
         const at = now();
-        const backup = createBackup(readPreciousData(db), at.toISOString());
+        const backup = exportBackup(db, at);
         return shareBackupFile(
           serializeBackup(backup),
           `riftbound-collection-${localIsoDate(at)}.json`,

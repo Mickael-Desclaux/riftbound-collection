@@ -67,8 +67,11 @@ const SETTINGS = {
   chartPeriod,
   newExpansionNotifications: toggle(true),
   priceAlertNotifications: toggle(true),
-  /** Seuil de baisse, en %, qui déclenche une Alerte de prix. */
+  /** Seuil de baisse, en %, qui déclenche une Alerte de prix d'un souhait. */
   priceAlertThreshold: percentage(15),
+  priceRiseAlertNotifications: toggle(true),
+  /** Seuil de hausse, en %, qui déclenche une Alerte de prix d'une Version de la Collection. */
+  priceRiseAlertThreshold: percentage(15),
 } satisfies Record<string, SettingDefinition<unknown>>;
 
 export type SettingKey = keyof typeof SETTINGS;

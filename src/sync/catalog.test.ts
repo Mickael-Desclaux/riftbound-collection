@@ -123,10 +123,10 @@ describe('syncCatalog', () => {
     const db = await syncedDatabase();
     const code = (value: string) => value as PrintingCode;
     db.insert(collectionEntry)
-      .values({ printingCode: code('OGN-255'), quantity: 3 })
+      .values({ printingCode: code('OGN-255'), quantity: 3, addedAt: '2026-11-01T10:00:00.000Z' })
       .run();
     db.insert(collectionEntry)
-      .values({ printingCode: code('OGN-999'), quantity: 1 })
+      .values({ printingCode: code('OGN-999'), quantity: 1, addedAt: '2026-11-01T10:00:00.000Z' })
       .run();
     db.insert(wishlistEntry)
       .values({ printingCode: code('OPP-r04b'), addedAt: '2026-11-01T00:00:00Z' })

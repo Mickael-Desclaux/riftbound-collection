@@ -14,7 +14,13 @@ const newExpansionsData = z.object({
 
 const priceAlertsData = z.object({ kind: z.literal('priceAlerts') });
 
-const notificationData = z.discriminatedUnion('kind', [newExpansionsData, priceAlertsData]);
+const priceRiseAlertsData = z.object({ kind: z.literal('priceRiseAlerts') });
+
+const notificationData = z.discriminatedUnion('kind', [
+  newExpansionsData,
+  priceAlertsData,
+  priceRiseAlertsData,
+]);
 
 export type NotificationData = z.infer<typeof notificationData>;
 

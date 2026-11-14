@@ -17,7 +17,7 @@ import { isValidSetting, SETTING_KEYS, type SettingValues } from './settings';
 
 export const BACKUP_FORMAT = 'riftbound-collection-backup';
 /** Version du format écrit par cette version de l'app. */
-export const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 2;
 
 /** L'historique d'un prix (Version × source × Finition) : ses Relevés, du plus ancien au plus récent. */
 export type PriceSeries = {
@@ -27,18 +27,29 @@ export type PriceSeries = {
   points: [recordedAt: IsoDateTime, value: number][];
 };
 
-export type BackupWishlistEntry = {
-  printingCode: PrintingCode;
-  addedAt: IsoDateTime;
+/** La dernière Alerte de prix, entière ou absente. */
+type BackupLastAlert = {
   lastAlertPrice: number | null;
   lastAlertSource: PriceSource | null;
   lastAlertAt: IsoDateTime | null;
 };
 
+export type BackupWishlistEntry = {
+  printingCode: PrintingCode;
+  addedAt: IsoDateTime;
+} & BackupLastAlert;
+
+export type BackupCollectionEntry = {
+  printingCode: PrintingCode;
+  quantity: number;
+  /** Entrée dans la Collection. */
+  addedAt: IsoDateTime;
+} & BackupLastAlert;
+
 /** Tout ce que contient une Sauvegarde, hors en-tête. */
 export type PreciousData = {
   settings: SettingValues;
-  collection: { printingCode: PrintingCode; quantity: number }[];
+  collection: BackupCollectionEntry[];
   wishlist: BackupWishlistEntry[];
   binderSelection: PrintingCode[];
   priceHistory: PriceSeries[];
@@ -65,8 +76,29 @@ export type BackupReadResult = { ok: true; backup: Backup } | { ok: false; error
 /** Convertit un document de la version n vers la version n + 1. */
 export type BackupUpgrade = (document: Record<string, unknown>) => Record<string, unknown>;
 
+/**
+ * Format 1 → 2 : la Collection gagne sa date d'entrée et sa dernière Alerte
+ * de prix. Faute de mieux, les Versions possédées y entrent à la date
+ * d'export, comme le fait la migration de la base.
+ */
+const addCollectionAlerts: BackupUpgrade = (document) => {
+  const { collection, exportedAt } = document;
+  if (!Array.isArray(collection)) throw new Error('la Collection n’est pas une liste');
+  return {
+    ...document,
+    version: 2,
+    collection: collection.map((entry: unknown) => ({
+      addedAt: exportedAt,
+      lastAlertPrice: null,
+      lastAlertSource: null,
+      lastAlertAt: null,
+      ...(entry as Record<string, unknown>),
+    })),
+  };
+};
+
 /** `BACKUP_UPGRADES[i]` convertit la version i + 1 en version i + 2. */
-const BACKUP_UPGRADES: readonly BackupUpgrade[] = [];
+const BACKUP_UPGRADES: readonly BackupUpgrade[] = [addCollectionAlerts];
 
 export function createBackup(data: PreciousData, exportedAt: IsoDateTime): Backup {
   return { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt, ...data };
@@ -210,6 +242,19 @@ const priceSeriesSchema = z.strictObject({
     .superRefine(unique(([recordedAt]) => recordedAt, 'Relevé de prix')),
 });
 
+const lastAlertShape = {
+  lastAlertPrice: priceSchema.nullable(),
+  lastAlertSource: z.enum(PRICE_SOURCES).nullable(),
+  lastAlertAt: dateTimeSchema.nullable(),
+};
+
+/** La dernière Alerte de prix est entière, ou absente. */
+function hasWholeLastAlert({ lastAlertPrice, lastAlertSource, lastAlertAt }: BackupLastAlert) {
+  return new Set([lastAlertPrice, lastAlertSource, lastAlertAt].map((v) => v === null)).size === 1;
+}
+
+const wholeLastAlert = { message: 'dernière Alerte de prix incomplète' };
+
 const backupSchema = z.strictObject({
   format: z.literal(BACKUP_FORMAT),
   version: z.literal(BACKUP_VERSION),
@@ -217,7 +262,14 @@ const backupSchema = z.strictObject({
   settings: settingsSchema,
   collection: z
     .array(
-      z.strictObject({ printingCode: printingCodeSchema, quantity: z.number().int().positive() }),
+      z
+        .strictObject({
+          printingCode: printingCodeSchema,
+          quantity: z.number().int().positive(),
+          addedAt: dateTimeSchema,
+          ...lastAlertShape,
+        })
+        .refine(hasWholeLastAlert, wholeLastAlert),
     )
     .superRefine(unique((entry) => entry.printingCode, 'Version')),
   wishlist: z
@@ -226,17 +278,9 @@ const backupSchema = z.strictObject({
         .strictObject({
           printingCode: printingCodeSchema,
           addedAt: dateTimeSchema,
-          lastAlertPrice: priceSchema.nullable(),
-          lastAlertSource: z.enum(PRICE_SOURCES).nullable(),
-          lastAlertAt: dateTimeSchema.nullable(),
+          ...lastAlertShape,
         })
-        .refine(
-          // La dernière Alerte de prix est entière, ou absente.
-          ({ lastAlertPrice, lastAlertSource, lastAlertAt }) =>
-            new Set([lastAlertPrice, lastAlertSource, lastAlertAt].map((v) => v === null)).size ===
-            1,
-          { message: 'dernière Alerte de prix incomplète' },
-        ),
+        .refine(hasWholeLastAlert, wholeLastAlert),
     )
     .superRefine(unique((entry) => entry.printingCode, 'Version')),
   binderSelection: z

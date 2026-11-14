@@ -59,7 +59,11 @@ describe('readCatalogEntries', () => {
   it('donne la quantité possédée d’après la Collection', async () => {
     const db = await catalogDatabase();
     db.insert(collectionEntry)
-      .values({ printingCode: 'SFD-001' as PrintingCode, quantity: 3 })
+      .values({
+        printingCode: 'SFD-001' as PrintingCode,
+        quantity: 3,
+        addedAt: '2026-11-01T10:00:00.000Z',
+      })
       .run();
 
     const entries = withOwnedQuantities(readCatalogEntries(db), readOwnedQuantities(db));

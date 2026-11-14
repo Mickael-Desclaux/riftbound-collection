@@ -16,10 +16,32 @@ const code = (value: string) => value as PrintingCode;
 
 const EXPORTED_AT = '2026-11-14T10:00:00.000Z';
 
+/** Une ligne de la Collection telle que l'écrit le format 2. */
+function owned(printingCode: string, quantity: number, overrides: Record<string, unknown> = {}) {
+  return {
+    printingCode,
+    quantity,
+    addedAt: '2026-11-02T08:00:00.000Z',
+    lastAlertPrice: null,
+    lastAlertSource: null,
+    lastAlertAt: null,
+    ...overrides,
+  };
+}
+
 function preciousData(overrides: Partial<PreciousData> = {}): PreciousData {
   return {
     settings: { displayCurrency: 'EUR', priceAlertThreshold: 20 },
-    collection: [{ printingCode: code('OGN-030a'), quantity: 2 }],
+    collection: [
+      {
+        printingCode: code('OGN-030a'),
+        quantity: 2,
+        addedAt: '2026-11-02T08:00:00.000Z',
+        lastAlertPrice: 4.1,
+        lastAlertSource: 'cardmarket',
+        lastAlertAt: '2026-11-09T08:00:00.000Z',
+      },
+    ],
     wishlist: [
       {
         printingCode: code('OGN-303s'),
@@ -159,19 +181,20 @@ describe('readBackup', () => {
     ['une section manquante', (d) => delete d.wishlist],
     ['un champ inconnu', (d) => (d.extra = true)],
     ['une date d’export illisible', (d) => (d.exportedAt = 'hier')],
-    ['une quantité nulle', (d) => (d.collection = [{ printingCode: 'OGN-030a', quantity: 0 }])],
+    ['une quantité nulle', (d) => (d.collection = [owned('OGN-030a', 0)])],
+    ['une quantité décimale', (d) => (d.collection = [owned('OGN-030a', 1.5)])],
     [
-      'une quantité décimale',
-      (d) => (d.collection = [{ printingCode: 'OGN-030a', quantity: 1.5 }]),
+      'une Version de la Collection sans date d’entrée',
+      (d) => (d.collection = [{ ...owned('OGN-030a', 1), addedAt: undefined }]),
+    ],
+    [
+      'une dernière Alerte de prix incomplète dans la Collection',
+      (d) => (d.collection = [owned('OGN-030a', 1, { lastAlertPrice: 3 })]),
     ],
     ['un Code de version vide', (d) => (d.binderSelection = [''])],
     [
       'une Version en double dans la Collection',
-      (d) =>
-        (d.collection = [
-          { printingCode: 'OGN-030a', quantity: 1 },
-          { printingCode: 'OGN-030a', quantity: 2 },
-        ]),
+      (d) => (d.collection = [owned('OGN-030a', 1), owned('OGN-030a', 2)]),
     ],
     ['une Version en double dans le classeur', (d) => (d.binderSelection = ['SFD-001', 'SFD-001'])],
     ['un réglage inconnu', (d) => (d.settings = { couleur: 'bleu' })],
@@ -224,6 +247,39 @@ describe('readBackup', () => {
       points: [['2026-11-01T00:00:00.000Z', 1]],
     };
   }
+});
+
+describe('readBackup, format 1', () => {
+  it('convertit une Sauvegarde du format 1 : les Versions possédées entrent dans la Collection à la date d’export', () => {
+    const document = JSON.parse(serializeBackup(createBackup(preciousData(), EXPORTED_AT)));
+    document.version = 1;
+    document.collection = [{ printingCode: 'OGN-030a', quantity: 2 }];
+
+    const result = readBackup(JSON.stringify(document));
+
+    expect(result).toMatchObject({ ok: true, backup: { version: BACKUP_VERSION } });
+    expect(result.ok && result.backup.collection).toEqual([
+      {
+        printingCode: 'OGN-030a',
+        quantity: 2,
+        addedAt: EXPORTED_AT,
+        lastAlertPrice: null,
+        lastAlertSource: null,
+        lastAlertAt: null,
+      },
+    ]);
+  });
+
+  it('signale une Sauvegarde du format 1 abîmée plutôt que d’échouer pendant la conversion', () => {
+    const document = JSON.parse(serializeBackup(createBackup(preciousData(), EXPORTED_AT)));
+    document.version = 1;
+    document.collection = 'rien';
+
+    expect(readBackup(JSON.stringify(document))).toMatchObject({
+      ok: false,
+      error: { kind: 'damaged' },
+    });
+  });
 });
 
 describe('upgradeBackupDocument', () => {

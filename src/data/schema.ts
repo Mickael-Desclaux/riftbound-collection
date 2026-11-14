@@ -175,6 +175,12 @@ export const collectionEntry = sqliteTable(
   {
     printingCode: printingCodeColumn().primaryKey(),
     quantity: integer('quantity').notNull(),
+    /** Entrée dans la Collection (passage de 0 à au moins 1 exemplaire), point de départ des Alertes de prix. */
+    addedAt: text('added_at').$type<IsoDateTime>().notNull(),
+    /** Dernière Alerte de prix (hausse), comme pour `wishlistEntry`. */
+    lastAlertPrice: real('last_alert_price'),
+    lastAlertSource: text('last_alert_source').$type<PriceSource>(),
+    lastAlertAt: text('last_alert_at').$type<IsoDateTime>(),
   },
   (t) => [check('collection_entry_quantity_positive', sql`${t.quantity} > 0`)],
 );
