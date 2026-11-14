@@ -33,10 +33,23 @@
           "color": "#e0b44c",
           "enableRemoteNotifications": false
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": false
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cb6d81a0-47b3-47a8-ae85-cdc71b491998"
+      }
     }
   }
 }
