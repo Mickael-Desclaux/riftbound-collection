@@ -1,19 +1,19 @@
 import type { NewExpansion } from '@/domain/catalog';
 
-import { createNewExpansionAnnouncer } from './newExpansionAnnouncer';
+import { createAnnouncer } from './announcer';
 
 const VENDETTA: NewExpansion = { code: 'VEN', name: 'Vendetta', isPromo: false };
 
 function setup() {
   const notified: NewExpansion[][] = [];
   const shown: NewExpansion[][] = [];
-  const announcer = createNewExpansionAnnouncer(async (expansions) => {
+  const announcer = createAnnouncer<NewExpansion>(async (expansions) => {
     notified.push(expansions);
   });
   return { announcer, notified, shown, showInApp: () => announcer.subscribe((e) => shown.push(e)) };
 }
 
-describe('createNewExpansionAnnouncer', () => {
+describe('createAnnouncer', () => {
   it('affiche un message quand l’app est ouverte', async () => {
     const { announcer, notified, shown, showInApp } = setup();
     showInApp();

@@ -6,7 +6,7 @@ import { expansionFilters } from '@/domain/catalogFilters';
 import { useOpenCatalog } from '@/features/catalog/catalogRequest';
 import type { NewExpansion } from '@/domain/catalog';
 
-import { newExpansionAnnouncer } from './newExpansionAnnouncer';
+import { newExpansionAnnouncer } from './announcer';
 import { NewExpansionsNotice } from './NewExpansionsNotice';
 
 /** Ajoute les Extensions annoncées à celles déjà affichées, sans doublon. */

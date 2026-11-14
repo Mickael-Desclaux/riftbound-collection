@@ -106,10 +106,15 @@ const formatOneDecimal = new Intl.NumberFormat('fr-FR', {
   maximumFractionDigits: 1,
 }).format;
 
+/** « 10,0 % » : un pourcentage sans signe. */
+export function formatPercent(value: number): string {
+  return `${formatOneDecimal(Math.abs(value))} %`;
+}
+
 /** « +10,0 % », « −3,5 % » : une variation, toujours signée. */
 export function formatPercentChange(change: number): string {
   const sign = change > 0 ? '+' : change < 0 ? '−' : '';
-  return `${sign}${formatOneDecimal(Math.abs(change))} %`;
+  return `${sign}${formatPercent(change)}`;
 }
 
 const formatDayMonth = new Intl.DateTimeFormat('fr-FR', {
