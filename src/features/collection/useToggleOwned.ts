@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 
+import { restoreOwnedQuantity } from '@/data/collection';
+import { useDatabase } from '@/data/DatabaseProvider';
 import { toggleOwned } from '@/domain/collection';
 import type { GridPrinting } from '@/ui/printing-grid/gridPrinting';
 import { useToast } from '@/ui/Toast';
@@ -15,6 +17,7 @@ export type OwnedToggleTarget = Pick<GridPrinting, 'printingCode' | 'ownedQuanti
  * « Retirée de la collection (×n) · Annuler », comme une Version inconnue.
  */
 export function useToggleOwned(): (printing: OwnedToggleTarget) => void {
+  const db = useDatabase();
   const setOwnedQuantity = useSetOwnedQuantity();
   const showToast = useToast();
   return useCallback(
@@ -25,9 +28,9 @@ export function useToggleOwned(): (printing: OwnedToggleTarget) => void {
       showToast({
         message: `Retirée de la collection (×${undoQuantity})`,
         actionLabel: 'Annuler',
-        onAction: () => setOwnedQuantity(printingCode, undoQuantity),
+        onAction: () => restoreOwnedQuantity(db, printingCode, undoQuantity),
       });
     },
-    [setOwnedQuantity, showToast],
+    [db, setOwnedQuantity, showToast],
   );
 }

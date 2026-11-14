@@ -58,7 +58,7 @@ export function withWishlist(
 export function wishlistEntries(
   entries: CatalogEntry[],
   wishlist: ReadonlyMap<PrintingCode, IsoDateTime>,
-  owned: ReadonlyMap<PrintingCode, number> = new Map(),
+  owned: ReadonlyMap<PrintingCode, number>,
 ): CatalogEntry[] {
   const unknown = unknownEntries(entries, wishlist.keys(), owned, wishlist);
   return [...entries, ...unknown].filter((entry) => entry.wishlistedAt !== null);

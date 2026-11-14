@@ -64,9 +64,9 @@ export function PrintingTile({
           accessibilityLabel={`Possédée : ${printing.name}`}
           onPress={onToggleOwned}
           hitSlop={6}
-          style={[styles.check, owned && styles.checkOn]}
+          style={[styles.corner, styles.check, owned && styles.checkOn]}
         >
-          <Text style={[styles.checkMark, owned && styles.checkMarkOn]}>✓</Text>
+          <Text style={[styles.cornerMark, owned && styles.checkMarkOn]}>✓</Text>
         </Pressable>
         <Pressable
           accessibilityRole="checkbox"
@@ -74,9 +74,9 @@ export function PrintingTile({
           accessibilityLabel={`En souhait : ${printing.name}`}
           onPress={onToggleWishlisted}
           hitSlop={6}
-          style={[styles.check, styles.heart]}
+          style={[styles.corner, styles.heart]}
         >
-          <Text style={[styles.checkMark, wished && styles.heartOn]}>{wished ? '♥' : '♡'}</Text>
+          <Text style={[styles.cornerMark, wished && styles.heartOn]}>{wished ? '♥' : '♡'}</Text>
         </Pressable>
       </View>
       <Text numberOfLines={1} style={styles.name}>
@@ -160,10 +160,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   badgeLabel: { color: colors.background, fontSize: 12, fontWeight: '700' },
-  check: {
+  corner: {
     position: 'absolute',
     top: 6,
-    right: 6,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -173,10 +172,11 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: '#000a',
   },
-  heart: { right: undefined, left: 6 },
+  heart: { left: 6 },
   heartOn: { color: colors.accent },
+  check: { right: 6 },
   checkOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  checkMark: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  cornerMark: { color: colors.text, fontSize: 16, fontWeight: '700' },
   checkMarkOn: { color: colors.background },
   image: {
     width: '100%',

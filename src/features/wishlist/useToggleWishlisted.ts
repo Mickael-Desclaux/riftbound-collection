@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
 
 import { useDatabase } from '@/data/DatabaseProvider';
-import { restoreWishlistEntry, setWishlisted } from '@/data/wishlist';
+import { setWishlisted } from '@/data/wishlist';
 import { useClock } from '@/ui/ClockContext';
 import type { GridPrinting } from '@/ui/printing-grid/gridPrinting';
-import { useToast } from '@/ui/Toast';
+
+import { useWishlistUndoToast } from './useWishlistUndoToast';
 
 /** Ce que le ♡ doit savoir d'une case de grille. */
 export type WishlistToggleTarget = Pick<
@@ -21,7 +22,7 @@ export type WishlistToggleTarget = Pick<
 export function useToggleWishlisted(): (printing: WishlistToggleTarget) => void {
   const db = useDatabase();
   const now = useClock();
-  const showToast = useToast();
+  const showUndoToast = useWishlistUndoToast();
   return useCallback(
     ({ printingCode, wishlistedAt, inCatalog }) => {
       const removed = setWishlisted(
@@ -29,13 +30,8 @@ export function useToggleWishlisted(): (printing: WishlistToggleTarget) => void 
         printingCode,
         wishlistedAt === null ? now().toISOString() : null,
       );
-      if (removed === null || inCatalog) return;
-      showToast({
-        message: 'Retirée des souhaits',
-        actionLabel: 'Annuler',
-        onAction: () => restoreWishlistEntry(db, removed),
-      });
+      if (removed !== null && !inCatalog) showUndoToast(removed);
     },
-    [db, now, showToast],
+    [db, now, showUndoToast],
   );
 }

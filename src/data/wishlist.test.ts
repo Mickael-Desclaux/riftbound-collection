@@ -1,7 +1,7 @@
 import type { IsoDateTime } from '@/domain/dates';
 import type { PrintingCode } from '@/domain/printingCode';
 
-import { readOwnedQuantities, setOwnedQuantity } from './collection';
+import { readOwnedQuantities, restoreOwnedQuantity, setOwnedQuantity } from './collection';
 import { readWishlistPriceHistory, savePrices } from './prices';
 import { wishlistEntry } from './schema';
 import { createTestDatabase } from './testing/createTestDatabase';
@@ -69,6 +69,18 @@ describe('retrait automatique des souhaits', () => {
 
     expect(setOwnedQuantity(db, JINX, 2)).toBeNull();
     expect(setOwnedQuantity(db, JINX, 0)).toBeNull();
+    expect(readWishlist(db).get(JINX)).toBe(ADDED);
+  });
+
+  it('laisse en souhait une Version dont on annule le retrait de la Collection', async () => {
+    const { db } = await createTestDatabase();
+    setOwnedQuantity(db, JINX, 3);
+    setWishlisted(db, JINX, ADDED);
+    setOwnedQuantity(db, JINX, 0);
+
+    restoreOwnedQuantity(db, JINX, 3);
+
+    expect(readOwnedQuantities(db).get(JINX)).toBe(3);
     expect(readWishlist(db).get(JINX)).toBe(ADDED);
   });
 

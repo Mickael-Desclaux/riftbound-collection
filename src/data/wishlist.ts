@@ -32,17 +32,26 @@ export function setWishlisted(
   printingCode: PrintingCode,
   addedAt: IsoDateTime | null,
 ): WishlistEntry | null {
-  if (addedAt === null) {
-    return (
-      db
-        .delete(wishlistEntry)
-        .where(eq(wishlistEntry.printingCode, printingCode))
-        .returning()
-        .get() ?? null
-    );
-  }
+  if (addedAt === null) return removeFromWishlist(db, printingCode);
   db.insert(wishlistEntry).values({ printingCode, addedAt }).onConflictDoNothing().run();
   return null;
+}
+
+/**
+ * Retire la Version de la Liste de souhaits, et rend le souhait retiré (`null`
+ * si elle n'y était pas). `db` peut être une transaction en cours.
+ */
+export function removeFromWishlist(
+  db: Pick<AppDatabase, 'delete'>,
+  printingCode: PrintingCode,
+): WishlistEntry | null {
+  return (
+    db
+      .delete(wishlistEntry)
+      .where(eq(wishlistEntry.printingCode, printingCode))
+      .returning()
+      .get() ?? null
+  );
 }
 
 /** Remet un souhait retiré tel qu'il était (« Annuler »), dernière alerte comprise. */

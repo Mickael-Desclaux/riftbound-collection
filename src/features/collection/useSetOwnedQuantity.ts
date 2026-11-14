@@ -2,9 +2,8 @@ import { useCallback } from 'react';
 
 import { setOwnedQuantity } from '@/data/collection';
 import { useDatabase } from '@/data/DatabaseProvider';
-import { restoreWishlistEntry } from '@/data/wishlist';
 import type { PrintingCode } from '@/domain/printingCode';
-import { useToast } from '@/ui/Toast';
+import { useWishlistUndoToast } from '@/features/wishlist/useWishlistUndoToast';
 
 /**
  * Règle la quantité possédée d'une Version, depuis n'importe quel écran. Une
@@ -13,17 +12,12 @@ import { useToast } from '@/ui/Toast';
  */
 export function useSetOwnedQuantity(): (printingCode: PrintingCode, quantity: number) => void {
   const db = useDatabase();
-  const showToast = useToast();
+  const showUndoToast = useWishlistUndoToast();
   return useCallback(
     (printingCode, quantity) => {
       const removed = setOwnedQuantity(db, printingCode, quantity);
-      if (removed === null) return;
-      showToast({
-        message: 'Retirée des souhaits',
-        actionLabel: 'Annuler',
-        onAction: () => restoreWishlistEntry(db, removed),
-      });
+      if (removed !== null) showUndoToast(removed);
     },
-    [db, showToast],
+    [db, showUndoToast],
   );
 }
