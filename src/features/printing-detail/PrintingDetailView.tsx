@@ -19,7 +19,7 @@ import {
 import type { RecordedValue } from '@/domain/priceHistory';
 import type { PrintingCode } from '@/domain/printingCode';
 import { wishlistPriceChange } from '@/domain/wishlist';
-import { controlStyles } from '@/ui/controls';
+import { makeControlStyles } from '@/ui/controls';
 import {
   formatDate,
   formatNumericDayMonth,
@@ -435,7 +435,7 @@ const makeStyles = (colors: Palette) =>
     name: { color: colors.text, fontSize: 22, fontWeight: '700' },
     muted: { color: colors.muted, fontSize: 13 },
     bigPrice: { color: colors.accent, fontSize: 30, fontWeight: '700', marginTop: 6 },
-    wishlistNote: { ...controlStyles(colors).idle, borderRadius: 10, padding: 12 },
+    wishlistNote: { ...makeControlStyles(colors).idle, borderRadius: 10, padding: 12 },
     wishlistNoteText: { color: colors.text, fontSize: 14 },
     section: { gap: 8 },
     sectionTitle: {
@@ -447,7 +447,7 @@ const makeStyles = (colors: Palette) =>
     },
     cells: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     cell: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       flexBasis: '47%',
       flexGrow: 1,
       borderRadius: 10,
@@ -481,7 +481,7 @@ const makeStyles = (colors: Palette) =>
     quantity: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     quantityValue: { color: colors.text, fontSize: 17, minWidth: 24, textAlign: 'center' },
     iconButton: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       width: 40,
       height: 40,
       borderRadius: 20,
@@ -491,13 +491,13 @@ const makeStyles = (colors: Palette) =>
     disabled: { opacity: 0.4 },
     icon: { color: colors.text, fontSize: 18 },
     binder: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       flex: 1,
       borderRadius: 20,
       alignItems: 'center',
       paddingVertical: 10,
     },
     binderLabel: { color: colors.text, fontSize: 14 },
-    binderSelected: controlStyles(colors).selected,
-    binderSelectedLabel: controlStyles(colors).selectedLabel,
+    binderSelected: makeControlStyles(colors).selected,
+    binderSelectedLabel: makeControlStyles(colors).selectedLabel,
   });

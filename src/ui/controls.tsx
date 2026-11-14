@@ -47,7 +47,7 @@ export function Chip({
 }
 
 /** Styles communs des contrôles, à étaler dans la feuille de styles d'un composant. */
-export function controlStyles(colors: Palette) {
+export function makeControlStyles(colors: Palette) {
   return {
     /** Fond et bordure d'un contrôle au repos. */
     idle: { borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface },
@@ -59,19 +59,19 @@ export function controlStyles(colors: Palette) {
 const makeStyles = (colors: Palette) =>
   StyleSheet.create({
     button: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       borderRadius: 8,
       paddingHorizontal: 20,
       paddingVertical: 10,
     },
     chip: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       borderRadius: 999,
       paddingHorizontal: 10,
       paddingVertical: 6,
     },
     label: { color: colors.text, fontSize: 15 },
     chipLabel: { color: colors.text, fontSize: 13 },
-    selected: controlStyles(colors).selected,
-    selectedLabel: controlStyles(colors).selectedLabel,
+    selected: makeControlStyles(colors).selected,
+    selectedLabel: makeControlStyles(colors).selectedLabel,
   });

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { isValidSetting } from '@/domain/settings';
-import { Button, controlStyles } from '@/ui/controls';
+import { Button, makeControlStyles } from '@/ui/controls';
 import { formatEditableNumber } from '@/ui/format';
 import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
 
@@ -127,7 +127,7 @@ const makeStyles = (colors: Palette) =>
     hint: { color: colors.muted, fontSize: 13 },
     threshold: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     input: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       color: colors.text,
       borderRadius: 8,
       minWidth: 56,

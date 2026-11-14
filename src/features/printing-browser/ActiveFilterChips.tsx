@@ -7,7 +7,7 @@ import {
   type LockedCriterion,
 } from '@/domain/catalogFilters';
 import type { Currency } from '@/domain/price';
-import { controlStyles } from '@/ui/controls';
+import { makeControlStyles } from '@/ui/controls';
 import { type Palette, useThemedStyles } from '@/ui/theme';
 
 import type { FilterOptions } from './FilterSheet';
@@ -63,7 +63,7 @@ const makeStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { gap: 6 },
     chip: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       borderColor: colors.accent,
       borderRadius: 999,
       paddingHorizontal: 10,

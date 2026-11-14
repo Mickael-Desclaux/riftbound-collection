@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { BinderPage } from '@/domain/binder';
 import type { CatalogEntry } from '@/domain/catalogEntry';
-import { Button, controlStyles } from '@/ui/controls';
+import { Button, makeControlStyles } from '@/ui/controls';
 import { formatBinderSummary } from '@/ui/format';
 import { CARD_ASPECT_RATIO, gridImageUri } from '@/ui/printing-grid/gridPrinting';
 import { type Palette, useThemedStyles, usePalette } from '@/ui/theme';
@@ -190,7 +190,7 @@ const makeStyles = (colors: Palette) =>
     emptyTitle: { color: colors.text, fontSize: 17, fontWeight: '600' },
     option: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     optionLabel: { color: colors.text, fontSize: 15 },
-    progress: { ...controlStyles(colors).idle, borderRadius: 8, padding: 12, gap: 8 },
+    progress: { ...makeControlStyles(colors).idle, borderRadius: 8, padding: 12, gap: 8 },
     progressLabel: { color: colors.text, fontSize: 14 },
     progressTrack: { height: 6, borderRadius: 3, backgroundColor: colors.line, overflow: 'hidden' },
     progressFill: { height: '100%', backgroundColor: colors.accent },

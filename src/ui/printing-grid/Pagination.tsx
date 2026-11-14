@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { paginationItems } from '@/domain/pagination';
-import { controlStyles } from '@/ui/controls';
+import { makeControlStyles } from '@/ui/controls';
 import { type Palette, useThemedStyles } from '@/ui/theme';
 
 type Props = { page: number; pageCount: number; onPageChange: (page: number) => void };
@@ -75,16 +75,16 @@ const makeStyles = (colors: Palette) =>
       padding: 16,
     },
     button: {
-      ...controlStyles(colors).idle,
+      ...makeControlStyles(colors).idle,
       minWidth: 36,
       height: 36,
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: 8,
     },
-    current: controlStyles(colors).selected,
+    current: makeControlStyles(colors).selected,
     disabled: { opacity: 0.35 },
     label: { color: colors.text, fontSize: 15 },
-    currentLabel: controlStyles(colors).selectedLabel,
+    currentLabel: makeControlStyles(colors).selectedLabel,
     gap: { color: colors.muted, paddingHorizontal: 4 },
   });

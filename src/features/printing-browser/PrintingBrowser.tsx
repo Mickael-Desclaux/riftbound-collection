@@ -20,7 +20,7 @@ import {
 } from '@/domain/catalogFilters';
 import { sortCatalog, type CatalogSort } from '@/domain/catalogSort';
 import { pageCount, pageOf } from '@/domain/pagination';
-import { Chip, controlStyles } from '@/ui/controls';
+import { Chip, makeControlStyles } from '@/ui/controls';
 import { formatBinderAdded, formatPrintingCount } from '@/ui/format';
 import { gridImageUri, type GridPrinting } from '@/ui/printing-grid/gridPrinting';
 import { PrintingGrid } from '@/ui/printing-grid/PrintingGrid';
@@ -349,8 +349,8 @@ const makeStyles = (colors: Palette) =>
     chips: { gap: 6 },
     toolbar: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     count: { flex: 1, textAlign: 'right', color: colors.muted, fontSize: 13 },
-    menuScrim: { flex: 1, backgroundColor: '#0008', justifyContent: 'center', padding: 48 },
-    menu: { ...controlStyles(colors).idle, borderRadius: 12, overflow: 'hidden' },
+    menuScrim: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'center', padding: 48 },
+    menu: { ...makeControlStyles(colors).idle, borderRadius: 12, overflow: 'hidden' },
     menuItem: { paddingHorizontal: 16, paddingVertical: 14 },
     menuLabel: { color: colors.text, fontSize: 16 },
     menuLabelSelected: { color: colors.accent, fontWeight: '700' },

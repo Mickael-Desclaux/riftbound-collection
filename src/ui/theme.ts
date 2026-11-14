@@ -2,7 +2,7 @@
  * Jetons de couleur des thèmes Clair et Sombre (spec § 2.6).
  *
  * Le thème actif est celui du téléphone, ou celui choisi dans les Réglages :
- * `ThemeSetting` le force pour toute l'app via `Appearance.setColorScheme`,
+ * `ApplyThemeSetting` le force pour toute l'app via `Appearance.setColorScheme`,
  * si bien que `useColorScheme` (et les fenêtres natives, comme le calendrier)
  * suivent toujours le bon thème.
  */
@@ -22,6 +22,8 @@ export type Palette = {
   onAccent: string;
   /** Bordures et séparateurs. */
   line: string;
+  /** Voile sous une fenêtre ou un menu posé sur l'écran. */
+  scrim: string;
 };
 
 /** Sombre : les couleurs des prototypes. */
@@ -33,6 +35,7 @@ export const darkPalette: Palette = {
   accent: '#e0b44c',
   onAccent: '#0d1017',
   line: '#2a3142',
+  scrim: '#000a',
 };
 
 /** Clair : les teintes de l'app d'origine, avec un doré assez foncé pour se lire sur blanc. */
@@ -44,9 +47,10 @@ export const lightPalette: Palette = {
   accent: '#8a6100',
   onAccent: '#ffffff',
   line: '#d4dbe5',
+  scrim: '#0008',
 };
 
-/** Couleurs du thème actif. */
+/** Couleurs du thème actif : le sombre, sauf si le téléphone ou le réglage demandent le clair. */
 export function usePalette(): Palette {
   return useColorScheme() === 'light' ? lightPalette : darkPalette;
 }

@@ -278,7 +278,7 @@ function Section({ title, children }: Readonly<{ title: string; children: React.
 
 const makeStyles = (colors: Palette) =>
   StyleSheet.create({
-    scrim: { flex: 1, backgroundColor: '#000a' },
+    scrim: { flex: 1, backgroundColor: colors.scrim },
     sheet: {
       maxHeight: '85%',
       backgroundColor: colors.surface,
