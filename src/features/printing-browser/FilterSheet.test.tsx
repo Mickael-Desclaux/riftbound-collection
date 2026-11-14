@@ -26,6 +26,7 @@ async function setup(
 ) {
   const onChange = jest.fn();
   const onClose = jest.fn();
+  const onAddToBinder = jest.fn();
   await render(
     <FilterSheet
       visible
@@ -37,9 +38,10 @@ async function setup(
       lockedCriteria={locked.lockedCriteria ?? []}
       onChange={onChange}
       onClose={onClose}
+      onAddToBinder={onAddToBinder}
     />,
   );
-  return { onChange, onClose };
+  return { onChange, onClose, onAddToBinder };
 }
 
 describe('FilterSheet', () => {
@@ -106,6 +108,7 @@ describe('FilterSheet', () => {
         lockedCriteria={[]}
         onChange={onChange}
         onClose={jest.fn()}
+        onAddToBinder={jest.fn()}
       />,
     );
 
@@ -188,5 +191,13 @@ describe('ActiveFilterChips', () => {
     );
 
     expect(screen.getByLabelText('Retirer le filtre ≥ 5,00\u00a0$\u00a0CA')).toBeTruthy();
+  });
+
+  it('ajoute les résultats au classeur', async () => {
+    const { onAddToBinder } = await setup();
+
+    await fireEvent.press(screen.getByText('Ajouter les 12 résultats au classeur'));
+
+    expect(onAddToBinder).toHaveBeenCalled();
   });
 });

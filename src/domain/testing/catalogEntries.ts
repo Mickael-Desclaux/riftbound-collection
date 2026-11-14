@@ -25,6 +25,7 @@ export function entry(code: string, overrides: Partial<CatalogEntry> = {}): Cata
     wishlistPriceChange: null,
     imageSmall: null,
     imageNormal: null,
+    imageLarge: null,
     ...overrides,
   };
 }

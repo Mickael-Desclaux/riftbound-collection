@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -33,6 +34,10 @@ const COLLECTION_FILTERS: CatalogFilters = { ...DEFAULT_CATALOG_FILTERS, showPro
  */
 export function CollectionScreen() {
   const openCatalog = useOpenCatalog();
+  const router = useRouter();
+  const binderButton = (
+    <Button label="Classeur" onPress={() => router.push('/collection/binder')} />
+  );
   const { entries, owned, wishlist } = usePrintingEntries();
   const collection = useMemo(
     () => collectionEntries(entries, owned, wishlist),
@@ -71,29 +76,33 @@ export function CollectionScreen() {
       onToggleOwned={toggleOwned}
       onToggleWishlisted={toggleWishlisted}
       banner={
-        <CollectionHeader
-          owned={collection}
-          catalog={entries}
-          expansionNames={expansionNames}
-          history={history}
-          sourceCurrency={SOURCE_CURRENCY[priceSource]}
-          displayCurrency={displayCurrency}
-          rates={rates}
-          today={toIsoDate(now())}
-          onOpenCompletion={(expansionCode) =>
-            openCatalog({
-              ...DEFAULT_CATALOG_FILTERS,
-              expansionCodes: [expansionCode],
-              ownership: 'missing',
-            })
-          }
-        />
+        <View style={styles.banner}>
+          <View style={styles.binderRow}>{binderButton}</View>
+          <CollectionHeader
+            owned={collection}
+            catalog={entries}
+            expansionNames={expansionNames}
+            history={history}
+            sourceCurrency={SOURCE_CURRENCY[priceSource]}
+            displayCurrency={displayCurrency}
+            rates={rates}
+            today={toIsoDate(now())}
+            onOpenCompletion={(expansionCode) =>
+              openCatalog({
+                ...DEFAULT_CATALOG_FILTERS,
+                expansionCodes: [expansionCode],
+                ownership: 'missing',
+              })
+            }
+          />
+        </View>
       }
       emptyState={
         <View style={styles.empty}>
           <Text style={styles.title}>Ta collection est vide.</Text>
           <Text style={styles.hint}>Marque tes cartes avec ✓ dans le Catalogue.</Text>
           <Button label="Parcourir le Catalogue" variant="primary" onPress={() => openCatalog()} />
+          {binderButton}
         </View>
       }
     />
@@ -101,6 +110,8 @@ export function CollectionScreen() {
 }
 
 const styles = StyleSheet.create({
+  banner: { gap: 8 },
+  binderRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
   title: { color: colors.text, fontSize: 17, fontWeight: '600' },
   hint: { color: colors.muted, fontSize: 14, textAlign: 'center' },

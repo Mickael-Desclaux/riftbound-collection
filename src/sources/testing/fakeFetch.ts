@@ -16,8 +16,11 @@ export function fakeFetch(responses: Record<string, FakeResponse>) {
     if (response === undefined) throw new Error(`URL inattendue dans le test : ${url}`);
     if (response instanceof Error) throw response;
     const status = response.status ?? 200;
-    // Une réponse 304 n'a pas de corps.
-    const body = status === 304 ? null : JSON.stringify(response.body);
+    // Une réponse 304 n'a pas de corps ; des octets (une image) sont servis tels quels.
+    let body: BodyInit | null = null;
+    if (response.body instanceof Uint8Array)
+      body = new Blob([response.body as Uint8Array<ArrayBuffer>]);
+    else if (status !== 304) body = JSON.stringify(response.body);
     return new Response(body, { status, headers: response.headers });
   };
   return { fetch: fetch as typeof globalThis.fetch, requests };

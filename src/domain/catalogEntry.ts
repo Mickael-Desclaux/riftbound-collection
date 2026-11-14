@@ -38,6 +38,8 @@ export type CatalogEntry = {
   wishlistPriceChange: number | null;
   imageSmall: string | null;
   imageNormal: string | null;
+  /** Grande image, pour le classeur imprimé. */
+  imageLarge: string | null;
 };
 
 /**
@@ -72,6 +74,7 @@ function unknownEntry(
     wishlistPriceChange: null,
     imageSmall: null,
     imageNormal: null,
+    imageLarge: null,
   };
 }
 

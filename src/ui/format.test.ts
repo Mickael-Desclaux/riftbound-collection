@@ -1,4 +1,5 @@
 import {
+  formatBinderSummary,
   formatCollectionCounts,
   formatWishlistCost,
   formatCompletion,
@@ -87,5 +88,12 @@ describe('formatCompletion', () => {
     expect(formatCompletion({ expansionCode: 'OGN', owned: 54, total: 352 })).toBe(
       `54 / 352 · 15${NBSP}%`,
     );
+  });
+});
+
+describe('formatBinderSummary', () => {
+  it('accorde les cartes et les pages', () => {
+    expect(formatBinderSummary(1, 1)).toBe('1 carte · 1 page A4');
+    expect(formatBinderSummary(12, 2)).toBe('12 cartes · 2 pages A4');
   });
 });

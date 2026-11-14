@@ -56,6 +56,7 @@ export function readCatalogEntries(db: AppDatabase): CatalogEntry[] {
       domains: card.domains,
       imageSmall: printing.imageSmall,
       imageNormal: printing.imageNormal,
+      imageLarge: printing.imageLarge,
     })
     .from(printing)
     .innerJoin(card, eq(card.oracleId, printing.cardOracleId))

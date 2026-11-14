@@ -18,6 +18,12 @@ export function toIsoDate(at: Date): IsoDate {
   return at.toISOString().slice(0, 10);
 }
 
+/** Le jour à l'heure du téléphone, `AAAA-MM-JJ` : pour nommer un fichier exporté. */
+export function localIsoDate(at: Date): IsoDate {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`;
+}
+
 /** La date `days` jours plus tard (ou plus tôt si `days` est négatif). */
 export function addDays(date: IsoDate, days: number): IsoDate {
   const at = new Date(`${date}T00:00:00Z`);
